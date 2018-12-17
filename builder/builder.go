@@ -35,13 +35,18 @@ type SQLSegments struct {
 	}
 }
 
-//Table ...
+//Table ..
 type Table struct {
 	Name  string
 	Alias string
 }
 
-//NewSQLSegment ...
+//New ..
+func New() *SQLSegments {
+	return &SQLSegments{}
+}
+
+//NewSQLSegment ..
 func NewSQLSegment() *SQLSegments {
 	return &SQLSegments{}
 }
@@ -151,8 +156,6 @@ func (s *SQLSegments) ForUpdate() *SQLSegments {
 	s.forUpdate = true
 	return s
 }
-
-//todo Union SQLSegments
 
 //Clause ...
 type Clause struct {
@@ -384,7 +387,6 @@ func (s *SQLSegments) buildField() string {
 			} else {
 				sql += " " + buildIdent(v)
 			}
-
 		}
 	}
 	return sql
@@ -488,7 +490,7 @@ func (s *SQLSegments) BuildSelect() string {
 		s.buildUnion(),
 		s.buildForUpdate(),
 	)
-	fmt.Println(s.render.args)
+	// fmt.Println(s.render.args)
 	return sql
 }
 

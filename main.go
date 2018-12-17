@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	s := builder.NewSQLSegment()
+	s := builder.New()
 	s.Flag("DISTANCE")
 	s.Field("*")
 	s.Table("tbl1.t1")
@@ -36,7 +36,7 @@ func main() {
 	s.ForUpdate()
 	fmt.Println(s.BuildSelect())
 
-	builder.NewConnect().Connect()
+	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")
 	// s.Insert(&struct {
