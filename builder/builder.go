@@ -1,9 +1,7 @@
 package builder
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 	"reflect"
 	"regexp"
 	"strings"
@@ -671,6 +669,7 @@ func buildPlaceholder(val interface{}) string {
 	return sql
 }
 
+/*
 //Connect ...
 type Connect struct {
 	db *sql.DB
@@ -770,7 +769,7 @@ func (c *Connect) scanAll(rows *sql.Rows, dest interface{}) {
 func (c *Connect) Connect() {
 	var err error
 	c.db, err = sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
-	// fmt.Println(err)
+
 	if err != nil {
 		log.Println(err)
 	}
@@ -791,7 +790,7 @@ func (c *Connect) Connect() {
 	// 	}
 	// 	rows.Scan(values...)
 	// }
-
+	fmt.Println(rows)
 	var dest []TT
 	c.scanAll(rows, dest)
 
@@ -820,3 +819,4 @@ func (c *Connect) Connect() {
 	// fmt.Println("---", aa)
 	//在这里进行一些数据库操作
 }
+*/
