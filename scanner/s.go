@@ -91,7 +91,7 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 			// index:      idx,
 			// meddler:    meddler,
 		}
-		for i, tag := range tags {
+		for _, tag := range tags {
 			t := strings.Split(tag, ":")
 			if len(t) < 1 {
 				t = append(t, tag)
@@ -116,12 +116,12 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 			case "index": //index
 
 			}
-			sf.index = i
 		}
 		if _, ok := data.fields[name]; ok {
 			return nil, fmt.Errorf("scanner found multiple fields for column %s", name)
 		}
 		sf.column = name
+		sf.index = i
 		sf.primaryKey = name == data.pk
 		data.fields[name] = sf
 		data.columns = append(data.columns, name)
@@ -150,13 +150,12 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	// perform the scan
 	if err := rows.Scan(targets...); err != nil {
 		return err
 	}
 
-	// // post-process and copy the target values into the struct
+	// post-process and copy the target values into the struct
 	// if err := WriteTargets(dst, columns, targets); err != nil {
 	// 	return err
 	// }
@@ -173,60 +172,55 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			fmt.Println(fieldAddr)
 			// scanTarget, err := field.meddler.PreRead(fieldAddr)
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
 			}
+			targets = append(targets, fieldAddr)
 			// targets = append(targets, scanTarget)
 		} else {
 			// no destination, so throw this away
 			targets = append(targets, new(interface{}))
-
 			if Debug {
 				log.Printf("scanner.Targets: column [%s] not found in struct", name)
 			}
 		}
 	}
-
 	return targets, nil
 }
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
-// func WriteTargets(dst interface{}, columns []string, targets []interface{}) error {
-// 	if len(columns) != len(targets) {
-// 		return fmt.Errorf("meddler.WriteTargets: mismatch in number of columns (%d) and targets (%d)",
-// 			len(columns), len(targets))
-// 	}
+func WriteTargets(dst interface{}, columns []string, targets []interface{}) error {
+	if len(columns) != len(targets) {
+		return fmt.Errorf("meddler.WriteTargets: mismatch in number of columns (%d) and targets (%d)",
+			len(columns), len(targets))
+	}
 
-// 	data, err := getColumns(reflect.TypeOf(dst))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	structVal := reflect.ValueOf(dst).Elem()
+	data, err := getColumns(reflect.TypeOf(dst))
+	if err != nil {
+		return err
+	}
+	structVal := reflect.ValueOf(dst).Elem()
 
-// 	for i, name := range columns {
-// 		if field, present := data.fields[name]; present {
-// 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-// 			err := field.meddler.PostRead(fieldAddr, targets[i])
-// 			if err != nil {
-// 				return fmt.Errorf("meddler.WriteTargets: PostRead error on column [%s]: %v", name, err)
-// 			}
-// 		} else {
-// 			// not destination, so throw this away
-// 			if Debug {
-// 				log.Printf("meddler.WriteTargets: column [%s] not found in struct", name)
-// 			}
-// 		}
-// 	}
-
-// 	return nil
-// }
+	for i, name := range columns {
+		if field, ok := data.fields[name]; ok {
+			fieldAddr := structVal.Field(field.index).Addr().Interface()
+			_ = fieldAddr
+			_ = i
+			// err := field.meddler.PostRead(fieldAddr, targets[i])
+			// targets[i] = fieldAddr
+			if err != nil {
+				return fmt.Errorf("meddler.WriteTargets: PostRead error on column [%s]: %v", name, err)
+			}
+		} else {
+			// not destination, so throw this away
+			if Debug {
+				log.Printf("meddler.WriteTargets: column [%s] not found in struct", name)
+			}
+		}
+	}
+	return nil
+}
 func Scan(rows *sql.Rows, dst interface{}) error {
-	// get the list of struct fields
-	// data, err := getColumns(reflect.TypeOf(dst))
-	// if err != nil {
-	// 	return err
-	// }
 	return scanRow(rows, dst)
 }

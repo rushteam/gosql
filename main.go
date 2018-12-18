@@ -72,9 +72,10 @@ func main() {
 	// }
 
 	type TTT struct {
-		ID   int `db:"id,pk"`
-		Name int `db:"name,index"`
+		ID   string `db:"id,pk"`
+		Type string `db:"type,index"`
 	}
+	//id type client_id client_secret salt created updated metadata
 	t := &TTT{}
 	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
 	if err != nil {
@@ -84,11 +85,11 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(rows)
 	err = scanner.Scan(rows, t)
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Println(t)
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")
