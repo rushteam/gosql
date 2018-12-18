@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 
 	"./builder"
+	"./scanner"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -36,6 +38,14 @@ func main() {
 	s.ForUpdate()
 	fmt.Println(s.BuildSelect())
 
+	type TTT struct {
+		ID   int `db:"id,pk"`
+		Name int `db:"name,index"`
+	}
+	t := &TTT{}
+	column, err := scanner.GetColumns(reflect.TypeOf(t))
+	fmt.Println(err)
+	fmt.Println(column)
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")
