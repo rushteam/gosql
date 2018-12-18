@@ -1,9 +1,8 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
+	"reflect"
 
 	"./builder"
 	"./scanner"
@@ -41,35 +40,44 @@ func main() {
 	s.ForUpdate()
 	fmt.Println(s.BuildSelect())
 
-	type Accounts struct{}
-	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
+	// type Accounts struct{}
+	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
 
-	if err != nil {
-		log.Println(err)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer db.Close()
+	// err = db.Ping()
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// sq := builder.New()
+	// // sql.Field("*")
+	// sq.Table("accounts")
+	// // fmt.Println(sq.BuildSelect())
+	// // rows, _ := db.Query(sq.BuildSelect())
+	// rows, err := db.Query("SELECT * FORM `accounts`")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// var accts []Accounts
+	// // fmt.Println(rows == nil)
+	// err = scanner.Scan(rows, &accts)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// for _, acc := range accts {
+	// 	fmt.Println(acc)
+	// }
+
+	type TTT struct {
+		ID   int `db:"id,pk"`
+		Name int `db:"name,index"`
 	}
-	defer db.Close()
-	err = db.Ping()
-	if err != nil {
-		log.Println(err)
-	}
-	sq := builder.New()
-	// sql.Field("*")
-	sq.Table("accounts")
-	// fmt.Println(sq.BuildSelect())
-	// rows, _ := db.Query(sq.BuildSelect())
-	rows, err := db.Query("SELECT * FORM `accounts`")
-	if err != nil {
-		log.Println(err)
-	}
-	var accts []Accounts
-	// fmt.Println(rows == nil)
-	err = scanner.Scan(rows, &accts)
-	if err != nil {
-		log.Println(err)
-	}
-	for _, acc := range accts {
-		fmt.Println(acc)
-	}
+	t := &TTT{}
+	column, err := scanner.GetColumns(reflect.TypeOf(t))
+	fmt.Println(err)
+	fmt.Println(column)
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")
