@@ -188,6 +188,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	return targets, nil
 }
 
+//https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 // func WriteTargets(dst interface{}, columns []string, targets []interface{}) error {
 // 	if len(columns) != len(targets) {
 // 		return fmt.Errorf("meddler.WriteTargets: mismatch in number of columns (%d) and targets (%d)",
