@@ -130,6 +130,9 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 	return data, nil
 }
 func scanRow(rows *sql.Rows, dst interface{}) error {
+	if rows == nil {
+		return fmt.Errorf("rows is a pointer, but not be a nil")
+	}
 	// get the sql columns
 	columns, err := rows.Columns()
 	if err != nil {
@@ -170,6 +173,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
+			fmt.Println(fieldAddr)
 			// scanTarget, err := field.meddler.PreRead(fieldAddr)
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
@@ -220,10 +224,9 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 // }
 func Scan(rows *sql.Rows, dst interface{}) error {
 	// get the list of struct fields
-	data, err := getColumns(reflect.TypeOf(dst))
-	if err != nil {
-		return err
-	}
-
-	return scanRow(data, rows, dst, columns)
+	// data, err := getColumns(reflect.TypeOf(dst))
+	// if err != nil {
+	// 	return err
+	// }
+	return scanRow(rows, dst)
 }

@@ -1,8 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
-	"reflect"
+	"log"
 
 	"./builder"
 	"./scanner"
@@ -38,7 +39,7 @@ func main() {
 	s.Limit(30)
 	s.Offset(10)
 	s.ForUpdate()
-	fmt.Println(s.BuildSelect())
+	// fmt.Println(s.BuildSelect())
 
 	// type Accounts struct{}
 	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
@@ -56,7 +57,7 @@ func main() {
 	// sq.Table("accounts")
 	// // fmt.Println(sq.BuildSelect())
 	// // rows, _ := db.Query(sq.BuildSelect())
-	// rows, err := db.Query("SELECT * FORM `accounts`")
+	// rows, err := db.Query("SELECT * FROM `accounts`")
 	// if err != nil {
 	// 	log.Println(err)
 	// }
@@ -75,9 +76,19 @@ func main() {
 		Name int `db:"name,index"`
 	}
 	t := &TTT{}
-	column, err := scanner.GetColumns(reflect.TypeOf(t))
-	fmt.Println(err)
-	fmt.Println(column)
+	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
+	if err != nil {
+		log.Println(err)
+	}
+	rows, err := db.Query("SELECT * FROM `accounts`")
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(rows)
+	err = scanner.Scan(rows, t)
+	if err != nil {
+		log.Println(err)
+	}
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")
