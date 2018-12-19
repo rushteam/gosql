@@ -65,11 +65,11 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 
 	for i := 0; i < structType.NumField(); i++ {
 		f := structType.Field(i)
+		tags := strings.Split(f.Tag.Get(tagKey), tagSplit)
 		// skip non-exported fields
-		if f.PkgPath != "" {
+		if f.PkgPath != "" && len(tags) < 1 {
 			continue
 		}
-		tags := strings.Split(f.Tag.Get(tagKey), tagSplit)
 		// skip using "-" tag fields
 		if len(tags) > 0 && tags[0] == "-" {
 			continue
@@ -88,7 +88,7 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 		sf := &structField{
 			column:     name,
 			primaryKey: name == data.pk,
-			// index:      idx,
+			index:      i,
 			// meddler:    meddler,
 		}
 		for _, tag := range tags {
@@ -120,8 +120,6 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 		if _, ok := data.fields[name]; ok {
 			return nil, fmt.Errorf("scanner found multiple fields for column %s", name)
 		}
-		sf.column = name
-		sf.index = i
 		sf.primaryKey = name == data.pk
 		data.fields[name] = sf
 		data.columns = append(data.columns, name)
@@ -145,7 +143,7 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 		}
 		return sql.ErrNoRows
 	}
-	// get a list of targets
+	// maping struct address to  map address
 	targets, err := Targets(dst, columns)
 	if err != nil {
 		return err
@@ -154,11 +152,14 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 	if err := rows.Scan(targets...); err != nil {
 		return err
 	}
-
-	// post-process and copy the target values into the struct
-	// if err := WriteTargets(dst, columns, targets); err != nil {
-	// 	return err
-	// }
+	if len(columns) != len(targets) {
+		return fmt.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
+			len(columns), len(targets))
+	}
+	// format some field which have tag plugin
+	if err := Formats(dst, columns, targets); err != nil {
+		return err
+	}
 
 	return rows.Err()
 }
@@ -190,12 +191,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 }
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
-func WriteTargets(dst interface{}, columns []string, targets []interface{}) error {
-	if len(columns) != len(targets) {
-		return fmt.Errorf("meddler.WriteTargets: mismatch in number of columns (%d) and targets (%d)",
-			len(columns), len(targets))
-	}
-
+func Formats(dst interface{}, columns []string, targets []interface{}) error {
 	data, err := getColumns(reflect.TypeOf(dst))
 	if err != nil {
 		return err
@@ -210,12 +206,12 @@ func WriteTargets(dst interface{}, columns []string, targets []interface{}) erro
 			// err := field.meddler.PostRead(fieldAddr, targets[i])
 			// targets[i] = fieldAddr
 			if err != nil {
-				return fmt.Errorf("meddler.WriteTargets: PostRead error on column [%s]: %v", name, err)
+				return fmt.Errorf("meddler.Formats: PostRead error on column [%s]: %v", name, err)
 			}
 		} else {
 			// not destination, so throw this away
 			if Debug {
-				log.Printf("meddler.WriteTargets: column [%s] not found in struct", name)
+				log.Printf("meddler.Formats: column [%s] not found in struct", name)
 			}
 		}
 	}
