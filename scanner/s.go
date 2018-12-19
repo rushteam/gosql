@@ -200,7 +200,9 @@ func Formats(dst interface{}, columns []string, targets []interface{}) error {
 
 	for i, name := range columns {
 		if field, ok := data.fields[name]; ok {
+			// field.Elem.Addr().Int
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
+			// field.plguin.Formats(fieldAddr)
 			_ = fieldAddr
 			_ = i
 			// err := field.meddler.PostRead(fieldAddr, targets[i])
