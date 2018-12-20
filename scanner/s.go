@@ -31,12 +31,13 @@ type structField struct {
 	column     string
 	index      int
 	primaryKey bool
+	plugins    []string
 }
 type structData struct {
 	columns []string
 	fields  map[string]*structField
 	pk      string
-	ref     *reflect.Value
+	// ref     *reflect.Value
 }
 
 var Debug = false
@@ -45,7 +46,7 @@ var Debug = false
 var refStructCache = make(map[reflect.Type]*structData)
 var refStructCacheMutex sync.Mutex
 
-func getColumns(dstType reflect.Type) (*structData, error) {
+func resolveStruct(dstType reflect.Type) (*structData, error) {
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -86,7 +87,7 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 		}
 		// check for a meddler
 		// var meddler Meddler = registry["identity"]
-		sf := &structField{
+		field := &structField{
 			column:     name,
 			primaryKey: name == data.pk,
 			index:      i,
@@ -113,16 +114,16 @@ func getColumns(dstType reflect.Type) (*structData, error) {
 				// } else {
 				// 	return nil, fmt.Errorf("scanner found field %s with meddler %s, but that meddler is not registered", f.Name, tag)
 			case "unique_index", "unique": //unique_index
-
 			case "index": //index
-
+			default:
+				field.plugins = append(field.plugins, tag)
 			}
 		}
 		if _, ok := data.fields[name]; ok {
 			return nil, fmt.Errorf("scanner found multiple fields for column %s", name)
 		}
-		sf.primaryKey = name == data.pk
-		data.fields[name] = sf
+		field.primaryKey = name == data.pk
+		data.fields[name] = field
 		data.columns = append(data.columns, name)
 	}
 	refStructCache[dstType] = data
@@ -165,7 +166,7 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 	return rows.Err()
 }
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
-	data, err := getColumns(reflect.TypeOf(dst))
+	data, err := resolveStruct(reflect.TypeOf(dst))
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +194,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
-	data, err := getColumns(reflect.TypeOf(dst))
+	data, err := getFields(reflect.TypeOf(dst))
 	if err != nil {
 		return err
 	}
@@ -235,4 +236,38 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 }
 func Scan(rows *sql.Rows, dst interface{}) error {
 	return scanRow(rows, dst)
+}
+func ScanAll(rows *sql.Rows, dst interface{}) error {
+	defer rows.Close()
+	dstVal := reflect.ValueOf(dst)
+	if dstVal.Kind() != reflect.Ptr || dstVal.IsNil() {
+		return fmt.Errorf("ScanAll called with non-pointer destination: %T", dst)
+	}
+	sliceVal := dstVal.Elem()
+	if sliceVal.Kind() != reflect.Slice {
+		return fmt.Errorf("ScanAll called with pointer to non-slice: %T", dst)
+	}
+	ptrType := sliceVal.Type().Elem()
+	if ptrType.Kind() != reflect.Ptr {
+		return fmt.Errorf("ScanAll expects element to be pointers, found %T", dst)
+	}
+	eltType := ptrType.Elem()
+	if eltType.Kind() != reflect.Struct {
+		return fmt.Errorf("ScanAll expects element to be pointers to structs, found %T", dst)
+	}
+	// gather the results
+	for {
+		// create a new element
+		eltVal := reflect.New(eltType)
+		elt := eltVal.Interface()
+		// scan it
+		if err := scanRow(rows, elt); err != nil {
+			if err == sql.ErrNoRows {
+				return nil
+			}
+			return err
+		}
+		// add to the result slice
+		sliceVal.Set(reflect.Append(sliceVal, eltVal))
+	}
 }
