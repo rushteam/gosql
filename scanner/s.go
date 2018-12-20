@@ -47,6 +47,23 @@ var Debug = false
 var refStructCache = make(map[reflect.Type]*StructData)
 var refStructCacheMutex sync.Mutex
 
+//https://github.com/jmoiron/sqlx/blob/master/reflectx/reflect.go
+func parseOptions(tag string) map[string]string {
+	parts := strings.Split(tag, ",")
+	options := make(map[string]string, len(parts))
+	if len(parts) > 1 {
+		for _, opt := range parts[1:] {
+			// short circuit potentially expensive split op
+			if strings.Contains(opt, "=") {
+				kv := strings.Split(opt, "=")
+				options[kv[0]] = kv[1]
+				continue
+			}
+			options[opt] = ""
+		}
+	}
+	return options
+}
 func ResolveStruct(dstType reflect.Type) (*StructData, error) {
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
