@@ -36,6 +36,7 @@ type structData struct {
 	columns []string
 	fields  map[string]*structField
 	pk      string
+	ref     *reflect.Value
 }
 
 var Debug = false
@@ -157,7 +158,7 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 			len(columns), len(targets))
 	}
 	// format some field which have tag plugin
-	if err := Formats(dst, columns, targets); err != nil {
+	if err := Plugins(dst, columns, targets); err != nil {
 		return err
 	}
 
@@ -191,13 +192,17 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 }
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
-func Formats(dst interface{}, columns []string, targets []interface{}) error {
+func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 	data, err := getColumns(reflect.TypeOf(dst))
 	if err != nil {
 		return err
 	}
 	structVal := reflect.ValueOf(dst).Elem()
-
+	for i, name := range data.columns {
+		if field, ok := data.fields[name]; ok {
+			field.Value.Addr().Interface()
+		}
+	}
 	for i, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			// field.Elem.Addr().Int
