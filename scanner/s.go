@@ -200,28 +200,37 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 	structVal := reflect.ValueOf(dst).Elem()
 	for i, name := range data.columns {
 		if field, ok := data.fields[name]; ok {
-			field.Value.Addr().Interface()
-		}
-	}
-	for i, name := range columns {
-		if field, ok := data.fields[name]; ok {
-			// field.Elem.Addr().Int
+			// field.Value.Addr().Interface()
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			// field.plguin.Formats(fieldAddr)
-			_ = fieldAddr
-			_ = i
-			// err := field.meddler.PostRead(fieldAddr, targets[i])
-			// targets[i] = fieldAddr
+			fmt.Println(i, name, fieldAddr)
 			if err != nil {
 				return fmt.Errorf("meddler.Formats: PostRead error on column [%s]: %v", name, err)
 			}
 		} else {
-			// not destination, so throw this away
 			if Debug {
 				log.Printf("meddler.Formats: column [%s] not found in struct", name)
 			}
 		}
 	}
+	// for i, name := range columns {
+	// 	if field, ok := data.fields[name]; ok {
+	// 		// field.Elem.Addr().Int
+	// 		fieldAddr := structVal.Field(field.index).Addr().Interface()
+	// 		// field.plguin.Formats(fieldAddr)
+	// 		_ = fieldAddr
+	// 		_ = i
+	// 		// err := field.meddler.PostRead(fieldAddr, targets[i])
+	// 		// targets[i] = fieldAddr
+	// 		if err != nil {
+	// 			return fmt.Errorf("meddler.Formats: PostRead error on column [%s]: %v", name, err)
+	// 		}
+	// 	} else {
+	// 		// not destination, so throw this away
+	// 		if Debug {
+	// 			log.Printf("meddler.Formats: column [%s] not found in struct", name)
+	// 		}
+	// 	}
+	// }
 	return nil
 }
 func Scan(rows *sql.Rows, dst interface{}) error {
