@@ -27,15 +27,16 @@ type 字段类型
 const tagKey = "db"
 const tagSplit = ","
 
-type structField struct {
+type StructField struct {
 	column     string
 	index      int
 	primaryKey bool
 	plugins    []string
 }
-type structData struct {
+type StructData struct {
+	table   string
 	columns []string
-	fields  map[string]*structField
+	fields  map[string]*StructField
 	pk      string
 	// ref     *reflect.Value
 }
@@ -43,10 +44,10 @@ type structData struct {
 var Debug = false
 
 //反射结构体缓存
-var refStructCache = make(map[reflect.Type]*structData)
+var refStructCache = make(map[reflect.Type]*StructData)
 var refStructCacheMutex sync.Mutex
 
-func resolveStruct(dstType reflect.Type) (*structData, error) {
+func ResolveStruct(dstType reflect.Type) (*StructData, error) {
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -62,8 +63,8 @@ func resolveStruct(dstType reflect.Type) (*structData, error) {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
 
-	data := new(structData)
-	data.fields = make(map[string]*structField)
+	data := new(StructData)
+	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
 		f := structType.Field(i)
@@ -87,7 +88,7 @@ func resolveStruct(dstType reflect.Type) (*structData, error) {
 		}
 		// check for a meddler
 		// var meddler Meddler = registry["identity"]
-		field := &structField{
+		field := &StructField{
 			column:     name,
 			primaryKey: name == data.pk,
 			index:      i,
@@ -166,7 +167,7 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 	return rows.Err()
 }
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
-	data, err := resolveStruct(reflect.TypeOf(dst))
+	data, err := ResolveStruct(reflect.TypeOf(dst))
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +195,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
-	data, err := getFields(reflect.TypeOf(dst))
+	data, err := ResolveStruct(reflect.TypeOf(dst))
 	if err != nil {
 		return err
 	}
@@ -205,11 +206,11 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
 			fmt.Println(i, name, fieldAddr)
 			if err != nil {
-				return fmt.Errorf("meddler.Formats: PostRead error on column [%s]: %v", name, err)
+				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
 			}
 		} else {
 			if Debug {
-				log.Printf("meddler.Formats: column [%s] not found in struct", name)
+				log.Printf("scanner.Plugins: column [%s] not found in struct", name)
 			}
 		}
 	}
