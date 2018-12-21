@@ -120,16 +120,16 @@ func main() {
 	// s.Delete()
 	// fmt.Println(s.BuildDelete())
 
-	c := &builder.Clause{}
-	c.Where("type", "A")
-	c.Where("status", "0")
-	c.Where(func(c *builder.Clause) {
-		c.Where("a", "200")
-		c.Where("b", "100")
-		c.Where(func(c *builder.Clause) {
-			c.Where("time", "2018")
-			c.Where("you", 1)
-		})
-	})
-	fmt.Println(c.Build(0))
+	// c := &builder.Clause{}
+	// c.Where("type", "A")
+	// c.Where("status", "0")
+	// c.Where(func(c *builder.Clause) {
+	// 	c.Where("a", "200")
+	// 	c.Where("b", "100")
+	// 	c.Where(func(c *builder.Clause) {
+	// 		c.Where("time", "2018")
+	// 		c.Where("you", 1)
+	// 	})
+	// })
+	// fmt.Println(c.Build(0))
 }
