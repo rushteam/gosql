@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"time"
 
 	"./builder"
 	"./scanner"
@@ -72,17 +73,20 @@ func main() {
 	// }
 
 	type T struct {
-		ID   string `db:"id,pk"`
-		Type string `db:"type,index"`
+		ID        string    `db:"id,pk"`
+		Uid       string    `db:",index"`
+		Typ       string    `db:"typ,index"`
+		UpdatedAt string    `db:"updated_at"`
+		CreatedAt time.Time `db:"created_at"`
 	}
 	//id type client_id client_secret salt created updated metadata
 	t := &T{}
-	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
+	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
 	if err != nil {
 		log.Println(err)
 	}
 	defer db.Close()
-	rows, err := db.Query("SELECT * FROM `accounts` order by id desc")
+	rows, err := db.Query("SELECT * FROM `login` order by id desc")
 	if err != nil {
 		log.Println(err)
 	}
@@ -92,12 +96,15 @@ func main() {
 	}
 	fmt.Println(t)
 	var tt []*T
-	rows, err = db.Query("SELECT * FROM `accounts`")
+	rows, err = db.Query("SELECT * FROM `login`")
 	err = scanner.ScanAll(rows, &tt)
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(tt[0])
+	for _, v := range tt {
+		fmt.Println(v)
+	}
+
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")

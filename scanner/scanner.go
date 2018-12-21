@@ -221,7 +221,8 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 		if field, ok := data.fields[name]; ok {
 			// field.Value.Addr().Interface()
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			fmt.Println(i, name, fieldAddr)
+			// fmt.Println(i, name, fieldAddr)
+			_, _, _ = i, name, fieldAddr
 			if err != nil {
 				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
 			}
