@@ -193,6 +193,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
+			fmt.Println(structVal.Field(field.index).Addr().Type())
 			// scanTarget, err := field.meddler.PreRead(fieldAddr)
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
