@@ -71,17 +71,18 @@ func main() {
 	// 	fmt.Println(acc)
 	// }
 
-	type TTT struct {
+	type T struct {
 		ID   string `db:"id,pk"`
 		Type string `db:"type,index"`
 	}
 	//id type client_id client_secret salt created updated metadata
-	t := &TTT{}
+	t := &T{}
 	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
 	if err != nil {
 		log.Println(err)
 	}
-	rows, err := db.Query("SELECT * FROM `accounts`")
+	defer db.Close()
+	rows, err := db.Query("SELECT * FROM `accounts` order by id desc")
 	if err != nil {
 		log.Println(err)
 	}
@@ -90,6 +91,13 @@ func main() {
 		log.Println(err)
 	}
 	fmt.Println(t)
+	var tt []*T
+	rows, err = db.Query("SELECT * FROM `accounts`")
+	err = scanner.ScanAll(rows, &tt)
+	if err != nil {
+		log.Println(err)
+	}
+	fmt.Println(tt[0])
 	// builder.NewConnect().Connect()
 
 	// s.Table("tbl1")

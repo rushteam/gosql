@@ -266,10 +266,13 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		return fmt.Errorf("ScanAll called with pointer to non-slice: %T", dst)
 	}
 	ptrType := sliceVal.Type().Elem()
+
+	var eltType reflect.Type
 	if ptrType.Kind() != reflect.Ptr {
-		return fmt.Errorf("ScanAll expects element to be pointers, found %T", dst)
+		eltType = ptrType
+	} else {
+		eltType = ptrType.Elem()
 	}
-	eltType := ptrType.Elem()
 	if eltType.Kind() != reflect.Struct {
 		return fmt.Errorf("ScanAll expects element to be pointers to structs, found %T", dst)
 	}
@@ -286,6 +289,10 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 			return err
 		}
 		// add to the result slice
-		sliceVal.Set(reflect.Append(sliceVal, eltVal))
+		if ptrType.Kind() != reflect.Ptr {
+			sliceVal.Set(reflect.Append(sliceVal, eltVal.Elem()))
+		} else {
+			sliceVal.Set(reflect.Append(sliceVal, eltVal))
+		}
 	}
 }
