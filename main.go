@@ -73,11 +73,11 @@ func main() {
 	// }
 
 	type T struct {
-		ID  string `db:"id,pk"`
-		Uid string `db:",index"`
-		Typ string `db:"typ,index"`
-		// Expires   string    `db:"column:expires"`
-		Expires   time.Time `db:"expires"`
+		ID      string `db:"id,pk"`
+		Uid     string `db:",index"`
+		Typ     string `db:"typ,index"`
+		Expires string `db:"expires"`
+		// Expires   time.Time `db:"expires"`
 		UpdatedAt string    `db:"updated_at"`
 		CreatedAt time.Time `db:"created_at"`
 	}
