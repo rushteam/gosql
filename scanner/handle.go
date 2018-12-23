@@ -12,8 +12,7 @@ func (elt TimeField) Read(fieldAddr interface{}) (scanTarget interface{}, err er
 	// case *time.Time:
 
 	// }
-	// return fieldAddr, nil
-
+	return fieldAddr, nil
 }
 
 // func (elt TimeField) Format(fieldAddr interface{}) (scanTarget interface{}, err error) {
