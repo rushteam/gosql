@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"time"
 )
 
 /**
@@ -220,19 +219,16 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 			fieldValue := structVal.Field(field.index).Addr().Interface()
 			// fmt.Println(structVal.Field(field.index).Addr().Type())
 			// scanTarget, err := field.meddler.PreRead(fieldValue)
-			if _, isScanner := fieldValue.(sql.Scanner); isScanner {
-				//如果字段有scan方法 则调用
-				// } else if _, isTime := fieldValue.(*time.Time); isTime {
-				// fmt.Println(fieldValue)
-			}
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
 			}
 			switch fieldValue.(type) {
-			case *time.Time:
-				var scanAddr interface{}
-				scanAddr = new([]uint8)
-				targets = append(targets, scanAddr)
+			// case sql.Scanner:
+			//如果字段有scan方法 则调用
+			// case *time.Time:
+			// 	var scanAddr interface{}
+			// 	scanAddr = new([]uint8)
+			// 	targets = append(targets, scanAddr)
 			default:
 				targets = append(targets, fieldValue)
 			}
