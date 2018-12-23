@@ -1,13 +1,15 @@
 package scanner
 
-//Field ..
-type Field interface {
+//Marshaler ..
+type Marshaler interface {
 	Read()
-	Format()
+	Marshaler()
 }
-type TimeField struct{}
 
-func (elt TimeField) Read(fieldAddr interface{}) (scanTarget interface{}, err error) {
+//TimeMarshaler ..
+type TimeMarshaler struct{}
+
+func (elt TimeMarshaler) Read(fieldAddr interface{}) (scanTarget interface{}, err error) {
 	// switch elem := fieldAddr.(type) {
 	// case *time.Time:
 
@@ -15,6 +17,20 @@ func (elt TimeField) Read(fieldAddr interface{}) (scanTarget interface{}, err er
 	return fieldAddr, nil
 }
 
-// func (elt TimeField) Format(fieldAddr interface{}) (scanTarget interface{}, err error) {
-// 	return nil
-// }
+//Marshaler ..
+func (elt TimeMarshaler) Marshaler(fieldAddr interface{}, scanTarget interface{}) error {
+	return nil
+}
+
+//CsvMarshaler ..
+type CsvMarshaler struct{}
+
+func (elt CsvMarshaler) Read(fieldAddr interface{}) (scanTarget interface{}, err error) {
+	scanTarget = new(string)
+	return scanTarget, nil
+}
+
+//Marshaler ..
+func (elt CsvMarshaler) Marshaler(fieldAddr interface{}, scanTarget interface{}) error {
+	return nil
+}

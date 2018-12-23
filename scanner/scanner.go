@@ -28,17 +28,18 @@ type 字段类型
 const tagKey = "db"
 const tagSplit = ","
 const tagOptSplit = ":"
+const tagColumn = "COLUMN"
 
 //StructFieldOpts 模型字段选项
 type StructFieldOpts map[string]string
 
 //StructField 模型字段
 type StructField struct {
-	column     string
-	index      int
-	primaryKey bool
-	options    StructFieldOpts
-	plugins    []string
+	column       string
+	index        int
+	isPrimaryKey bool
+	options      StructFieldOpts
+	plugins      []string
 }
 
 //StructData 模型
@@ -56,6 +57,7 @@ var Debug = false
 var refStructCache = make(map[reflect.Type]*StructData)
 var refStructCacheMutex sync.Mutex
 
+//解析field tags to options
 func parseTagOpts(tags reflect.StructTag) map[string]string {
 	opts := map[string]string{}
 	for _, str := range []string{tags.Get("sql"), tags.Get(tagKey)} {
@@ -68,7 +70,7 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 					opts[k] = strings.Join(v[1:], tagOptSplit)
 				} else {
 					if i == 0 {
-						opts["COLUMN"] = v[0]
+						opts[tagColumn] = v[0]
 					} else {
 						opts[k] = ""
 					}
@@ -78,9 +80,12 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 	}
 	return opts
 }
+func parseTableName(structType reflect.Type) string {
+	return structType.Name()
+}
 
-//ResolveStruct 解析模型
-func ResolveStruct(dstType reflect.Type) (*StructData, error) {
+//ResolveModelStruct 解析模型
+func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -97,36 +102,39 @@ func ResolveStruct(dstType reflect.Type) (*StructData, error) {
 	}
 
 	data := new(StructData)
+	data.table = parseTableName(structType)
 	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
 		f := structType.Field(i)
-		// tags := strings.Split(f.Tag.Get(tagKey), tagSplit)
 		// skip non-exported fields
 		if f.PkgPath != "" {
 			continue
 		}
 		opts := parseTagOpts(f.Tag)
-		// skip using "-" tag fields
-		if opts["COLUMN"] == "-" {
-			continue
-		}
 		// default to the field name
-		var column string
-		if opts["COLUMN"] != "" {
-			column = opts["COLUMN"]
-		} else {
+		column, ok := opts[tagColumn]
+		if !ok {
 			//todo 大小写转换下划线的、自定义方法的
 			column = f.Name
 		}
-		for k, opt := range opts {
-			if k == "COLUMN" {
+		// skip using "-" tag fields
+		if column == "-" {
+			continue
+		}
 
-			}
+		if _, ok := data.fields[column]; ok {
+			return nil, fmt.Errorf("scanner found multiple fields for column %s", column)
+		}
+		for k, opt := range opts {
 			switch k {
+			case tagColumn:
+				continue
 			case "PK", "PRIMARY", "PRIMARY KEY", "PRIMARY_KEY":
 				//pk can not is a pointer
 				if f.Type.Kind() == reflect.Ptr {
+					// indirectType := f.Type
+					//indirectType = indirectType.Elem()
 					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key but is a pointer", f.Name)
 				}
 				//primary key can only be one
@@ -145,22 +153,19 @@ func ResolveStruct(dstType reflect.Type) (*StructData, error) {
 				}
 			// data.indexs = append(data.indexs, opt)
 			default:
-				// if m, ok := registry[tag]; ok {
-				// field.plugins = append(field.plugins, tag)
+				// if m, ok := marshalers[k]; ok {
+				// field.marshaler =
+				// }
 			}
 		}
-		field := &StructField{
-			column:     column,
-			primaryKey: column == data.pk,
-			index:      i,
-			options:    opts,
-			// meddler:    meddler,
-		}
-		if _, ok := data.fields[column]; ok {
-			return nil, fmt.Errorf("scanner found multiple fields for column %s", column)
-		}
-		data.fields[column] = field
 		data.columns = append(data.columns, column)
+		data.fields[column] = &StructField{
+			column:       column,
+			isPrimaryKey: column == data.pk,
+			index:        i,
+			options:      opts,
+			// plugins:    plugins,
+		}
 	}
 	refStructCache[dstType] = data
 	return data, nil
@@ -202,29 +207,36 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 	return rows.Err()
 }
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
-	data, err := ResolveStruct(reflect.TypeOf(dst))
+	data, err := ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
 		return nil, err
 	}
 	structVal := reflect.ValueOf(dst).Elem()
+	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
 	var targets []interface{}
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
-			fieldAddr := structVal.Field(field.index).Addr().Interface()
+			//fieldAddr
+			fieldValue := structVal.Field(field.index).Addr().Interface()
 			// fmt.Println(structVal.Field(field.index).Addr().Type())
-			// scanTarget, err := field.meddler.PreRead(fieldAddr)
+			// scanTarget, err := field.meddler.PreRead(fieldValue)
+			if _, isScanner := fieldValue.(sql.Scanner); isScanner {
+				//如果字段有scan方法 则调用
+				// } else if _, isTime := fieldValue.(*time.Time); isTime {
+				// fmt.Println(fieldValue)
+			}
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
 			}
-			switch fieldAddr.(type) {
+			switch fieldValue.(type) {
 			case *time.Time:
 				var scanAddr interface{}
 				scanAddr = new([]uint8)
 				targets = append(targets, scanAddr)
 			default:
-				targets = append(targets, fieldAddr)
+				targets = append(targets, fieldValue)
 			}
-			// targets = append(targets, fieldAddr)
+			// targets = append(targets, fieldValue)
 			// targets = append(targets, scanTarget)
 		} else {
 			// no destination, so throw this away
@@ -239,7 +251,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
-	data, err := ResolveStruct(reflect.TypeOf(dst))
+	data, err := ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
 		return err
 	}
