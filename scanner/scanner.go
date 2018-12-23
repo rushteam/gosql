@@ -238,7 +238,8 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 			// targets = append(targets, scanTarget)
 		} else {
 			// no destination, so throw this away
-			targets[i] = new(interface{})
+			// targets[i] = new(interface{})
+			targets[i] = new(sql.RawBytes)
 			if Debug {
 				log.Printf("scanner.Targets: column [%s] not found in struct", name)
 			}
