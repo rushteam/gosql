@@ -212,6 +212,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
+	//var targets = []interface{} targets = append(targets, fieldValue)
 	var targets = make([]interface{}, len(columns))
 	for i, name := range columns {
 		if field, ok := data.fields[name]; ok {
