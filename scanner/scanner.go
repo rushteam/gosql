@@ -212,9 +212,8 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
-	// var targets []interface{}
 	var targets = make([]interface{}, len(columns))
-	for _, name := range columns {
+	for i, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			//fieldAddr
 			fieldValue := structVal.Field(field.index).Addr().Interface()
@@ -231,13 +230,14 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 			// 	scanAddr = new([]uint8)
 			// 	targets = append(targets, scanAddr)
 			default:
-				targets = append(targets, fieldValue)
+				targets[i] = fieldValue
 			}
+			// targets = append(targets, fieldValue)
 			// targets = append(targets, fieldValue)
 			// targets = append(targets, scanTarget)
 		} else {
 			// no destination, so throw this away
-			targets = append(targets, new(interface{}))
+			targets[i] = new(interface{})
 			if Debug {
 				log.Printf("scanner.Targets: column [%s] not found in struct", name)
 			}
