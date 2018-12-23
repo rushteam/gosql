@@ -212,7 +212,8 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
-	var targets []interface{}
+	// var targets []interface{}
+	var targets = make([]interface{}, len(columns))
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			//fieldAddr
