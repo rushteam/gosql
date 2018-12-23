@@ -193,7 +193,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	for _, name := range columns {
 		if field, ok := data.fields[name]; ok {
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			// fmt.Println(structVal.Field(field.index).Addr().Type())
+			fmt.Println(structVal.Field(field.index).Addr().Type())
 			// scanTarget, err := field.meddler.PreRead(fieldAddr)
 			if err != nil {
 				return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
@@ -223,7 +223,7 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 		if field, ok := data.fields[name]; ok {
 			// field.Value.Addr().Interface()
 			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			fmt.Println(i, name, fieldAddr, targets[i])
+			// fmt.Println(i, name, fieldAddr, targets[i])
 			_, _, _ = i, name, fieldAddr
 			if err != nil {
 				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
