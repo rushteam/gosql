@@ -112,6 +112,8 @@ func main() {
 	for _, v := range tt {
 		fmt.Println(v)
 	}
+	// orm.Db.(orm.Select(&T).Where())
+	orm.Model(&t).Where().Find()
 
 	// builder.NewConnect().Connect()
 

@@ -669,6 +669,11 @@ func buildPlaceholder(val interface{}) string {
 	return sql
 }
 
+//Args ..
+func (s *SQLSegments) Args() []interface{} {
+	return s.render.args
+}
+
 /*
 //Connect ...
 type Connect struct {

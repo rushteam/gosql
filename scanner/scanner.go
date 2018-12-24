@@ -50,6 +50,11 @@ type StructData struct {
 	// ref     *reflect.Value
 }
 
+//TableName ..
+func (s StructData) TableName() string {
+	return s.table
+}
+
 var Debug = false
 
 //反射结构体缓存

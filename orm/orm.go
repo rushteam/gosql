@@ -10,34 +10,49 @@ import (
 
 //ORM ..
 type ORM struct {
-	db         *sql.DB
-	builder    *builder.SQLSegments
-	structData *scanner.StructData
+	db          *sql.DB
+	dst         interface{}
+	builder     *builder.SQLSegments
+	modelStruct *scanner.StructData
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	var err error
 	o := &ORM{}
+	o.dst = dst
 	o.builder = builder.New()
-	o.structData, err = scanner.ResolveStruct(reflect.TypeOf(dst))
+	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
 		panic(err)
 	}
-	o.builder.Table(o.structData.TableName)
+	o.builder.Table(o.modelStruct.TableName())
 	return o
+}
+
+//Query ..
+func (o *ORM) Query() error {
+	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
+	if err != nil {
+		return err
+	}
+	err = scanner.Scan(rows, o.dst)
+	return err
 }
 
 /*
 Find 查找数据
 */
-func (o *ORM) Find() *ORM {
+func (o *ORM) Find() error {
 	if o.builder == nil {
 		panic("must call Model() first, before call Find() ")
 	}
 	o.builder.Limit(1)
-	o.builder.BuildSelect()
-	return o
+	err := o.Query()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 /*
