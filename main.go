@@ -113,7 +113,12 @@ func main() {
 		fmt.Println(v)
 	}
 	// orm.Db.(orm.Select(&T).Where())
-	orm.Model(&t).Where().Find()
+	// err := orm.Model().Where("id", 1).Find(&t)
+	// err := orm.Model().Where("id", 1).Update(&t)
+	// err := orm.Model().Insert(&t)
+	// err := orm.Model().Where("id",1)Delete(&t)
+	// // orm.Create()
+	// orm.Model().Where().Find()
 
 	// builder.NewConnect().Connect()
 

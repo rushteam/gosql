@@ -17,38 +17,38 @@ type ORM struct {
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
-func Model(dst interface{}) *ORM {
-	var err error
+func Model() *ORM {
 	o := &ORM{}
-	o.dst = dst
 	o.builder = builder.New()
-	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
-	if err != nil {
-		panic(err)
-	}
 	o.builder.Table(o.modelStruct.TableName())
 	return o
 }
 
 //Query ..
-func (o *ORM) Query() error {
+func (o *ORM) Query(dst interface{}) error {
 	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
-	err = scanner.Scan(rows, o.dst)
+	err = scanner.Scan(rows, dst)
 	return err
 }
 
 /*
 Find 查找数据
 */
-func (o *ORM) Find() error {
+func (o *ORM) Find(dst interface{}) error {
+	var err error
 	if o.builder == nil {
 		panic("must call Model() first, before call Find() ")
 	}
+	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
+	if err != nil {
+		panic(err)
+	}
+	o.builder.Table(o.modelStruct.TableName())
 	o.builder.Limit(1)
-	err := o.Query()
+	err = o.Query(dst)
 	if err != nil {
 		return err
 	}
