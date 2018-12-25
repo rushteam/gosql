@@ -17,42 +17,68 @@ type ORM struct {
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
-func Model() *ORM {
-	o := &ORM{}
-	o.builder = builder.New()
-	o.builder.Table(o.modelStruct.TableName())
-	return o
-}
-
-//Query ..
-func (o *ORM) Query(dst interface{}) error {
-	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
-	if err != nil {
-		return err
-	}
-	err = scanner.Scan(rows, dst)
-	return err
-}
-
-/*
-Find 查找数据
-*/
-func (o *ORM) Find(dst interface{}) error {
+func Model(dst interface{}) *ORM {
 	var err error
-	if o.builder == nil {
-		panic("must call Model() first, before call Find() ")
-	}
+	o := &ORM{}
+	// o.db = db
 	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
 		panic(err)
 	}
 	o.builder.Table(o.modelStruct.TableName())
+	o.builder = builder.New()
+	return o
+}
+
+/*
+Find 查找数据
+*/
+func (o *ORM) Find() error {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Find() ")
+	}
 	o.builder.Limit(1)
-	err = o.Query(dst)
+	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
-	return nil
+	return scanner.Scan(rows, o.dst)
+}
+
+/*
+FindAll 查找数据
+*/
+func (o *ORM) FindAll() error {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Find() ")
+	}
+	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
+	if err != nil {
+		return err
+	}
+	return scanner.ScanAll(rows, o.dst)
+}
+
+/*
+Limit 限制数
+*/
+func (o *ORM) Limit(n int) *ORM {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Limit() ")
+	}
+	o.builder.Limit(n)
+	return o
+}
+
+/*
+Offset 偏移量
+*/
+func (o *ORM) Offset(n int) *ORM {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Offset() ")
+	}
+	o.builder.Offset(n)
+	return o
 }
 
 /*
@@ -60,7 +86,7 @@ Where 条件
 */
 func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 	if o.builder == nil {
-		panic("must call Model() first, before call Where() ")
+		panic("orm: must call Model() first, before call Where() ")
 	}
 	o.builder.Where(key, vals...)
 	return o
@@ -69,11 +95,15 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 /*
 Update 更新数据
 */
-func (o *ORM) Update() *ORM {
+func (o *ORM) Update() error {
 	if o.builder == nil {
-		panic("must call Model() first, before call Update() ")
+		panic("orm: must call Model() first, before call Update() ")
 	}
-	o.builder.BuildUpdate()
+	o.builder.
+	rst, err := o.db.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	if err != nil {
+		return err
+	}
 	return o
 }
 
@@ -104,6 +134,3 @@ func (o *ORM) Update() *ORM {
 // s.Limit(30)
 // s.Offset(10)
 // s.ForUpdate()
-func (o *ORM) FindAll() {
-
-}
