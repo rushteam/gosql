@@ -40,7 +40,7 @@ func main() {
 	s.Limit(30)
 	s.Offset(10)
 	s.ForUpdate()
-	// fmt.Println(s.BuildSelect())
+	fmt.Println(s.BuildSelect())
 
 	// type Accounts struct{}
 	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
