@@ -56,8 +56,6 @@ builder of DEMO:
 	s.ForUpdate()
 	// fmt.Println(s.BuildSelect())
 
-是的，就是这么强大
-
 builder of API:
     
     新开始一条语句
@@ -74,6 +72,26 @@ builder of API:
 
     查询条件 t1.status = 0
     s.Where("t1.status", "0")
+
+    查询条件  t1.type in (a,b,c)
+    s.Where("[in]sts", []string{"a", "b", "c"})
+
+    查询条件  t1.a != 1  and (t1.b = 1 or t1.c = 1)
+
+    s.Where("[!]t1.a",1).Where(func(s *builder.Clause){
+        s.Where("t1.b",1)
+        s.OrWhere("t1.c",1)
+    })
+
+    分类
+    s.GroupBy("id")
+    排序
+    s.OrderBy("id desc", "id asc")
+    条数
+    s.Limit(30)
+    位移
+	s.Offset(10)
+
 
 
 
