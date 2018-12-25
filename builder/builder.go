@@ -556,72 +556,6 @@ func (s *SQLSegments) buildValuesForInsert() string {
 		values += buildPlaceholder(fieldLen, "?", ",")
 		values += ")"
 	}
-	// for i, vals := range s.params {
-	// 	if i == 0 {
-	// values += " ("
-	// 		fields += " ("
-	// 	} else {
-	// 		values += ",("
-	// 	}
-	// 	var j int
-	// 	for arg, val := range vals {
-	// 		s.render.args = append(s.render.args, val)
-	// 		if j > 0 {
-	// 			values += ","
-	// 		}
-	// 		values += "?"
-	// 		if i == 0 {
-	// 			if j > 0 {
-	// 				fields += ","
-	// 			}
-	// 			fields += buildIdent(arg)
-	// 		}
-	// 		j++
-	// 	}
-	// 	if i == 0 {
-	// 		fields += ")"
-	// 	}
-	// 	values += ")"
-	// }
-	// for i, param := range s.params {
-	// 	v := reflect.ValueOf(param).Elem()
-	// 	t := reflect.TypeOf(param).Elem()
-	// 	if i == 0 {
-	// 		values += " ("
-	// 		fields += " ("
-	// 	} else {
-	// 		values += ",("
-	// 	}
-	// 	for j := 0; j < v.NumField(); j++ {
-	// 		if v.Interface() == nil {
-	// 			continue
-	// 		}
-	// 		var arg string
-	// 		if t.Field(j).Tag.Get(tagKey) == "" {
-	// 			arg = t.Field(j).Name
-	// 		} else {
-	// 			arg = t.Field(j).Tag.Get(tagKey)
-	// 		}
-	// 		s.render.args = append(s.render.args, v.Field(j).Interface())
-	// 		// if v.Field(j).Kind() == reflect.String {
-	// 		// 	// fmt.Printf("t:%v      v:%+v", arg, v.Field(j).Interface().(string))
-	// 		// }
-	// 		if j > 0 {
-	// 			values += ","
-	// 		}
-	// 		values += "?"
-	// 		if i == 0 {
-	// 			if j > 0 {
-	// 				fields += ","
-	// 			}
-	// 			fields += arg
-	// 		}
-	// 	}
-	// 	if i == 0 {
-	// 		fields += ")"
-	// 	}
-	// 	values += ")"
-	// }
 	var sql = fields + " VALUES" + values
 	return sql
 }
@@ -677,6 +611,11 @@ func (s *SQLSegments) buildValuesForInsert() string {
 // 	s.params = append(s.params, params...)
 // 	return s
 // }
+//Update ...
+func (s *SQLSegments) Update(vals ...map[string]interface{}) *SQLSegments {
+	s.params = append(s.params, vals...)
+	return s
+}
 
 //buildReturning ...
 func (s *SQLSegments) buildReturning() string {
@@ -703,35 +642,60 @@ func (s *SQLSegments) BuildUpdate() string {
 
 //buildValuesForUpdate ...
 func (s *SQLSegments) buildValuesForUpdate() string {
-	var sql = " SET"
-	for i, param := range s.params {
-		v := reflect.ValueOf(param).Elem()
-		t := reflect.TypeOf(param).Elem()
+	var buffer bytes.Buffer
+	buffer.WriteString(" SET ")
+	var fieldSlice []string
+	for i, vals := range s.params {
 		if i == 0 {
-			for j := 0; j < v.NumField(); j++ {
-				if v.Interface() == nil {
-					continue
-				}
-				var arg string
-				if t.Field(j).Tag.Get(tagKey) == "" {
-					arg = t.Field(j).Name
-				} else {
-					arg = t.Field(j).Tag.Get(tagKey)
-				}
-				s.render.args = append(s.render.args, v.Field(j).Interface())
-				if j > 0 {
-					sql += ","
-				} else {
-					sql += " "
-				}
-				sql += arg + " = ?"
+			for arg, val := range vals {
+				fieldSlice = append(fieldSlice, arg)
+				s.render.args = append(s.render.args, val)
 			}
 		} else {
+			//just support one of vals
 			break
 		}
 	}
-	return sql
+	for i, s := range fieldSlice {
+		if i > 0 {
+			buffer.WriteString(", ")
+		}
+		buffer.WriteString(buildIdent(s))
+		buffer.WriteString(" = ?")
+	}
+	return buffer.String()
 }
+
+// func (s *SQLSegments) buildValuesForUpdate() string {
+// 	var sql = " SET"
+// 	for i, param := range s.params {
+// 		v := reflect.ValueOf(param).Elem()
+// 		t := reflect.TypeOf(param).Elem()
+// 		if i == 0 {
+// 			for j := 0; j < v.NumField(); j++ {
+// 				if v.Interface() == nil {
+// 					continue
+// 				}
+// 				var arg string
+// 				if t.Field(j).Tag.Get(tagKey) == "" {
+// 					arg = t.Field(j).Name
+// 				} else {
+// 					arg = t.Field(j).Tag.Get(tagKey)
+// 				}
+// 				s.render.args = append(s.render.args, v.Field(j).Interface())
+// 				if j > 0 {
+// 					sql += ","
+// 				} else {
+// 					sql += " "
+// 				}
+// 				sql += arg + " = ?"
+// 			}
+// 		} else {
+// 			break
+// 		}
+// 	}
+// 	return sql
+// }
 
 //Delete ...
 func (s *SQLSegments) Delete() *SQLSegments {

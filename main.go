@@ -162,13 +162,25 @@ func main() {
 	// 	})
 	// })
 	// fmt.Println(c.Build(0))
+
+	// build insert
+	// m := make(map[string]interface{}, 0)
+	// m["a"] = 1
+	// m["b"] = 2
+	// s = builder.New()
+	// s.Table("tbl1")
+	// s.Where("t1.status", "0")
+	// s.Insert(m, m)
+	// fmt.Println(s.BuildInsert())
+	// fmt.Println(s.Args())
+
 	m := make(map[string]interface{}, 0)
 	m["a"] = 1
 	m["b"] = 2
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
-	s.Insert(m, m)
-	fmt.Println(s.BuildInsert())
+	s.Update(m, m)
+	fmt.Println(s.BuildUpdate())
 	fmt.Println(s.Args())
 }
