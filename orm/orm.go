@@ -99,7 +99,7 @@ func (o *ORM) Update() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
-	o.builder.
+	o.builder.Update()
 	rst, err := o.db.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return err

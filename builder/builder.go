@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -27,8 +28,9 @@ type SQLSegments struct {
 	union     []func(*SQLSegments)
 	forUpdate bool
 	returning bool
-	params    []interface{}
-	render    struct {
+	// params    []interface{}
+	params []map[string]interface{}
+	render struct {
 		args []interface{}
 	}
 }
@@ -233,25 +235,33 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 				context = buildIdent(match[2]) + " = ?"
 				args = append(args, p.val)
 			case "in":
-				context = buildIdent(match[2]) + " IN (" + buildPlaceholder(p.val) + ")"
+				context = buildIdent(match[2]) + " IN ("
+				var holder string
 				if reflect.TypeOf(p.val).Kind() == reflect.Slice {
 					v := reflect.ValueOf(p.val)
+					holder = buildPlaceholder(v.Len(), "?", " ,")
 					for n := 0; n < v.Len(); n++ {
 						args = append(args, v.Index(n).Interface())
 					}
 				} else {
+					holder = "?"
 					args = append(args, p.val)
 				}
+				context += holder + ")"
 			case "!in":
-				context = buildIdent(match[2]) + " NOT IN (" + buildPlaceholder(p.val) + ")"
+				context = buildIdent(match[2]) + " NOT IN ("
+				var holder string
 				if reflect.TypeOf(p.val).Kind() == reflect.Slice {
 					v := reflect.ValueOf(p.val)
+					holder = buildPlaceholder(v.Len(), "?", " ,")
 					for n := 0; n < v.Len(); n++ {
 						args = append(args, v.Index(n).Interface())
 					}
 				} else {
+					holder = "?"
 					args = append(args, p.val)
 				}
+				context += holder + ")"
 			case "exists":
 				switch p.val.(type) {
 				case string:
@@ -493,8 +503,8 @@ func (s *SQLSegments) BuildSelect() string {
 }
 
 //Insert ...
-func (s *SQLSegments) Insert(params ...interface{}) *SQLSegments {
-	s.params = append(s.params, params...)
+func (s *SQLSegments) Insert(vals ...map[string]interface{}) *SQLSegments {
+	s.params = append(s.params, vals...)
 	return s
 }
 
@@ -524,54 +534,149 @@ func (s *SQLSegments) BuildReplace() string {
 func (s *SQLSegments) buildValuesForInsert() string {
 	var fields string
 	var values string
-	for i, param := range s.params {
-		v := reflect.ValueOf(param).Elem()
-		t := reflect.TypeOf(param).Elem()
+	var fieldSlice []string
+	for i, vals := range s.params {
+		if i == 0 {
+			for arg := range vals {
+				fieldSlice = append(fieldSlice, arg)
+			}
+		}
+	}
+	fieldLen := len(fieldSlice)
+	fields += buildString(fieldSlice, ",", " (", ")", true)
+	for i, vals := range s.params {
 		if i == 0 {
 			values += " ("
-			fields += " ("
 		} else {
 			values += ",("
 		}
-		for j := 0; j < v.NumField(); j++ {
-			if v.Interface() == nil {
-				continue
-			}
-			var arg string
-			if t.Field(j).Tag.Get(tagKey) == "" {
-				arg = t.Field(j).Name
-			} else {
-				arg = t.Field(j).Tag.Get(tagKey)
-			}
-			s.render.args = append(s.render.args, v.Field(j).Interface())
-			// if v.Field(j).Kind() == reflect.String {
-			// 	// fmt.Printf(3"t:%v      v:%+v", arg, v.Field(j).Interface().(string))
-			// }
-			if j > 0 {
-				values += ","
-			}
-			values += "?"
-			if i == 0 {
-				if j > 0 {
-					fields += ","
-				}
-				fields += arg
-			}
+		for _, arg := range fieldSlice {
+			s.render.args = append(s.render.args, vals[arg])
 		}
-		if i == 0 {
-			fields += ")"
-		}
+		values += buildPlaceholder(fieldLen, "?", ",")
 		values += ")"
 	}
+	// for i, vals := range s.params {
+	// 	if i == 0 {
+	// values += " ("
+	// 		fields += " ("
+	// 	} else {
+	// 		values += ",("
+	// 	}
+	// 	var j int
+	// 	for arg, val := range vals {
+	// 		s.render.args = append(s.render.args, val)
+	// 		if j > 0 {
+	// 			values += ","
+	// 		}
+	// 		values += "?"
+	// 		if i == 0 {
+	// 			if j > 0 {
+	// 				fields += ","
+	// 			}
+	// 			fields += buildIdent(arg)
+	// 		}
+	// 		j++
+	// 	}
+	// 	if i == 0 {
+	// 		fields += ")"
+	// 	}
+	// 	values += ")"
+	// }
+	// for i, param := range s.params {
+	// 	v := reflect.ValueOf(param).Elem()
+	// 	t := reflect.TypeOf(param).Elem()
+	// 	if i == 0 {
+	// 		values += " ("
+	// 		fields += " ("
+	// 	} else {
+	// 		values += ",("
+	// 	}
+	// 	for j := 0; j < v.NumField(); j++ {
+	// 		if v.Interface() == nil {
+	// 			continue
+	// 		}
+	// 		var arg string
+	// 		if t.Field(j).Tag.Get(tagKey) == "" {
+	// 			arg = t.Field(j).Name
+	// 		} else {
+	// 			arg = t.Field(j).Tag.Get(tagKey)
+	// 		}
+	// 		s.render.args = append(s.render.args, v.Field(j).Interface())
+	// 		// if v.Field(j).Kind() == reflect.String {
+	// 		// 	// fmt.Printf("t:%v      v:%+v", arg, v.Field(j).Interface().(string))
+	// 		// }
+	// 		if j > 0 {
+	// 			values += ","
+	// 		}
+	// 		values += "?"
+	// 		if i == 0 {
+	// 			if j > 0 {
+	// 				fields += ","
+	// 			}
+	// 			fields += arg
+	// 		}
+	// 	}
+	// 	if i == 0 {
+	// 		fields += ")"
+	// 	}
+	// 	values += ")"
+	// }
 	var sql = fields + " VALUES" + values
 	return sql
 }
 
+// func (s *SQLSegments) buildValuesForInsert() string {
+// 	var fields string
+// 	var values string
+// 	for i, param := range s.params {
+// 		v := reflect.ValueOf(param).Elem()
+// 		t := reflect.TypeOf(param).Elem()
+// 		if i == 0 {
+// 			values += " ("
+// 			fields += " ("
+// 		} else {
+// 			values += ",("
+// 		}
+// 		for j := 0; j < v.NumField(); j++ {
+// 			if v.Interface() == nil {
+// 				continue
+// 			}
+// 			var arg string
+// 			if t.Field(j).Tag.Get(tagKey) == "" {
+// 				arg = t.Field(j).Name
+// 			} else {
+// 				arg = t.Field(j).Tag.Get(tagKey)
+// 			}
+// 			s.render.args = append(s.render.args, v.Field(j).Interface())
+// 			// if v.Field(j).Kind() == reflect.String {
+// 			// 	// fmt.Printf(3"t:%v      v:%+v", arg, v.Field(j).Interface().(string))
+// 			// }
+// 			if j > 0 {
+// 				values += ","
+// 			}
+// 			values += "?"
+// 			if i == 0 {
+// 				if j > 0 {
+// 					fields += ","
+// 				}
+// 				fields += arg
+// 			}
+// 		}
+// 		if i == 0 {
+// 			fields += ")"
+// 		}
+// 		values += ")"
+// 	}
+// 	var sql = fields + " VALUES" + values
+// 	return sql
+// }
+
 //Update ...
-func (s *SQLSegments) Update(params ...interface{}) *SQLSegments {
-	s.params = append(s.params, params...)
-	return s
-}
+// func (s *SQLSegments) Update(params ...interface{}) *SQLSegments {
+// 	s.params = append(s.params, params...)
+// 	return s
+// }
 
 //buildReturning ...
 func (s *SQLSegments) buildReturning() string {
@@ -652,21 +757,33 @@ func buildIdent(name string) string {
 	return identKey + strings.Replace(name, ".", identKey+"."+identKey, -1) + identKey
 }
 
-//buildPlaceholder
-func buildPlaceholder(val interface{}) string {
-	var sql string
-	if reflect.TypeOf(val).Kind() == reflect.Slice {
-		for n := 0; n < reflect.ValueOf(val).Len(); n++ {
-			if n > 0 {
-				sql += ", ?"
-			} else {
-				sql += "?"
-			}
+func buildString(vals []string, sep string, header, footer string, ident bool) string {
+	var buffer bytes.Buffer
+	buffer.WriteString(header)
+	for i, s := range vals {
+		if i > 0 {
+			buffer.WriteString(sep)
 		}
-	} else {
-		sql += "?"
+		if ident {
+			buffer.WriteString(buildIdent(s))
+		} else {
+			buffer.WriteString(s)
+		}
 	}
-	return sql
+	buffer.WriteString(footer)
+	return buffer.String()
+}
+
+//buildPlaceholder
+func buildPlaceholder(l int, holder, sep string) string {
+	var buffer bytes.Buffer
+	for i := 0; i < l; i++ {
+		if i > 0 {
+			buffer.WriteString(sep)
+		}
+		buffer.WriteString(holder)
+	}
+	return buffer.String()
 }
 
 //Args ..
