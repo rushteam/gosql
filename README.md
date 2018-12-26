@@ -4,33 +4,36 @@ godb 是一个链式操作数据库的golang库
 
 已经有那么多操作db的库了，为什么还要写godb？
 
-因为市面上所有的db库用起来总有不顺手的地方
-比如gorm不支持读写分离,关联表使用频率少
-比如sqlx语法不够简洁
-比如gendry group by 、limit 语法怪异
+因为市面上所有的db库用起来总有不顺手的地方,比如gorm不支持读写分离,关联表使用频率少,比如sqlx语法不够简洁,比如gendry group by 、limit 语法怪异
 
-godb 是分模块化的一个db操作库 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql）
-分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
+godb 是分模块化的一个db操作库 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql）分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
 
-结构:
-    builder 拼装sql
-    scanner 映射数据到结构体
-    orm
-    mannger 数据库管理（读写分离）
+## structure:
 
-feature:
-    链式操作
-    查询条件无限嵌套
-    读写分离
-    数据库连接池
+* builder 拼装sql
+* scanner 映射数据到结构体
+* orm
+* mannger 数据库管理（读写分离）
+
+## feature:
+
+* 链式操作
+* 查询条件无限嵌套
+* 读写分离
+* 数据库连接池
 
 
-builder of DEMO:
+## builder of DEMO:
 
 先看看这条复杂的sql用builder如何实现？
 
+```sql
+
 SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `type` = ? AND `sts` IN (? ,? ,? ,?) AND `sts2` IN (?) AND ( `a` = ? AND `b` = ?) AND aaa = 999 AND ccc = ? AND `a` LIKE ? AND EXISTS (AA) AND EXISTS (SELECT * FORM WHERE `xx` = ?) GROUP BY `id` WHERE `ss` = ? ORDER BY `id desc`, `id asc` OFFSET 10 LIMIT 30 FOR UPDATE
 
+```
+
+```golang
     s := builder.New()
 	s.Flag("DISTANCE")
 	s.Field("*")
@@ -58,8 +61,9 @@ SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` 
 	s.Offset(10)
 	s.ForUpdate()
 	// fmt.Println(s.BuildSelect())
+```
 
-builder of API:
+## builder of API:
 
 ### 创建语句
 
