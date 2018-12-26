@@ -99,12 +99,16 @@ func (o *ORM) Update() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
-	o.builder.Update()
+	list, err := scanner.ResolveModelToMap(o.dst)
+	if err != nil {
+		return err
+	}
+	o.builder.Update(list)
 	rst, err := o.db.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
-	return o
+	return nil
 }
 
 // s := builder.New()

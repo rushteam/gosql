@@ -60,9 +60,18 @@ func (s StructData) Columns() []string {
 	return s.columns
 }
 
-//解析模型数据到
-func ResolveModelToMap(dst interface{}) map[string]interface{} {
+//ResolveModelToMap 解析模型数据到
+func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
+	var list = make(map[string]interface{}, 0)
+	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
+	if err != nil {
+		return list, err
+	}
 	structVal := reflect.ValueOf(dst).Elem()
+	for _, field := range modelStruct.fields {
+		list[field.column] = structVal.Field(field.index).Addr().Interface()
+	}
+	return list, nil
 }
 
 var Debug = false
@@ -220,6 +229,8 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 
 	return rows.Err()
 }
+
+//Targets ..
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	data, err := ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
