@@ -179,10 +179,9 @@ func main() {
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
-	s.Update(m, m)
+	s.Update(m)
 	fmt.Println(s.BuildUpdate())
 	fmt.Println(s.Args())
-
 	t := &T{}
 	orm.Model(t).Update()
 }

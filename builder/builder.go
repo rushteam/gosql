@@ -613,6 +613,9 @@ func (s *SQLSegments) buildValuesForInsert() string {
 // }
 //Update ...
 func (s *SQLSegments) Update(vals ...map[string]interface{}) *SQLSegments {
+	if len(vals) > 1 {
+		panic("Update method only one parameter is supported")
+	}
 	s.params = append(s.params, vals...)
 	return s
 }
