@@ -29,8 +29,9 @@ func main() {
 	s.Join("tbl3", "a", "=", "b")
 	s.Having("ss", "1")
 	s.Where("[~]a", "AA")
-	s.Where("[exists]", "AA")
+	s.Where("[exists]", "select 1")
 	s.Where("[exists]", func(s *builder.SQLSegments) {
+		s.Table("tbl2.t2")
 		s.Where("xx", 10000)
 	})
 	s.GroupBy("id")

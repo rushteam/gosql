@@ -29,13 +29,36 @@ godb 是分模块化的一个db操作库 目前仅支持mysql （关键是`符�
 
 ```sql
 
-SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `type` = ? AND `sts` IN (? ,? ,? ,?) AND `sts2` IN (?) AND ( `a` = ? AND `b` = ?) AND aaa = 999 AND ccc = ? AND `a` LIKE ? AND EXISTS (AA) AND EXISTS (SELECT * FORM WHERE `xx` = ?) GROUP BY `id` WHERE `ss` = ? ORDER BY `id desc`, `id asc` OFFSET 10 LIMIT 30 FOR UPDATE
-
+SELECT DISTINCT *
+FROM `tbl1`.`t1`
+	JOIN `tbl3` ON `a` = `b`
+WHERE (`t1`.`status` = ?
+	AND `type` = ?
+	AND `sts` IN (?, ?, ?, ?)
+	AND `sts2` IN (?)
+	AND (`a` = ?
+		AND `b` = ?)
+	AND aaa = 999
+	AND ccc = ?
+	AND `a` LIKE ?
+	AND EXISTS (
+		SELECT 1
+	)
+	AND EXISTS (
+		SELECT *
+		FROM `tbl2`.`t2`
+		WHERE `xx` = ?
+	))
+GROUP BY `id`
+HAVING `ss` = ?
+ORDER BY `id desc`, `id asc`
+LIMIT 10, 30
+FOR UPDATE
 ```
 
 ```golang
     s := builder.New()
-	s.Flag("DISTANCE")
+	s.Flag("DISTINCT")
 	s.Field("*")
 	s.Table("tbl1.t1")
 	s.Where("t1.status", "0")
@@ -51,8 +74,9 @@ SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` 
 	s.Join("tbl3", "a", "=", "b")
 	s.Having("ss", "1")
 	s.Where("[~]a", "AA")
-	s.Where("[exists]", "AA")
+	s.Where("[exists]", "select 1")
 	s.Where("[exists]", func(s *builder.SQLSegments) {
+		s.Table("tbl2.t2")
 		s.Where("xx", 10000)
 	})
 	s.GroupBy("id")
@@ -60,7 +84,7 @@ SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` 
 	s.Limit(30)
 	s.Offset(10)
 	s.ForUpdate()
-	// fmt.Println(s.BuildSelect())
+	fmt.Println(s.BuildSelect())
 ```
 
 ## builder of API:
