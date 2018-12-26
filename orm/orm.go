@@ -141,6 +141,29 @@ func (o *ORM) Update() (sql.Result, error) {
 	return rst, nil
 }
 
+//Insert 插入数据
+func (o *ORM) Insert() (sql.Result, error) {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Update() ")
+	}
+	list, err := scanner.ResolveModelToMap(o.dst)
+	if err != nil {
+		return nil, err
+	}
+	o.builder.Insert(list)
+	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	// o.modelStruct.GetStructField("").Index()
+	// if id, err := rst.LastInsertId(); err != nil {
+	// 	// list[pk] = id
+	// 	scanner.UpdateModel(o.dst, list)
+	// }
+	scanner.UpdateModel(o.dst, list)
+	return rst, nil
+}
+
 // s := builder.New()
 // s.Table("tbl1.t1")
 // s.Flag("DISTANCE")

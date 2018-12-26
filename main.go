@@ -181,21 +181,27 @@ func main() {
 	defer db.Close()
 	orm.InitDefaultDb(db)
 
-	m := make(map[string]interface{}, 0)
-	// m["a"] = 1
-	// m["b"] = 2
-	m["Uid"] = 2
+	// m := make(map[string]interface{}, 0)
+	// // m["a"] = 1
+	// // m["b"] = 2
+	// m["Uid"] = 2
+	// s = builder.New()
+	// s.Table("tbl1")
+	// s.Where("t1.status", "0")
+	// s.Update(m)
+	// // fmt.Println(s.BuildUpdate())
+	// // fmt.Println(s.Args())
+	// t := &T{}
+	// rst, err := orm.Model(t).Update()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(rst)
+
+	t := &T{}
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
-	s.Update(m)
-	fmt.Println(s.BuildUpdate())
-	fmt.Println(s.Args())
-	t := &T{}
-	rst, err := orm.Model(t).Update()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(t)
-	fmt.Println(rst)
+	rst, err := orm.Model(t).Insert()
+
 }
