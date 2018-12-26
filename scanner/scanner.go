@@ -153,9 +153,7 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 }
 
 //ResolveModelStruct 解析模型
-// func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
-func ResolveModelStruct(dst interface{}) (*StructData, error) {
-	dstType := reflect.TypeOf(dst)
+func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -171,6 +169,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	}
 	data := new(StructData)
 	data.table = dstType.Elem().Name()
+	fmt.Println(data.table)
 	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
