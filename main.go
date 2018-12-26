@@ -77,12 +77,12 @@ func main() {
 		Val string `db:"val"`
 	}
 	type T struct {
-		ID      string `db:"id,pk"`
-		Uid     string `db:",index"`
-		Typ     string `db:"typ,index"`
-		Expires int    `db:"expires"`
-		XX      int    `db:"-"`
-		Scope   string `db:"scope,csv"`
+		ID      string  `db:"id,pk"`
+		Uid     *string `db:",index"`
+		Typ     string  `db:"typ,index"`
+		Expires int     `db:"expires"`
+		XX      int     `db:"-"`
+		Scope   string  `db:"scope,csv"`
 		// Scope     json.RawMessage `db:"scope,csv"`
 		UpdatedAt string    `db:"updated_at"`
 		CreatedAt time.Time `db:"created_at"`
@@ -198,7 +198,10 @@ func main() {
 	// }
 	// fmt.Println(rst)
 
-	t := &T{}
+	t := &T{
+		Scope:     "test",
+		CreatedAt: time.Now(),
+	}
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")

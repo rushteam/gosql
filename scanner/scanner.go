@@ -73,7 +73,7 @@ func (s StructData) GetStructField(k string) *StructField {
 	return nil
 }
 
-//ResolveModelToMap 解析模型数据到
+//ResolveModelToMap 解析模型数据到 非零值不解析
 func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	var list = make(map[string]interface{}, 0)
 	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
@@ -82,7 +82,11 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
-		list[field.column] = structVal.Field(field.index).Addr().Interface()
+		if structVal.Field(field.index).Kind() == reflect.Ptr && structVal.Field(field.index).IsNil() {
+			list[field.column] = structVal.Field(field.index).Addr().Interface()
+		} else if !isZeroVal(structVal.Field(field.index)) {
+			list[field.column] = structVal.Field(field.index).Addr().Interface()
+		}
 	}
 	return list, nil
 }
@@ -379,4 +383,21 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 			sliceVal.Set(reflect.Append(sliceVal, eltVal))
 		}
 	}
+}
+func isZeroVal(value reflect.Value) bool {
+	switch value.Kind() {
+	case reflect.String:
+		return value.Len() == 0
+	case reflect.Bool:
+		return !value.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return value.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return value.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return value.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return value.IsNil()
+	}
+	return reflect.DeepEqual(value.Interface(), reflect.Zero(value.Type()).Interface())
 }

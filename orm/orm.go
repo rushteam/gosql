@@ -2,6 +2,7 @@ package orm
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 
 	"../builder"
@@ -151,7 +152,9 @@ func (o *ORM) Insert() (sql.Result, error) {
 		return nil, err
 	}
 	o.builder.Insert(list)
-	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	fmt.Println(o.builder.BuildInsert())
+	fmt.Printf("%t", o.builder.Args())
+	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
