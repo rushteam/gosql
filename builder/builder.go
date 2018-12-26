@@ -46,7 +46,7 @@ type Table struct {
 
 //New ..
 func New() *SQLSegments {
-	return &SQLSegments{}
+	return &SQLSegments{checks: make(map[int]bool, 0)}
 }
 
 //NewSQLSegment ..
@@ -353,8 +353,9 @@ func (s *SQLSegments) buildWhereClause() string {
 			sql += part
 			s.render.args = append(s.render.args, args...)
 		}
-	} else {
-		if b, ok := s.checks[checkWhere]; ok || b == true {
+	}
+	if sql != "" {
+		if _, ok := s.checks[checkWhere]; ok {
 			panic("To ensure data security must with Where() be used before Update()  or with UnsafeUpdate() replace Update()")
 		}
 	}
