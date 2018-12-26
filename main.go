@@ -13,7 +13,7 @@ import (
 
 func main() {
 	s := builder.New()
-	s.Flag("DISTANCE")
+	s.Flag("DISTINCT")
 	s.Field("*")
 	s.Table("tbl1.t1")
 	s.Where("t1.status", "0")
