@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+const checkWhere = 1
+
 var tagKey = "db"
 var identKey = "`"
 
@@ -33,6 +35,7 @@ type SQLSegments struct {
 	render struct {
 		args []interface{}
 	}
+	checks map[int]bool
 }
 
 //Table ..
@@ -350,6 +353,10 @@ func (s *SQLSegments) buildWhereClause() string {
 			sql += part
 			s.render.args = append(s.render.args, args...)
 		}
+	} else {
+		if b, ok := s.checks[checkWhere]; ok || b == true {
+			panic("To ensure data security must with Where() be used before Update()  or with UnsafeUpdate() replace Update()")
+		}
 	}
 	return sql
 }
@@ -611,8 +618,19 @@ func (s *SQLSegments) buildValuesForInsert() string {
 // 	s.params = append(s.params, params...)
 // 	return s
 // }
-//Update ...
+
+//Update 更新必须指定where条件才能更新否则panic
 func (s *SQLSegments) Update(vals ...map[string]interface{}) *SQLSegments {
+	if len(vals) > 1 {
+		panic("Update method only one parameter is supported")
+	}
+	s.checks[checkWhere] = true
+	s.params = append(s.params, vals...)
+	return s
+}
+
+//UnsafeUpdate 可以没有where条件更新
+func (s *SQLSegments) UnsafeUpdate(vals ...map[string]interface{}) *SQLSegments {
 	if len(vals) > 1 {
 		panic("Update method only one parameter is supported")
 	}
