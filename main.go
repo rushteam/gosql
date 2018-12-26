@@ -1,13 +1,11 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"./builder"
-	"./scanner"
+	"./orm"
 
 	// "github.com/didi/gendry/scanner"
 	_ "github.com/go-sql-driver/mysql"
@@ -88,11 +86,11 @@ func main() {
 	}
 	//id type client_id client_secret salt created updated metadata
 
-	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
-	if err != nil {
-		log.Println(err)
-	}
-	defer db.Close()
+	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer db.Close()
 	// t := &T{}
 	// rows, err := db.Query("SELECT * FROM `login` order by id desc")
 	// if err != nil {
@@ -103,15 +101,15 @@ func main() {
 	// 	log.Println(err)
 	// }
 	// fmt.Println(t)
-	var tt []*T
-	rows, err := db.Query("SELECT * FROM `login`")
-	err = scanner.ScanAll(rows, &tt)
-	if err != nil {
-		log.Println(err)
-	}
-	for _, v := range tt {
-		fmt.Println(v)
-	}
+	// var tt []*T
+	// rows, err := db.Query("SELECT * FROM `login`")
+	// err = scanner.ScanAll(rows, &tt)
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// for _, v := range tt {
+	// 	fmt.Println(v)
+	// }
 	// orm.Db.(orm.Select(&T).Where())
 	// err := orm.Model().Where("id", 1).Find(&t)
 	// err := orm.Model().Where("id", 1).Update(&t)
@@ -183,4 +181,7 @@ func main() {
 	s.Update(m, m)
 	fmt.Println(s.BuildUpdate())
 	fmt.Println(s.Args())
+
+	t := &T{}
+	orm.Model(t).Update()
 }

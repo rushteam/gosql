@@ -60,6 +60,19 @@ func (s StructData) Columns() []string {
 	return s.columns
 }
 
+//GetPk ..
+func (s StructData) GetPk() string {
+	return s.pk
+}
+
+//GetStructField ..
+func (s StructData) GetStructField(k string) *StructField {
+	if field, ok := s.fields[k]; ok {
+		return field
+	}
+	return nil
+}
+
 //ResolveModelToMap 解析模型数据到
 func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	var list = make(map[string]interface{}, 0)
@@ -72,6 +85,21 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 		list[field.column] = structVal.Field(field.index).Addr().Interface()
 	}
 	return list, nil
+}
+
+//UpdateModel ..
+func UpdateModel(dst interface{}, list map[string]interface{}) error {
+	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
+	if err != nil {
+		return err
+	}
+	listValue := reflect.ValueOf(list)
+	structVal := reflect.ValueOf(dst).Elem()
+	for _, field := range modelStruct.fields {
+		structVal.Field(field.index).Addr().Set(listValue.FieldByName(field.column))
+		// structVal.Field(field.index).Addr().Set(reflect.ValueOf(list[field.column]))
+	}
+	return nil
 }
 
 var Debug = false
@@ -115,7 +143,6 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	if result, ok := refStructCache[dstType]; ok {
 		return result, nil
 	}
-
 	if dstType.Kind() != reflect.Ptr {
 		return nil, fmt.Errorf("scanner called with non-pointer destination %v", dstType)
 	}

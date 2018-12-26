@@ -2,11 +2,19 @@ package orm
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 
 	"../builder"
 	"../scanner"
 )
+
+var defaultDb *sql.DB
+
+//SetDefaultDb 设置默认db
+func SetDefaultDb(db *sql.DB) {
+	defaultDb = db
+}
 
 //ORM ..
 type ORM struct {
@@ -20,14 +28,23 @@ type ORM struct {
 func Model(dst interface{}) *ORM {
 	var err error
 	o := &ORM{}
-	// o.db = db
+	o.db = defaultDb
+	o.dst = dst
 	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
 		panic(err)
 	}
-	o.builder.Table(o.modelStruct.TableName())
 	o.builder = builder.New()
+	o.builder.Table(o.modelStruct.TableName())
 	return o
+}
+
+//Db ..
+func (o *ORM) Db(db *sql.DB) {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Db() ")
+	}
+	o.db = db
 }
 
 /*
@@ -99,15 +116,26 @@ func (o *ORM) Update() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
+	pk := o.modelStruct.GetPk()
 	list, err := scanner.ResolveModelToMap(o.dst)
+	delete(list, pk)
 	if err != nil {
 		return err
 	}
 	o.builder.Update(list)
+	fmt.Println(o.builder.BuildUpdate())
 	rst, err := o.db.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
+	// o.modelStruct.GetStructField("").Index()
+
+	if id, err := rst.LastInsertId(); err != nil {
+		list[pk] = id
+		scanner.UpdateModel(o.dst, list)
+	}
+	rst.LastInsertId()
+	rst.RowsAffected()
 	return nil
 }
 
