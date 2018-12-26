@@ -55,6 +55,16 @@ func (s StructData) TableName() string {
 	return s.table
 }
 
+//Columns ..
+func (s StructData) Columns() []string {
+	return s.columns
+}
+
+//解析模型数据到
+func ResolveModelToMap(dst interface{}) map[string]interface{} {
+	structVal := reflect.ValueOf(dst).Elem()
+}
+
 var Debug = false
 
 //反射结构体缓存
