@@ -1,7 +1,9 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"./builder"
@@ -172,10 +174,17 @@ func main() {
 	// s.Insert(m, m)
 	// fmt.Println(s.BuildInsert())
 	// fmt.Println(s.Args())
+	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
+	if err != nil {
+		log.Println(err)
+	}
+	defer db.Close()
+	orm.InitDefaultDb(db)
 
 	m := make(map[string]interface{}, 0)
-	m["a"] = 1
-	m["b"] = 2
+	// m["a"] = 1
+	// m["b"] = 2
+	m["Uid"] = 2
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
@@ -183,5 +192,10 @@ func main() {
 	fmt.Println(s.BuildUpdate())
 	fmt.Println(s.Args())
 	t := &T{}
-	orm.Model(t).Update()
+	rst, err := orm.Model(t).Update()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(t)
+	fmt.Println(rst)
 }

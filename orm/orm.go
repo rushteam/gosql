@@ -2,7 +2,6 @@ package orm
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 
 	"../builder"
@@ -11,8 +10,8 @@ import (
 
 var defaultDb *sql.DB
 
-//SetDefaultDb 设置默认db
-func SetDefaultDb(db *sql.DB) {
+//InitDefaultDb 设置默认db
+func InitDefaultDb(db *sql.DB) {
 	defaultDb = db
 }
 
@@ -40,11 +39,14 @@ func Model(dst interface{}) *ORM {
 }
 
 //Db ..
-func (o *ORM) Db(db *sql.DB) {
+func (o *ORM) Db() *sql.DB {
+	if o.db == nil {
+		panic("orm: not found db, must init a db first")
+	}
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Db() ")
 	}
-	o.db = db
+	return o.db
 }
 
 /*
@@ -55,7 +57,7 @@ func (o *ORM) Find() error {
 		panic("orm: must call Model() first, before call Find() ")
 	}
 	o.builder.Limit(1)
-	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
+	rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
@@ -69,7 +71,7 @@ func (o *ORM) FindAll() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Find() ")
 	}
-	rows, err := o.db.Query(o.builder.BuildSelect(), o.builder.Args()...)
+	rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
@@ -112,7 +114,7 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 /*
 Update 更新数据
 */
-func (o *ORM) Update() error {
+func (o *ORM) Update() (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
@@ -120,23 +122,19 @@ func (o *ORM) Update() error {
 	list, err := scanner.ResolveModelToMap(o.dst)
 	delete(list, pk)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	o.builder.Update(list)
-	fmt.Println(o.builder.BuildUpdate())
-	rst, err := o.db.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	// o.modelStruct.GetStructField("").Index()
-
 	if id, err := rst.LastInsertId(); err != nil {
 		list[pk] = id
 		scanner.UpdateModel(o.dst, list)
 	}
-	rst.LastInsertId()
-	rst.RowsAffected()
-	return nil
+	return rst, nil
 }
 
 // s := builder.New()
