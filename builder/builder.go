@@ -447,11 +447,11 @@ func (s *SQLSegments) buildOrderBy() string {
 }
 func (s *SQLSegments) buildLimit() string {
 	var sql string
-	if s.limit.offset != 0 {
-		sql += fmt.Sprintf(" OFFSET %d", s.limit.offset)
+	if s.limit.limit != 0 {
+		sql += fmt.Sprintf(" LIMIT %d", s.limit.limit)
 	}
 	if s.limit.offset != 0 {
-		sql += fmt.Sprintf(" LIMIT %d", s.limit.limit)
+		sql += fmt.Sprintf(" OFFSET %d", s.limit.offset)
 	}
 	return sql
 }
