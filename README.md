@@ -28,6 +28,9 @@ feature:
 builder of DEMO:
 
 先看看这条复杂的sql用builder如何实现？
+
+SELECT DISTANCE * FORM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `type` = ? AND `sts` IN (? ,? ,? ,?) AND `sts2` IN (?) AND ( `a` = ? AND `b` = ?) AND aaa = 999 AND ccc = ? AND `a` LIKE ? AND EXISTS (AA) AND EXISTS (SELECT * FORM WHERE `xx` = ?) GROUP BY `id` WHERE `ss` = ? ORDER BY `id desc`, `id asc` OFFSET 10 LIMIT 30 FOR UPDATE
+
     s := builder.New()
 	s.Flag("DISTANCE")
 	s.Field("*")
@@ -57,40 +60,98 @@ builder of DEMO:
 	// fmt.Println(s.BuildSelect())
 
 builder of API:
-    
-    新开始一条语句
-    s := builder.New()
 
-    设置一个falg,非必须 
-    s.Flag(string)
+### 创建语句
 
-    指定字段
-    s.Field("*")
+用法 builder.New()
 
-    指定表名
-    s.Table("tbl1.t1")
+例子 s := builder.New()
 
-    查询条件 t1.status = 0
-    s.Where("t1.status", "0")
 
-    查询条件  t1.type in (a,b,c)
-    s.Where("[in]sts", []string{"a", "b", "c"})
+### 设置Flag builder.Flag(f string)
 
-    查询条件  t1.a != 1  and (t1.b = 1 or t1.c = 1)
+设置一个falg,非必须
 
+用法 s.Flag(string)
+
+例子 s := builder.New().Flag("")
+
+
+### 指定字段 builder.Field(fields string)
+
+指定查询字段 不指定 默认为 *
+
+用法 s.Field("*")
+
+### 指定表名 builder.Table(tbl string)
+
+用法 s.Table("tbl1.t1")
+
+### 查询条件 
+
+* 普通查询 s.Where(key string, val inferface{})
+
+ * 等于查询 
+
+    用法 s.Where("t1.status", "0")
+
+    等效SQL t1.status = 0
+
+  * 不等于查询 
+ 
+    用法 s.Where("[!]t1.status", "0")
+
+    等效SQL t1.status != 0
+
+* IN查询
+
+    用法 s.Where("[in]sts", []string{"a", "b", "c"})
+
+    等效SQL t1.type in (a,b,c)
+
+* NOT IN查询
+
+    用法 s.Where("[!in]sts", []string{"a", "b", "c"})
+
+    等效SQL t1.type not in (a,b,c)
+
+* 复杂条件查询
+
+    用法
+
+    ```golang
     s.Where("[!]t1.a",1).Where(func(s *builder.Clause){
         s.Where("t1.b",1)
         s.OrWhere("t1.c",1)
     })
+    ```
 
-    分类
-    s.GroupBy("id")
-    排序
-    s.OrderBy("id desc", "id asc")
-    条数
-    s.Limit(30)
-    位移
-	s.Offset(10)
+    等效SQL  t1.a != 1  and (t1.b = 1 or t1.c = 1)
+    
+* GROUP BY 分类
+
+    用法  s.GroupBy("id")
+
+    等效SQL group by `id`
+
+* ORDER BY 排序
+
+    用法  s.OrderBy("id desc", "age asc")
+
+    等效SQL order by `id` desc
+
+* 限制条数
+
+    用法  s.Limit(30)
+
+    等效SQL limit 30
+
+* 偏移条数
+
+    用法  s.Offset(10)
+
+    等效SQL offset 30
+	
 
 
 
