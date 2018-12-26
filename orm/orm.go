@@ -120,9 +120,12 @@ func (o *ORM) Update() (sql.Result, error) {
 	}
 	pk := o.modelStruct.GetPk()
 	list, err := scanner.ResolveModelToMap(o.dst)
-	delete(list, pk)
 	if err != nil {
 		return nil, err
+	}
+	if id, ok := list[pk]; ok {
+		o.Where(pk, id)
+		delete(list, pk)
 	}
 	o.builder.Update(list)
 	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
@@ -130,10 +133,11 @@ func (o *ORM) Update() (sql.Result, error) {
 		return nil, err
 	}
 	// o.modelStruct.GetStructField("").Index()
-	if id, err := rst.LastInsertId(); err != nil {
-		list[pk] = id
-		scanner.UpdateModel(o.dst, list)
-	}
+	// if id, err := rst.LastInsertId(); err != nil {
+	// 	// list[pk] = id
+	// 	scanner.UpdateModel(o.dst, list)
+	// }
+	scanner.UpdateModel(o.dst, list)
 	return rst, nil
 }
 
