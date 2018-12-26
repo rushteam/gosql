@@ -82,6 +82,7 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
+		fmt.Println(field.column)
 		list[field.column] = structVal.Field(field.index).Addr().Interface()
 	}
 	return list, nil
@@ -164,7 +165,7 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 		opts := parseTagOpts(f.Tag)
 		// default to the field name
 		column, ok := opts[tagColumn]
-		if !ok {
+		if !ok || column == "" {
 			//todo 大小写转换下划线的、自定义方法的
 			column = f.Name
 		}
