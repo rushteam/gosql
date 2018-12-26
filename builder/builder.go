@@ -364,7 +364,7 @@ func (s *SQLSegments) Having(key interface{}, vals ...interface{}) *SQLSegments 
 func (s *SQLSegments) buildHavingClause() string {
 	var sql string
 	if len(s.having.clause) > 0 {
-		sql = " WHERE"
+		sql = " HAVING"
 		for i, c := range s.having.clause {
 			part, args := c.Build(i)
 			sql += part
@@ -485,7 +485,7 @@ func (s *SQLSegments) buildForUpdate() string {
 
 //BuildSelect ...
 func (s *SQLSegments) BuildSelect() string {
-	var sql = fmt.Sprintf("SELECT%s%s FORM%s%s%s%s%s%s%s%s%s",
+	var sql = fmt.Sprintf("SELECT%s%s FROM%s%s%s%s%s%s%s%s%s",
 		s.buildFlags(),
 		s.buildField(),
 		s.buildTable(),
