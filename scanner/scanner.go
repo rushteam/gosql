@@ -29,6 +29,9 @@ const tagSplit = ","
 const tagOptSplit = ":"
 const tagColumn = "COLUMN"
 
+//Debug 模式
+var Debug = false
+
 //StructFieldOpts 模型字段选项
 type StructFieldOpts map[string]string
 
@@ -73,23 +76,43 @@ func (s StructData) GetStructField(k string) *StructField {
 	return nil
 }
 
-//ResolveModelToMap 解析模型数据到 非零值不解析
-func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
-	var list = make(map[string]interface{}, 0)
-	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
-	if err != nil {
-		return list, err
-	}
-	structVal := reflect.ValueOf(dst).Elem()
-	for _, field := range modelStruct.fields {
-		if structVal.Field(field.index).Kind() == reflect.Ptr && structVal.Field(field.index).IsNil() {
-			list[field.column] = structVal.Field(field.index).Addr().Interface()
-		} else if !isZeroVal(structVal.Field(field.index)) {
-			list[field.column] = structVal.Field(field.index).Addr().Interface()
+//反射结构体缓存
+var refStructCache = make(map[reflect.Type]*StructData)
+var refStructCacheMutex sync.Mutex
+
+//解析field tags to options
+func parseTagOpts(tags reflect.StructTag) map[string]string {
+	opts := map[string]string{}
+	for _, str := range []string{tags.Get("sql"), tags.Get(tagKey)} {
+		if str != "" {
+			continue
+		}
+		tag := strings.Split(str, tagSplit)
+		for i, value := range tag {
+			v := strings.Split(value, tagOptSplit)
+			k := strings.TrimSpace(strings.ToUpper(v[0]))
+			if len(v) >= 2 {
+				opts[k] = strings.Join(v[1:], tagOptSplit)
+			} else {
+				if i == 0 {
+					opts[tagColumn] = v[0]
+				} else {
+					opts[k] = ""
+				}
+			}
 		}
 	}
-	return list, nil
+	return opts
 }
+
+// func parseTableName(dstValue reflect.Value) string {
+
+// 	// if m, ok := dstType..MethodByName("TableName"); ok {
+// 	// return m.
+// 	// }
+// 	// fmt.Println(dstType.Elem().MethodByName("TableName"))
+// 	return dstType.Elem().Name()
+// }
 
 //UpdateModel ..
 func UpdateModel(dst interface{}, list map[string]interface{}) error {
@@ -106,41 +129,33 @@ func UpdateModel(dst interface{}, list map[string]interface{}) error {
 	return nil
 }
 
-var Debug = false
-
-//反射结构体缓存
-var refStructCache = make(map[reflect.Type]*StructData)
-var refStructCacheMutex sync.Mutex
-
-//解析field tags to options
-func parseTagOpts(tags reflect.StructTag) map[string]string {
-	opts := map[string]string{}
-	for _, str := range []string{tags.Get("sql"), tags.Get(tagKey)} {
-		if str != "" {
-			tag := strings.Split(str, tagSplit)
-			for i, value := range tag {
-				v := strings.Split(value, tagOptSplit)
-				k := strings.TrimSpace(strings.ToUpper(v[0]))
-				if len(v) >= 2 {
-					opts[k] = strings.Join(v[1:], tagOptSplit)
-				} else {
-					if i == 0 {
-						opts[tagColumn] = v[0]
-					} else {
-						opts[k] = ""
-					}
-				}
+//ResolveModelToMap 解析模型数据到 非零值不解析
+func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
+	var list = make(map[string]interface{}, 0)
+	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
+	if err != nil {
+		return list, err
+	}
+	structVal := reflect.ValueOf(dst).Elem()
+	for _, field := range modelStruct.fields {
+		if structVal.Field(field.index).Kind() == reflect.Ptr {
+			if structVal.Field(field.index).IsNil() {
+				list[field.column] = reflect.New(structVal.Field(field.index).Type()).Interface()
+			} else {
+				list[field.column] = structVal.Field(field.index).Elem().Interface()
+				// list[field.column] = structVal.Field(field.index).Interface()
 			}
+		} else if !isZeroVal(structVal.Field(field.index)) {
+			list[field.column] = structVal.Field(field.index).Addr().Interface()
 		}
 	}
-	return opts
-}
-func parseTableName(structType reflect.Type) string {
-	return structType.Name()
+	return list, nil
 }
 
 //ResolveModelStruct 解析模型
-func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
+// func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
+func ResolveModelStruct(dst interface{}) (*StructData, error) {
+	dstType := reflect.TypeOf(dst)
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -154,9 +169,8 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	if structType.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
-
 	data := new(StructData)
-	data.table = parseTableName(structType)
+	data.table = dstType.Elem().Name()
 	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {

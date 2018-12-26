@@ -153,7 +153,7 @@ func (o *ORM) Insert() (sql.Result, error) {
 	}
 	o.builder.Insert(list)
 	fmt.Println(o.builder.BuildInsert())
-	fmt.Printf("%t", o.builder.Args())
+	fmt.Println(o.builder.Args())
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
 	if err != nil {
 		return nil, err

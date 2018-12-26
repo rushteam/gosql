@@ -13,6 +13,25 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type S struct {
+	Key string `db:"key"`
+	Val string `db:"val"`
+}
+type T struct {
+	ID      string  `db:"id,pk"`
+	Uid     string  `db:",index"`
+	Typ     *string `db:"typ,index"`
+	Expires int     `db:"expires"`
+	XX      int     `db:"-"`
+	Scope   string  `db:"scope,csv"`
+	// Scope     json.RawMessage `db:"scope,csv"`
+	UpdatedAt string    `db:"updated_at"`
+	CreatedAt time.Time `db:"created_at"`
+}
+
+func (t T) TableName() string {
+	return "accounts"
+}
 func main() {
 	s := builder.New()
 	s.Flag("DISTINCT")
@@ -72,21 +91,7 @@ func main() {
 	// for _, acc := range accts {
 	// 	fmt.Println(acc)
 	// }
-	type S struct {
-		Key string `db:"key"`
-		Val string `db:"val"`
-	}
-	type T struct {
-		ID      string  `db:"id,pk"`
-		Uid     *string `db:",index"`
-		Typ     string  `db:"typ,index"`
-		Expires int     `db:"expires"`
-		XX      int     `db:"-"`
-		Scope   string  `db:"scope,csv"`
-		// Scope     json.RawMessage `db:"scope,csv"`
-		UpdatedAt string    `db:"updated_at"`
-		CreatedAt time.Time `db:"created_at"`
-	}
+
 	//id type client_id client_secret salt created updated metadata
 
 	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
@@ -197,8 +202,9 @@ func main() {
 	// 	fmt.Println(err)
 	// }
 	// fmt.Println(rst)
-
+	var typ = "11"
 	t := &T{
+		Typ:       &typ,
 		Scope:     "test",
 		CreatedAt: time.Now(),
 	}
