@@ -82,7 +82,6 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	}
 	structVal := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
-		fmt.Println(field.column)
 		list[field.column] = structVal.Field(field.index).Addr().Interface()
 	}
 	return list, nil
