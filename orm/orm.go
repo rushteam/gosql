@@ -163,39 +163,19 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if id, err := rst.LastInsertId(); err != nil {
 		list[pk] = id
 	}
-	// o.modelStruct.GetStructField("").Index()
-	// if id, err := rst.LastInsertId(); err != nil {
-	// 	// list[pk] = id
-	// 	scanner.UpdateModel(o.dst, list)
-	// }
 	scanner.UpdateModel(&o.dst, list)
 	return rst, nil
 }
 
-// s := builder.New()
-// s.Table("tbl1.t1")
-// s.Flag("DISTANCE")
-// s.Field("*")
-// s.Table("tbl1.t1")
-// s.Where("t1.status", "0")
-// s.Where("type", "A")
-// s.Where("[in]sts", []string{"1", "2", "3", "4"})
-// s.Where("[in]sts2", 1)
-// s.Where(func(s *builder.Clause) {
-// 	s.Where("a", "200")
-// 	s.Where("b", "100")
-// })
-// s.Where("aaa = 999")
-// s.Where("[#]ccc = ?", 888)
-// s.Join("tbl3", "a", "=", "b")
-// s.Having("ss", "1")
-// s.Where("[~]a", "AA")
-// s.Where("[exists]", "AA")
-// s.Where("[exists]", func(s *builder.SQLSegments) {
-// 	s.Where("xx", 10000)
-// })
-// s.GroupBy("id")
-// s.OrderBy("id desc", "id asc")
-// s.Limit(30)
-// s.Offset(10)
-// s.ForUpdate()
+//Delete 插入数据
+func (o *ORM) Delete() (sql.Result, error) {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Update() ")
+	}
+	o.builder.Delete()
+	rst, err := o.Db().Exec(o.builder.BuildDelete(), o.builder.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	return rst, nil
+}
