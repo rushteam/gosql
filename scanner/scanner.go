@@ -124,11 +124,15 @@ func UpdateModel(dst interface{}, list map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
+
 	listValue := reflect.ValueOf(list)
 	structVal := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
-		structVal.Field(field.index).Addr().Set(listValue.FieldByName(field.column))
-		// structVal.Field(field.index).Addr().Set(reflect.ValueOf(list[field.column]))
+		if !structVal.Field(field.index).Addr().CanSet() {
+			return fmt.Errorf("scanner called with non-pointer destination")
+		}
+		// fmt.Println(structVal.Field(field.index).Addr().CanSet())
+		structVal.Field(field.index).Addr().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
 	}
 	return nil
 }

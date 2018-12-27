@@ -2,7 +2,6 @@ package orm
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 
 	"../builder"
@@ -151,23 +150,25 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
+	pk := o.modelStruct.GetPk()
 	list, err := scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		return nil, err
 	}
 	o.builder.Insert(list)
-	fmt.Println(o.builder.BuildInsert())
-	fmt.Println(o.builder.Args())
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
+	}
+	if id, err := rst.LastInsertId(); err != nil {
+		list[pk] = id
 	}
 	// o.modelStruct.GetStructField("").Index()
 	// if id, err := rst.LastInsertId(); err != nil {
 	// 	// list[pk] = id
 	// 	scanner.UpdateModel(o.dst, list)
 	// }
-	scanner.UpdateModel(o.dst, list)
+	scanner.UpdateModel(&o.dst, list)
 	return rst, nil
 }
 
