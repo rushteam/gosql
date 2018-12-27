@@ -84,7 +84,7 @@ var refStructCacheMutex sync.Mutex
 func parseTagOpts(tags reflect.StructTag) map[string]string {
 	opts := map[string]string{}
 	for _, str := range []string{tags.Get("sql"), tags.Get(tagKey)} {
-		if str != "" {
+		if str == "" {
 			continue
 		}
 		tag := strings.Split(str, tagSplit)
