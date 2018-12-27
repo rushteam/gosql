@@ -35,7 +35,11 @@ func Model(dst interface{}) *ORM {
 		panic(err)
 	}
 	o.builder = builder.New()
-	o.builder.Table(o.modelStruct.TableName())
+	name, err := scanner.ResolveModelTableName(dst)
+	if err != nil {
+		panic(err)
+	}
+	o.builder.Table(name)
 	return o
 }
 

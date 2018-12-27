@@ -28,6 +28,7 @@ const tagKey = "db"
 const tagSplit = ","
 const tagOptSplit = ":"
 const tagColumn = "COLUMN"
+const tableFuncName = "TableName"
 
 //Debug 模式
 var Debug = false
@@ -55,6 +56,9 @@ type StructData struct {
 
 //TableName ..
 func (s StructData) TableName() string {
+	if s.table == "" {
+		panic("This method should be called before calling the ResolveModelTableName()")
+	}
 	return s.table
 }
 
@@ -152,18 +156,27 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	return list, nil
 }
 
-type xTableName interface {
-	TableName() string
+//ResolveModelTableName 解析方法名
+func ResolveModelTableName(dst interface{}) (string, error) {
+	dstType, err := ResolveModelStruct(reflect.TypeOf(dst))
+	if err != nil {
+		return "", err
+	}
+	if dstType.table == "" {
+		structVal := reflect.ValueOf(dst).Elem()
+		name := structVal.Type().Name()
+		fnTableName := structVal.MethodByName(tableFuncName)
+		if fnTableName.IsValid() {
+			name = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
+		}
+		dstType.table = name
+		// if TableNameFormat == TableNameSnake {
+		// 	name = utils.SnakeString(name)
+		// }
+	}
+	return dstType.table, nil
+
 }
-
-// func ResolveModelTableName(dst interface{}) {
-// structVal := reflect.ValueOf(dst).Elem()
-// dstType := reflect.TypeOf(dst)
-// if dstType.Implements() {
-// 	dst.(xTableName).TableName()
-// }
-
-// }
 
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
@@ -181,9 +194,7 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
 	data := new(StructData)
-	// rv := reflect.New(dstType)
-	// rv.MethodByName("TableName").Call()
-	data.table = dstType.Elem().Name()
+	// data.table = dstType.Elem().Name()
 	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
