@@ -124,13 +124,12 @@ func UpdateModel(dst interface{}, list map[string]interface{}) error {
 	if err != nil {
 		return err
 	}
-
 	listValue := reflect.ValueOf(list)
 	structVal := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
-		if !structVal.Field(field.index).Addr().CanSet() {
-			return fmt.Errorf("scanner called with non-pointer destination")
-		}
+		// if !structVal.Field(field.index).Addr().CanSet() {
+		// 	return fmt.Errorf("struct addr ")
+		// }
 		// fmt.Println(structVal.Field(field.index).Addr().CanSet())
 		structVal.Field(field.index).Addr().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
 	}
@@ -184,6 +183,7 @@ func ResolveModelTableName(dst interface{}) (string, error) {
 
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
+
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
