@@ -152,6 +152,19 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	return list, nil
 }
 
+type xTableName interface {
+	TableName() string
+}
+
+// func ResolveModelTableName(dst interface{}) {
+// structVal := reflect.ValueOf(dst).Elem()
+// dstType := reflect.TypeOf(dst)
+// if dstType.Implements() {
+// 	dst.(xTableName).TableName()
+// }
+
+// }
+
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	refStructCacheMutex.Lock()
@@ -168,8 +181,9 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
 	data := new(StructData)
+	// rv := reflect.New(dstType)
+	// rv.MethodByName("TableName").Call()
 	data.table = dstType.Elem().Name()
-	fmt.Println(data.table)
 	data.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
