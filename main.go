@@ -211,7 +211,7 @@ func main() {
 	s = builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
-	rst, err := orm.Model(&t).Insert()
+	rst, err := orm.Model(t).Insert()
 	if err != nil {
 		fmt.Println(err)
 	}

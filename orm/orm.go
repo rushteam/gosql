@@ -2,7 +2,6 @@ package orm
 
 import (
 	"database/sql"
-	"fmt"
 	"reflect"
 
 	"../builder"
@@ -19,7 +18,7 @@ func InitDefaultDb(db *sql.DB) {
 //ORM ..
 type ORM struct {
 	db          *sql.DB
-	dst         *interface{}
+	dst         interface{}
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
 }
@@ -152,15 +151,11 @@ func (o *ORM) Insert() (sql.Result, error) {
 		panic("orm: must call Model() first, before call Update() ")
 	}
 	pk := o.modelStruct.GetPk()
-	list, err := scanner.ResolveModelToMap(&o.dst)
+	list, err := scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		return nil, err
 	}
 	o.builder.Insert(list)
-	// err = scanner.UpdateModel(&o.dst, list)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
@@ -168,11 +163,7 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if id, err := rst.LastInsertId(); err == nil {
 		list[pk] = id
 	}
-	fmt.Println(list)
-	err = scanner.UpdateModel(&o.dst, list)
-	if err != nil {
-		return nil, err
-	}
+	scanner.UpdateModel(o.dst, list)
 	return rst, nil
 }
 

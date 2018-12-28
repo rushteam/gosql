@@ -119,20 +119,39 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 // }
 
 //UpdateModel ..
-func UpdateModel(dst interface{}, list map[string]interface{}) error {
+func UpdateModel(dst interface{}, list map[string]interface{}) {
 	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
 	if err != nil {
-		return err
+		if Debug {
+			log.Printf(err.Error())
+		}
 	}
-	listValue := reflect.ValueOf(list)
 	structVal := reflect.ValueOf(dst).Elem()
-	for _, field := range modelStruct.fields {
-		// if !structVal.Field(field.index).Addr().CanSet() {
-		// 	return fmt.Errorf("struct addr ")
-		// }
-		// fmt.Println(structVal.Field(field.index).Addr().CanSet())
-		structVal.Field(field.index).Addr().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
+	for k, v := range list {
+		if field, ok := modelStruct.fields[k]; ok {
+			if structVal.Field(field.index).Kind() == reflect.Ptr {
+				structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
+			} else {
+				structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
+			}
+		} else {
+			if Debug {
+				log.Printf("field [%s] not found in struct", k)
+			}
+		}
 	}
+	// listValue := reflect.ValueOf(list)
+	// for _, field := range modelStruct.fields {
+	// 	// if !structVal.Field(field.index).Addr().CanSet() {
+	// 	// 	return fmt.Errorf("struct addr ")
+	// 	// }
+	// 	// fmt.Println(structVal.Field(field.index).Addr().CanSet())
+	// 	// fmt.Println(structVal.Field(field.index).Addr().Elem().CanSet())
+	// 	fieldValue := listValue.MapIndex(reflect.ValueOf(field.column))
+	// 	if fieldValue.IsValid() {
+	// 		structVal.Field(field.index).Addr().Elem().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
+	// 	}
+	// }
 	return nil
 }
 
@@ -183,7 +202,6 @@ func ResolveModelTableName(dst interface{}) (string, error) {
 
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
-
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
