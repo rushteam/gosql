@@ -109,15 +109,6 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 	return opts
 }
 
-// func parseTableName(dstValue reflect.Value) string {
-
-// 	// if m, ok := dstType..MethodByName("TableName"); ok {
-// 	// return m.
-// 	// }
-// 	// fmt.Println(dstType.Elem().MethodByName("TableName"))
-// 	return dstType.Elem().Name()
-// }
-
 //UpdateModel ..
 func UpdateModel(dst interface{}, list map[string]interface{}) {
 	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
@@ -168,7 +159,6 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 				list[field.column] = reflect.New(structVal.Field(field.index).Type()).Interface()
 			} else {
 				list[field.column] = structVal.Field(field.index).Elem().Interface()
-				// list[field.column] = structVal.Field(field.index).Interface()
 			}
 		} else if !isZeroVal(structVal.Field(field.index)) {
 			list[field.column] = structVal.Field(field.index).Addr().Interface()
@@ -191,12 +181,12 @@ func ResolveModelTableName(dst interface{}) (string, error) {
 			name = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
 		}
 		dstType.table = name
+		//todo 大小写转换下划线的、自定义方法的
 		// if TableNameFormat == TableNameSnake {
 		// 	name = utils.SnakeString(name)
 		// }
 	}
 	return dstType.table, nil
-
 }
 
 //ResolveModelStruct 解析模型
@@ -215,6 +205,7 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
 	data := new(StructData)
+	//这里不方便获取到方法自定义method上的table名所以滞后到ResolveModelTableName中
 	// data.table = dstType.Elem().Name()
 	data.fields = make(map[string]*StructField)
 
@@ -246,8 +237,6 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 			case "PK", "PRIMARY", "PRIMARY KEY", "PRIMARY_KEY":
 				//pk can not is a pointer
 				if f.Type.Kind() == reflect.Ptr {
-					// indirectType := f.Type
-					//indirectType = indirectType.Elem()
 					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key but is a pointer", f.Name)
 				}
 				//primary key can only be one

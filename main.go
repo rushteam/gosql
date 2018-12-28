@@ -6,8 +6,8 @@ import (
 	"log"
 	"time"
 
-	"./builder"
-	"./orm"
+	"github.com/mlboy/godb/builder"
+	"github.com/mlboy/godb/orm"
 
 	// "github.com/didi/gendry/scanner"
 	_ "github.com/go-sql-driver/mysql"

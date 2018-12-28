@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"reflect"
 
-	"../builder"
-	"../scanner"
+	"github.com/mlboy/godb/builder"
+	"github.com/mlboy/godb/scanner"
 )
 
 var defaultDb *sql.DB
