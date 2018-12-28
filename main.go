@@ -18,7 +18,7 @@ type S struct {
 	Val string `db:"val"`
 }
 type T struct {
-	ID      string  `db:"id,pk"`
+	ID      uint64  `db:"id,pk"`
 	Uid     string  `db:",index"`
 	Typ     *string `db:"typ,index"`
 	Expires int     `db:"expires"`
