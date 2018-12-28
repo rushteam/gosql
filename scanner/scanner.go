@@ -152,7 +152,6 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 	// 		structVal.Field(field.index).Addr().Elem().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
 	// 	}
 	// }
-	return nil
 }
 
 //ResolveModelToMap 解析模型数据到 非零值不解析
