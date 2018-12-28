@@ -2,6 +2,7 @@ package orm
 
 import (
 	"database/sql"
+	"fmt"
 	"reflect"
 
 	"github.com/mlboy/godb/builder"
@@ -58,6 +59,14 @@ func (o *ORM) Fetch() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Find() ")
 	}
+	list, err := scanner.ResolveModelToMap(o.dst)
+	if err != nil {
+		return err
+	}
+	for k, v := range list {
+		fmt.Println(k, v)
+	}
+
 	return o.Find()
 }
 
