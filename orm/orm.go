@@ -53,6 +53,14 @@ func (o *ORM) Db() *sql.DB {
 	return o.db
 }
 
+//Fetch 拉取
+func (o *ORM) Fetch() error {
+	if o.builder == nil {
+		panic("orm: must call Model() first, before call Find() ")
+	}
+	return o.Find()
+}
+
 /*
 Find 查找数据
 */
