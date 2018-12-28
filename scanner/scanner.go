@@ -125,6 +125,21 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 					reflect.Indirect(reflect.ValueOf(v)).Kind(), reflect.Indirect(structVal.Field(field.index)).Kind())
 				continue
 			}
+			switch reflect.Indirect(structVal.Field(field.index)).Kind() {
+			case reflect.String:
+				reflect.Indirect(structVal.Field(field.index)).Set(reflect.Indirect(reflect.ValueOf(v)))
+			case reflect.Bool:
+				reflect.Indirect(reflect.ValueOf(v)).Bool()
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				return value.Int() == 0
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+				return value.Uint() == 0
+			case reflect.Float32, reflect.Float64:
+				return value.Float() == 0
+			case reflect.Interface, reflect.Ptr:
+				return value.IsNil()
+
+			}
 			reflect.Indirect(structVal.Field(field.index)).Set(reflect.Indirect(reflect.ValueOf(v)))
 			// if structVal.Field(field.index).Kind() == reflect.Ptr {
 			// 	structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
