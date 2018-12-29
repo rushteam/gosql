@@ -8,6 +8,7 @@ import (
 func TestModel(t *testing.T) {
 	t.Skip()
 }
+
 func TestFind(t *testing.T) {
 	type S struct {
 		ID  string `db:"id"`
@@ -18,7 +19,7 @@ func TestFind(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	orm := Model(db).Find(s)
-	t.Log(orm)
-
+	InitDefaultDb(db)
+	err := Model(s).Find()
+	t.Log(err)
 }
