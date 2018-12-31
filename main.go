@@ -2,11 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
-	"github.com/mlboy/godb/builder"
 	"github.com/mlboy/godb/orm"
 
 	// "github.com/didi/gendry/scanner"
@@ -33,34 +31,34 @@ func (t T) TableName() string {
 	return "login"
 }
 func main() {
-	s := builder.New()
-	s.Flag("DISTINCT")
-	s.Field("*")
-	s.Table("tbl1.t1")
-	s.Where("t1.status", "0")
-	s.Where("type", "A")
-	s.Where("[in]sts", []string{"1", "2", "3", "4"})
-	s.Where("[in]sts2", 1)
-	s.Where(func(s *builder.Clause) {
-		s.Where("a", "200")
-		s.Where("b", "100")
-	})
-	s.Where("aaa = 999")
-	s.Where("[#]ccc = ?", 888)
-	s.Join("tbl3", "a", "=", "b")
-	s.Having("ss", "1")
-	s.Where("[~]a", "AA")
-	s.Where("[exists]", "select 1")
-	s.Where("[exists]", func(s *builder.SQLSegments) {
-		s.Table("tbl2.t2")
-		s.Where("xx", 10000)
-	})
-	s.GroupBy("id")
-	s.OrderBy("id desc", "id asc")
-	s.Limit(30)
-	s.Offset(10)
-	s.ForUpdate()
-	fmt.Println(s.BuildSelect())
+	// s := builder.New()
+	// s.Flag("DISTINCT")
+	// s.Field("*")
+	// s.Table("tbl1.t1")
+	// s.Where("t1.status", "0")
+	// s.Where("type", "A")
+	// s.Where("[in]sts", []string{"1", "2", "3", "4"})
+	// s.Where("[in]sts2", 1)
+	// s.Where(func(s *builder.Clause) {
+	// 	s.Where("a", "200")
+	// 	s.Where("b", "100")
+	// })
+	// s.Where("aaa = 999")
+	// s.Where("[#]ccc = ?", 888)
+	// s.Join("tbl3", "a", "=", "b")
+	// s.Having("ss", "1")
+	// s.Where("[~]a", "AA")
+	// s.Where("[exists]", "select 1")
+	// s.Where("[exists]", func(s *builder.SQLSegments) {
+	// 	s.Table("tbl2.t2")
+	// 	s.Where("xx", 10000)
+	// })
+	// s.GroupBy("id")
+	// s.OrderBy("id desc", "id asc")
+	// s.Limit(30)
+	// s.Offset(10)
+	// s.ForUpdate()
+	// fmt.Println(s.BuildSelect())
 
 	// type Accounts struct{}
 	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
@@ -202,19 +200,20 @@ func main() {
 	// 	fmt.Println(err)
 	// }
 	// fmt.Println(rst)
-	var typ = "11"
-	t := &T{
-		Typ:       &typ,
-		Scope:     "test",
-		CreatedAt: time.Now(),
-	}
-	s = builder.New()
-	s.Table("tbl1")
-	s.Where("t1.status", "0")
-	rst, err := orm.Model(t).Insert()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(rst)
+
+	// var typ = "11"
+	// t := &T{
+	// 	Typ:       &typ,
+	// 	Scope:     "test",
+	// 	CreatedAt: time.Now(),
+	// }
+	// s = builder.New()
+	// s.Table("tbl1")
+	// s.Where("t1.status", "0")
+	// rst, err := orm.Model(t).Insert()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Println(rst)
 
 }

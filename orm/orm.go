@@ -135,7 +135,7 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 /*
 Update 更新数据
 */
-func (o *ORM) Update() (sql.Result, error) {
+func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
