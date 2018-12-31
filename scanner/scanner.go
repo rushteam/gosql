@@ -121,7 +121,7 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 	for k, v := range list {
 		if field, ok := modelStruct.fields[k]; ok {
 			if reflect.Indirect(structVal.Field(field.index)).Kind() != reflect.Indirect(reflect.ValueOf(v)).Kind() {
-				log.Printf("value of type %s is not assignable to  type %s",
+				log.Printf("[scanner.UpdateModel] value of type %s is not assignable to  type %s",
 					reflect.Indirect(reflect.ValueOf(v)).Kind(), reflect.Indirect(structVal.Field(field.index)).Kind())
 				continue
 			}
