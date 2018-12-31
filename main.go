@@ -186,10 +186,10 @@ func main() {
 	defer db.Close()
 	orm.InitDefaultDb(db)
 
-	// m := make(map[string]interface{}, 0)
-	// // m["a"] = 1
-	// // m["b"] = 2
-	// m["Uid"] = 2
+	m := make(map[string]interface{}, 0)
+	// m["a"] = 1
+	// m["b"] = 2
+	m["Uid"] = 2
 	s := builder.New()
 	s.Table("tbl1")
 	s.Where("t1.status", "0")
