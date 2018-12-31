@@ -5,6 +5,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/mlboy/godb/builder"
+
 	"github.com/mlboy/godb/orm"
 
 	// "github.com/didi/gendry/scanner"
@@ -188,10 +190,10 @@ func main() {
 	// // m["a"] = 1
 	// // m["b"] = 2
 	// m["Uid"] = 2
-	// s = builder.New()
-	// s.Table("tbl1")
-	// s.Where("t1.status", "0")
-	// s.Update(m)
+	s := builder.New()
+	s.Table("tbl1")
+	s.Where("t1.status", "0")
+	s.Update(m)
 	// // fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
 	// t := &T{}
