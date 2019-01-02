@@ -143,6 +143,11 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(fs) > 0 {
+		for _, f := range fs {
+			f(o.builder)
+		}
+	}
 	pk := o.modelStruct.GetPk()
 	if pk != "" {
 		if id, ok := list[pk]; ok {
