@@ -531,6 +531,10 @@ func (s *SQLSegments) BuildReplace() string {
 	return sql
 }
 
+// unc (s *SQLSegments) UpdateField() *SQLSegments {
+
+// }
+
 //BuildInsert ...
 func (s *SQLSegments) buildValuesForInsert() string {
 	var fields string

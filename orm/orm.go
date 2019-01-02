@@ -135,7 +135,7 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 /*
 Update 更新数据
 */
-func (o *ORM) Update() (sql.Result, error) {
+func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
@@ -193,6 +193,19 @@ func (o *ORM) Delete() (sql.Result, error) {
 	}
 	o.builder.Delete()
 	rst, err := o.Db().Exec(o.builder.BuildDelete(), o.builder.Args()...)
+	if err != nil {
+		return nil, err
+	}
+	return rst, nil
+}
+
+//BuilderHandler ..
+type BuilderHandler func(*builder.SQLSegments)
+
+//BuilderUpdate ..
+func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
+	f(o.builder)
+	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
