@@ -139,14 +139,16 @@ func (o *ORM) Update() (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
-	pk := o.modelStruct.GetPk()
 	list, err := scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		return nil, err
 	}
-	if id, ok := list[pk]; ok {
-		o.Where(pk, id)
-		delete(list, pk)
+	pk := o.modelStruct.GetPk()
+	if pk != "" {
+		if id, ok := list[pk]; ok {
+			o.Where(pk, id)
+			delete(list, pk)
+		}
 	}
 	o.builder.Update(list)
 	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
@@ -177,7 +179,7 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if id, err := rst.LastInsertId(); err == nil {
+	if id, err := rst.LastInsertId(); err == nil && pk != "" {
 		list[pk] = id
 	}
 	scanner.UpdateModel(o.dst, list)
