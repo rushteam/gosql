@@ -133,6 +133,14 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 }
 
 /*
+UpdateField 更新字段
+*/
+func (o *ORM) UpdateField(k string, v interface{}) *ORM {
+	o.builder.UpdateField(k, v)
+	return o
+}
+
+/*
 Update 更新数据
 */
 func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
@@ -143,6 +151,7 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if len(fs) > 0 {
 		for _, f := range fs {
 			f(o.builder)

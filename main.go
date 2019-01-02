@@ -195,11 +195,13 @@ func main() {
 	// s.Update(m)
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
-	typ := "phone"
+	// typ := "phone"
 	t := &T{
-		Typ: &typ,
+		// Typ: &typ,
+		Uid:     "1",
+		Expires: 3,
 	}
-	rst, err := orm.Model(t).Update()
+	rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
 	if err != nil {
 		fmt.Println(err)
 	}

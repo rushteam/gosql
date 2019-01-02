@@ -42,6 +42,12 @@ type Table struct {
 	Alias string
 }
 
+//Add ..
+type Add int
+
+//Sub ..
+type Sub int
+
 //New ..
 func New() *SQLSegments {
 	return &SQLSegments{checks: make(map[int]bool, 0)}
@@ -531,10 +537,6 @@ func (s *SQLSegments) BuildReplace() string {
 	return sql
 }
 
-// unc (s *SQLSegments) UpdateField() *SQLSegments {
-
-// }
-
 //BuildInsert ...
 func (s *SQLSegments) buildValuesForInsert() string {
 	var fields string
@@ -610,14 +612,17 @@ func (s *SQLSegments) buildValuesForInsert() string {
 // 	var sql = fields + " VALUES" + values
 // 	return sql
 // }
-
-//Update ...
-// func (s *SQLSegments) Update(params ...interface{}) *SQLSegments {
-// 	s.params = append(s.params, params...)
-// 	return s
-// }
+func (s *SQLSegments) UpdateField(key string, val interface{}) *SQLSegments {
+	if len(s.params) == 0 {
+		s.params = append(s.params, make(map[string]interface{}, 0))
+	}
+	s.params[0][key] = val
+	return s
+}
 
 //Update ..
+// list := make(map[string]interface{}, 1)
+// list["[+]Expires"] = 1
 func (s *SQLSegments) Update(vals map[string]interface{}) *SQLSegments {
 	//panic("Update method only one parameter is supported")
 	if len(vals) < 1 {
@@ -663,18 +668,39 @@ func (s *SQLSegments) BuildUpdate() string {
 func (s *SQLSegments) buildValuesForUpdate() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(" SET ")
-	var fieldSlice []string
+	// var fieldSlice []string
 	if len(s.params) == 0 {
 		panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
 	}
+	r, _ := regexp.Compile(`\[(\+|\-)\]?([a-zA-Z0-9_.\-\=\s\?\(\)]*)`)
 	for i, vals := range s.params {
 		if i == 0 {
 			if len(vals) == 0 {
 				panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
 			}
+			j := 0
 			for arg, val := range vals {
-				fieldSlice = append(fieldSlice, arg)
-				s.render.args = append(s.render.args, val)
+				// fieldSlice = append(fieldSlice, arg)
+				// s.render.args = append(s.render.args, val)
+				if j > 0 {
+					buffer.WriteString(", ")
+				}
+
+				match := r.FindStringSubmatch(arg)
+				if len(match) > 1 {
+					buffer.WriteString(buildIdent(match[2]))
+					buffer.WriteString(" = ")
+					buffer.WriteString(buildIdent(match[2]))
+					buffer.WriteString(" ")
+					buffer.WriteString(match[1])
+					buffer.WriteString(" ?")
+					s.render.args = append(s.render.args, val)
+				} else {
+					buffer.WriteString(buildIdent(arg))
+					buffer.WriteString(" = ?")
+					s.render.args = append(s.render.args, val)
+				}
+				j++
 			}
 		} else {
 			if len(vals) == 0 {
@@ -684,13 +710,13 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 			break
 		}
 	}
-	for i, s := range fieldSlice {
-		if i > 0 {
-			buffer.WriteString(", ")
-		}
-		buffer.WriteString(buildIdent(s))
-		buffer.WriteString(" = ?")
-	}
+	// for i, s := range fieldSlice {
+	// 	if i > 0 {
+	// 		buffer.WriteString(", ")
+	// 	}
+	// 	buffer.WriteString(buildIdent(s))
+	// 	buffer.WriteString(" = ?")
+	// }
 	return buffer.String()
 }
 
