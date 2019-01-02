@@ -195,13 +195,16 @@ func main() {
 	// s.Update(m)
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
-
-	t := &T{}
+	typ := "phone"
+	t := &T{
+		Typ: &typ,
+	}
 	rst, err := orm.Model(t).Update()
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(rst)
+	fmt.Println(rst.LastInsertId())
+	fmt.Println(rst.RowsAffected())
 
 	// var typ = "11"
 	// t := &T{

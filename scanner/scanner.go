@@ -120,20 +120,11 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 	structVal := reflect.ValueOf(dst).Elem()
 	for k, v := range list {
 		if field, ok := modelStruct.fields[k]; ok {
-
-			// structVal.Field(field.index).Set(reflect.ValueOf(v).Elem())
-			structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
-			// if reflect.Indirect(structVal.Field(field.index)).Kind() != reflect.ValueOf(v).Kind() {
-			// 	log.Printf("[scanner.UpdateModel] value of type %s is not assignable to type %s",
-			// 		reflect.Indirect(reflect.ValueOf(v)).Kind(), reflect.Indirect(structVal.Field(field.index)).Kind())
-			// 	continue
-			// }
-			// reflect.Indirect(structVal.Field(field.index)).Set(reflect.Indirect(reflect.ValueOf(v)))
-			// if structVal.Field(field.index).Kind() == reflect.Ptr {
-			// 	structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
-			// } else {
-			// 	structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
-			// }
+			if structVal.Field(field.index).Kind() == reflect.Ptr {
+				structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
+			} else {
+				structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
+			}
 		} else {
 			if Debug {
 				log.Printf("field [%s] not found in struct", k)
@@ -165,7 +156,10 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	for _, field := range modelStruct.fields {
 		if structVal.Field(field.index).Kind() == reflect.Ptr {
 			if structVal.Field(field.index).IsNil() {
-				list[field.column] = reflect.New(structVal.Field(field.index).Type()).Interface()
+				//指针为nil时候的处理
+				continue
+				// list[field.column] = reflect.New(structVal.Field(field.index).Type()).Interface()
+				// list[field.column] = sql.NullString
 			} else {
 				list[field.column] = structVal.Field(field.index).Elem().Interface()
 			}

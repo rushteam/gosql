@@ -618,11 +618,12 @@ func (s *SQLSegments) buildValuesForInsert() string {
 // }
 
 //Update ..
-func (s *SQLSegments) Update(vals ...map[string]interface{}) *SQLSegments {
-	if len(vals) > 1 {
-		panic("Update method only one parameter is supported")
+func (s *SQLSegments) Update(vals map[string]interface{}) *SQLSegments {
+	//panic("Update method only one parameter is supported")
+	if len(vals) < 1 {
+		panic("Must be have values")
 	}
-	s.params = append(s.params, vals...)
+	s.params = append(s.params, vals)
 	return s
 }
 
@@ -663,13 +664,22 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 	var buffer bytes.Buffer
 	buffer.WriteString(" SET ")
 	var fieldSlice []string
+	if len(s.params) == 0 {
+		panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
+	}
 	for i, vals := range s.params {
 		if i == 0 {
+			if len(vals) == 0 {
+				panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
+			}
 			for arg, val := range vals {
 				fieldSlice = append(fieldSlice, arg)
 				s.render.args = append(s.render.args, val)
 			}
 		} else {
+			if len(vals) == 0 {
+				panic("just support one of vals")
+			}
 			//just support one of vals
 			break
 		}
