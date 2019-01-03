@@ -170,7 +170,7 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	}
 	o.builder.Update(list)
 	sql := o.builder.BuildUpdate()
-	fmt.Println(sql)
+	// fmt.Println(sql)
 	rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
 		return nil, err
