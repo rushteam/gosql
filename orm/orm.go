@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"time"
 
 	"github.com/mlboy/godb/builder"
 	"github.com/mlboy/godb/scanner"
@@ -164,9 +165,12 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	// 		delete(list, pk)
 	// 	}
 	// }
+	if _, ok := list["updated_at"]; !ok {
+		list["updated_at"] = time.Now()
+	}
 	o.builder.Update(list)
 	sql := o.builder.BuildUpdate()
-	fmt.Println(sql)
+	// fmt.Println(sql)
 	rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
 		return nil, err
@@ -184,6 +188,12 @@ func (o *ORM) Insert() (sql.Result, error) {
 	list, err := scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		return nil, err
+	}
+	if _, ok := list["created_at"]; !ok {
+		list["created_at"] = time.Now()
+	}
+	if _, ok := list["updated_at"]; !ok {
+		list["updated_at"] = time.Now()
 	}
 	o.builder.Insert(list)
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
