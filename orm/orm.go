@@ -55,6 +55,14 @@ func (o *ORM) Db() *sql.DB {
 	return o.db
 }
 
+// begin()
+//Session ..
+func (o *ORM) Session(endpoint, sql string) {
+	if endpoint == "master" {
+
+	}
+}
+
 //Fetch 拉取
 func (o *ORM) Fetch() error {
 	if o.builder == nil {
