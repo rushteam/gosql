@@ -118,9 +118,13 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 		}
 	}
 	structVal := reflect.ValueOf(dst).Elem()
+	// fmt.Printf("%v", structVal.CanSet())
 	for k, v := range list {
 		if field, ok := modelStruct.fields[k]; ok {
 			if structVal.Field(field.index).Kind() == reflect.Ptr {
+				if structVal.Field(field.index).IsNil() && structVal.Field(field.index).CanSet() {
+					structVal.Field(field.index).Set(reflect.New(structVal.Field(field.index).Type().Elem()))
+				}
 				structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
 			} else {
 				structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))

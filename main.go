@@ -24,8 +24,8 @@ type T struct {
 	XX      int     `db:"-"`
 	Scope   string  `db:"scope,csv"`
 	// Scope     json.RawMessage `db:"scope,csv"`
-	UpdatedAt string    `db:"updated_at"`
-	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt *time.Time `db:"updated_at"`
+	CreatedAt time.Time  `db:"created_at"`
 }
 
 func (t T) TableName() string {
@@ -205,6 +205,7 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(t)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 

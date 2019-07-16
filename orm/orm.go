@@ -12,6 +12,9 @@ import (
 
 var defaultDb *sql.DB
 
+var createdAtField = "created_at"
+var updatedAtField = "updated_at"
+
 //InitDefaultDb 设置默认db
 func InitDefaultDb(db *sql.DB) {
 	defaultDb = db
@@ -31,7 +34,11 @@ func Model(dst interface{}) *ORM {
 	o := &ORM{}
 	o.db = defaultDb
 	o.dst = dst
-	o.modelStruct, err = scanner.ResolveModelStruct(reflect.TypeOf(dst))
+	rtDst := reflect.TypeOf(dst)
+	if rtDst.Kind() != reflect.Ptr {
+		panic("orm: dst param must be a struct ptr")
+	}
+	o.modelStruct, err = scanner.ResolveModelStruct(rtDst)
 	if err != nil {
 		panic(err)
 	}
@@ -173,8 +180,8 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	// 		delete(list, pk)
 	// 	}
 	// }
-	if _, ok := list["updated_at"]; !ok {
-		list["updated_at"] = time.Now()
+	if _, ok := list[updatedAtField]; !ok {
+		list[updatedAtField] = time.Now()
 	}
 	o.builder.Update(list)
 	sql := o.builder.BuildUpdate()
@@ -197,11 +204,11 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := list["created_at"]; !ok {
-		list["created_at"] = time.Now()
+	if _, ok := list[createdAtField]; !ok {
+		list[createdAtField] = time.Now()
 	}
-	if _, ok := list["updated_at"]; !ok {
-		list["updated_at"] = time.Now()
+	if _, ok := list[updatedAtField]; !ok {
+		list[updatedAtField] = time.Now()
 	}
 	o.builder.Insert(list)
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
