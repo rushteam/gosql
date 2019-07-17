@@ -3,7 +3,7 @@ package orm
 import (
 	"database/sql"
 	"fmt"
-	"reflect"
+	"regexp"
 	"time"
 
 	"github.com/mlboy/godb/builder"
@@ -12,8 +12,10 @@ import (
 
 var defaultDb *sql.DB
 
+var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
+var deletedAtField = "deleted_at"
 
 //InitDefaultDb 设置默认db
 func InitDefaultDb(db *sql.DB) {
@@ -26,6 +28,7 @@ type ORM struct {
 	dst         interface{}
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
+	fields      map[string]interface{}
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
@@ -34,20 +37,19 @@ func Model(dst interface{}) *ORM {
 	o := &ORM{}
 	o.db = defaultDb
 	o.dst = dst
-	rtDst := reflect.TypeOf(dst)
-	if rtDst.Kind() != reflect.Ptr {
-		panic("orm: dst param must be a struct ptr")
+	//解析结构体
+	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
+	if err != nil {
+		panic(err)
 	}
-	o.modelStruct, err = scanner.ResolveModelStruct(rtDst)
+	// o.pk := o.modelStruct.GetPk()
+	o.fields, err = scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		panic(err)
 	}
 	o.builder = builder.New()
-	name, err := scanner.ResolveModelTableName(dst)
-	if err != nil {
-		panic(err)
-	}
-	o.builder.Table(name)
+	//获取表名
+	o.builder.Table(o.modelStruct.TableName())
 	return o
 }
 
@@ -152,6 +154,14 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 UpdateField 更新字段
 */
 func (o *ORM) UpdateField(k string, v interface{}) *ORM {
+	r, _ := regexp.Compile(`\[(\+|\-)\]?([a-zA-Z0-9_.\-\=\s\?\(\)]*)`)
+	match := r.FindStringSubmatch(k)
+	key := scanner.FormatName(match[2])
+	if match[1] == "" {
+		o.fields[key] = v
+	} else {
+		//todo [opt]1 这种数据时候的处理
+	}
 	o.builder.UpdateField(k, v)
 	return o
 }
@@ -163,10 +173,7 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Update() ")
 	}
-	list, err := scanner.ResolveModelToMap(o.dst)
-	if err != nil {
-		return nil, err
-	}
+	// list, err := scanner.ResolveModelToMap(o.dst)
 
 	if len(fs) > 0 {
 		for _, f := range fs {
@@ -180,17 +187,19 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	// 		delete(list, pk)
 	// 	}
 	// }
-	if _, ok := list[updatedAtField]; !ok {
-		list[updatedAtField] = time.Now()
+	if autoFillCreatedAndUpdatedField == true {
+		if _, ok := o.fields[updatedAtField]; !ok {
+			o.fields[updatedAtField] = time.Now()
+		}
 	}
-	o.builder.Update(list)
+	o.builder.Update(o.fields)
 	sql := o.builder.BuildUpdate()
 	// fmt.Println(sql)
 	rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
-	scanner.UpdateModel(o.dst, list)
+	scanner.UpdateModel(o.dst, o.fields)
 	return rst, nil
 }
 
@@ -204,11 +213,13 @@ func (o *ORM) Insert() (sql.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, ok := list[createdAtField]; !ok {
-		list[createdAtField] = time.Now()
-	}
-	if _, ok := list[updatedAtField]; !ok {
-		list[updatedAtField] = time.Now()
+	if autoFillCreatedAndUpdatedField == true {
+		if _, ok := list[createdAtField]; !ok {
+			list[createdAtField] = time.Now()
+		}
+		if _, ok := list[updatedAtField]; !ok {
+			list[updatedAtField] = time.Now()
+		}
 	}
 	o.builder.Insert(list)
 	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)

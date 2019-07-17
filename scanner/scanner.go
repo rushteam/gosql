@@ -57,7 +57,7 @@ type StructData struct {
 //TableName ..
 func (s StructData) TableName() string {
 	if s.table == "" {
-		panic("This method should be called before calling the ResolveModelTableName()")
+		panic("scanner not foundd table name")
 	}
 	return s.table
 }
@@ -111,7 +111,7 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 
 //UpdateModel ..
 func UpdateModel(dst interface{}, list map[string]interface{}) {
-	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
+	modelStruct, err := ResolveModelStruct(dst)
 	if err != nil {
 		if Debug {
 			log.Printf(err.Error())
@@ -152,7 +152,7 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 //ResolveModelToMap 解析模型数据到 非零值不解析
 func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	var list = make(map[string]interface{}, 0)
-	modelStruct, err := ResolveModelStruct(reflect.TypeOf(dst))
+	modelStruct, err := ResolveModelStruct(dst)
 	if err != nil {
 		return list, err
 	}
@@ -174,30 +174,33 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	return list, nil
 }
 
-//ResolveModelTableName 解析方法名
-func ResolveModelTableName(dst interface{}) (string, error) {
-	dstType, err := ResolveModelStruct(reflect.TypeOf(dst))
-	if err != nil {
-		return "", err
-	}
-	if dstType.table == "" {
-		structVal := reflect.ValueOf(dst).Elem()
-		name := structVal.Type().Name()
-		fnTableName := structVal.MethodByName(tableFuncName)
-		if fnTableName.IsValid() {
-			name = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
+//SnakeString  转 snake_string
+func SnakeString(s string) string {
+	data := make([]byte, 0, len(s)*2)
+	j := false
+	num := len(s)
+	for i := 0; i < num; i++ {
+		d := s[i]
+		if i > 0 && d >= 'A' && d <= 'Z' && j {
+			data = append(data, '_')
 		}
-		dstType.table = name
-		//todo 大小写转换下划线的、自定义方法的
-		// if TableNameFormat == TableNameSnake {
-		// 	name = utils.SnakeString(name)
-		// }
+		if d != '_' {
+			j = true
+		}
+		data = append(data, d)
 	}
-	return dstType.table, nil
+	return strings.ToLower(string(data[:]))
+}
+
+//FormatName 格式化字段名
+func FormatName(name string) string {
+	return SnakeString(name)
 }
 
 //ResolveModelStruct 解析模型
-func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
+func ResolveModelStruct(dst interface{}) (*StructData, error) {
+	dstType := reflect.TypeOf(dst)
+
 	refStructCacheMutex.Lock()
 	defer refStructCacheMutex.Unlock()
 
@@ -211,10 +214,21 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 	if structType.Kind() != reflect.Struct {
 		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
 	}
-	data := new(StructData)
-	//这里不方便获取到方法自定义method上的table名所以滞后到ResolveModelTableName中
-	// data.table = dstType.Elem().Name()
-	data.fields = make(map[string]*StructField)
+	modelStruct := new(StructData)
+	//这里从value上获取到自定义method上的table name
+	// modelStruct.table = dstType.Elem().Name()
+	structVal := reflect.ValueOf(dst).Elem()
+	fnTableName := structVal.MethodByName(tableFuncName)
+	if fnTableName.IsValid() {
+		modelStruct.table = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
+	} else {
+		modelStruct.table = structVal.Type().Name()
+		//todo 大小写转换下划线的、自定义方法的
+		// if TableNameFormat == TableNameSnake {
+		// 	name = utils.SnakeString(name)
+		// }
+	}
+	modelStruct.fields = make(map[string]*StructField)
 
 	for i := 0; i < structType.NumField(); i++ {
 		f := structType.Field(i)
@@ -227,14 +241,14 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 		column, ok := opts[tagColumn]
 		if !ok || column == "" {
 			//todo 大小写转换下划线的、自定义方法的
-			column = f.Name
+			column = FormatName(f.Name)
 		}
 		// skip using "-" tag fields
 		if column == "-" {
 			continue
 		}
 
-		if _, ok := data.fields[column]; ok {
+		if _, ok := modelStruct.fields[column]; ok {
 			return nil, fmt.Errorf("scanner found multiple fields for column %s", column)
 		}
 		for k, opt := range opts {
@@ -247,37 +261,37 @@ func ResolveModelStruct(dstType reflect.Type) (*StructData, error) {
 					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key but is a pointer", f.Name)
 				}
 				//primary key can only be one
-				if data.pk != "" {
+				if modelStruct.pk != "" {
 					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key, but a primary key field was already found", f.Name)
 				}
-				data.pk = column
+				modelStruct.pk = column
 			case "UNI", "UNIQUE", "UNIQUE_INDEX":
 				if opt == "" {
 					opt = column
 				}
-				// data.uniques = append(data.uniques, opt)
+				// modelStruct.uniques = append(modelStruct.uniques, opt)
 			case "IDX", "INDEX":
 				if opt == "" {
 					opt = column
 				}
-			// data.indexs = append(data.indexs, opt)
+			// modelStruct.indexs = append(modelStruct.indexs, opt)
 			default:
 				// if m, ok := marshalers[k]; ok {
 				// field.marshaler =
 				// }
 			}
 		}
-		data.columns = append(data.columns, column)
-		data.fields[column] = &StructField{
+		modelStruct.columns = append(modelStruct.columns, column)
+		modelStruct.fields[column] = &StructField{
 			column:       column,
-			isPrimaryKey: column == data.pk,
+			isPrimaryKey: column == modelStruct.pk,
 			index:        i,
 			options:      opts,
 			// plugins:    plugins,
 		}
 	}
-	refStructCache[dstType] = data
-	return data, nil
+	refStructCache[dstType] = modelStruct
+	return modelStruct, nil
 }
 func scanRow(rows *sql.Rows, dst interface{}) error {
 	if rows == nil {
@@ -318,7 +332,7 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 
 //Targets ..
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
-	data, err := ResolveModelStruct(reflect.TypeOf(dst))
+	data, err := ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
 	}
@@ -362,7 +376,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
-	data, err := ResolveModelStruct(reflect.TypeOf(dst))
+	data, err := ResolveModelStruct(dst)
 	if err != nil {
 		return err
 	}
