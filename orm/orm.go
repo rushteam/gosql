@@ -68,10 +68,10 @@ func (o *ORM) Ctor(dst interface{}) error {
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
 	o.Query = func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-		return o.db.QueryContext(context.Background(), query, args)
+		return o.db.QueryContext(ctx, query, args)
 	}
 	o.Exec = func(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-		return o.db.ExecContext(context.Background(), query, args)
+		return o.db.ExecContext(ctx, query, args)
 	}
 	return nil
 }
