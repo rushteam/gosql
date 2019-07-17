@@ -2,7 +2,6 @@ package orm
 
 import (
 	"database/sql"
-	"fmt"
 	"regexp"
 	"time"
 
@@ -33,24 +32,30 @@ type ORM struct {
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
-	var err error
 	o := &ORM{}
+	o.Ctor(dst)
 	o.db = defaultDb
+	return o
+}
+
+//Ctor 初始化
+func (o *ORM) Ctor(dst interface{}) error {
+	var err error
 	o.dst = dst
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// o.pk := o.modelStruct.GetPk()
 	o.fields, err = scanner.ResolveModelToMap(o.dst)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	return o
+	return nil
 }
 
 //Db ..
@@ -64,8 +69,7 @@ func (o *ORM) Db() *sql.DB {
 	return o.db
 }
 
-// begin()
-//Session ..
+//Session ..begin()
 func (o *ORM) Session(endpoint, sql string) {
 	if endpoint == "master" {
 
@@ -77,24 +81,6 @@ func (o *ORM) Fetch() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Find() ")
 	}
-	list, err := scanner.ResolveModelToMap(o.dst)
-	if err != nil {
-		return err
-	}
-	for k, v := range list {
-		fmt.Println(k, v)
-	}
-
-	return o.Find()
-}
-
-/*
-Find 查找数据
-*/
-func (o *ORM) Find() error {
-	if o.builder == nil {
-		panic("orm: must call Model() first, before call Find() ")
-	}
 	o.builder.Limit(1)
 	rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
@@ -103,10 +89,8 @@ func (o *ORM) Find() error {
 	return scanner.Scan(rows, o.dst)
 }
 
-/*
-FindAll 查找数据
-*/
-func (o *ORM) FindAll() error {
+//FetchAll 查找数据
+func (o *ORM) FetchAll() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Find() ")
 	}
@@ -177,7 +161,6 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 		panic("orm: must call Model() first, before call Update() ")
 	}
 	// list, err := scanner.ResolveModelToMap(o.dst)
-
 	if len(fs) > 0 {
 		for _, f := range fs {
 			f(o.builder)
@@ -209,37 +192,35 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 //Insert 插入数据
 func (o *ORM) Insert() (sql.Result, error) {
 	if o.builder == nil {
-		panic("orm: must call Model() first, before call Update() ")
+		panic("orm: must call Model() first, before call Insert() ")
+	}
+	// list, err := scanner.ResolveModelToMap(o.dst)
+	if autoFillCreatedAndUpdatedField == true {
+		if _, ok := o.fields[createdAtField]; !ok {
+			o.fields[createdAtField] = time.Now()
+		}
+		if _, ok := o.fields[updatedAtField]; !ok {
+			o.fields[updatedAtField] = time.Now()
+		}
+	}
+	o.builder.Insert(o.fields)
+	sql := o.builder.BuildInsert()
+	rst, err := o.Db().Exec(sql, o.builder.Args()...)
+	if err != nil {
+		return nil, err
 	}
 	pk := o.modelStruct.GetPk()
-	list, err := scanner.ResolveModelToMap(o.dst)
-	if err != nil {
-		return nil, err
-	}
-	if autoFillCreatedAndUpdatedField == true {
-		if _, ok := list[createdAtField]; !ok {
-			list[createdAtField] = time.Now()
-		}
-		if _, ok := list[updatedAtField]; !ok {
-			list[updatedAtField] = time.Now()
-		}
-	}
-	o.builder.Insert(list)
-	rst, err := o.Db().Exec(o.builder.BuildInsert(), o.builder.Args()...)
-	if err != nil {
-		return nil, err
-	}
 	if id, err := rst.LastInsertId(); err == nil && pk != "" {
-		list[pk] = id
+		o.fields[pk] = id
 	}
-	scanner.UpdateModel(o.dst, list)
+	scanner.UpdateModel(o.dst, o.fields)
 	return rst, nil
 }
 
 //Delete 插入数据
 func (o *ORM) Delete() (sql.Result, error) {
 	if o.builder == nil {
-		panic("orm: must call Model() first, before call Update() ")
+		panic("orm: must call Model() first, before call Delete() ")
 	}
 	o.builder.Delete()
 	rst, err := o.Db().Exec(o.builder.BuildDelete(), o.builder.Args()...)
@@ -253,11 +234,11 @@ func (o *ORM) Delete() (sql.Result, error) {
 type BuilderHandler func(*builder.SQLSegments)
 
 //BuilderUpdate ..
-func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
-	f(o.builder)
-	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
-	if err != nil {
-		return nil, err
-	}
-	return rst, nil
-}
+// func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
+// 	f(o.builder)
+// 	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return rst, nil
+// }

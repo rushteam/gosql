@@ -209,6 +209,7 @@ func main() {
 	fmt.Println(t)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
+	// orm.Model(t).Fetch()
 
 	// var typ = "11"
 	// t := &T{
