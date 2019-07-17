@@ -146,6 +146,9 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Where() ")
 	}
+	// if len(vals) > 0 {
+	// 	o.fields[key] = vals[0]
+	// }
 	o.builder.Where(key, vals...)
 	return o
 }
