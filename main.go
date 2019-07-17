@@ -201,7 +201,6 @@ func main() {
 		Uid:     "1",
 		Expires: 3,
 	}
-	fmt.Println(t)
 	rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
 	if err != nil {
 		fmt.Println(err)
