@@ -567,62 +567,17 @@ func (s *SQLSegments) buildValuesForInsert() string {
 	return sql
 }
 
-// func (s *SQLSegments) buildValuesForInsert() string {
-// 	var fields string
-// 	var values string
-// 	for i, param := range s.params {
-// 		v := reflect.ValueOf(param).Elem()
-// 		t := reflect.TypeOf(param).Elem()
-// 		if i == 0 {
-// 			values += " ("
-// 			fields += " ("
-// 		} else {
-// 			values += ",("
-// 		}
-// 		for j := 0; j < v.NumField(); j++ {
-// 			if v.Interface() == nil {
-// 				continue
-// 			}
-// 			var arg string
-// 			if t.Field(j).Tag.Get(tagKey) == "" {
-// 				arg = t.Field(j).Name
-// 			} else {
-// 				arg = t.Field(j).Tag.Get(tagKey)
-// 			}
-// 			s.render.args = append(s.render.args, v.Field(j).Interface())
-// 			// if v.Field(j).Kind() == reflect.String {
-// 			// 	// fmt.Printf(3"t:%v      v:%+v", arg, v.Field(j).Interface().(string))
-// 			// }
-// 			if j > 0 {
-// 				values += ","
-// 			}
-// 			values += "?"
-// 			if i == 0 {
-// 				if j > 0 {
-// 					fields += ","
-// 				}
-// 				fields += arg
-// 			}
-// 		}
-// 		if i == 0 {
-// 			fields += ")"
-// 		}
-// 		values += ")"
-// 	}
-// 	var sql = fields + " VALUES" + values
-// 	return sql
-// }
+//UpdateField 更新字段
 func (s *SQLSegments) UpdateField(key string, val interface{}) *SQLSegments {
 	if len(s.params) == 0 {
 		s.params = append(s.params, make(map[string]interface{}, 0))
 	}
+	//更新字段 只更新第一部分的
 	s.params[0][key] = val
 	return s
 }
 
 //Update ..
-// list := make(map[string]interface{}, 1)
-// list["[+]Expires"] = 1
 func (s *SQLSegments) Update(vals map[string]interface{}) *SQLSegments {
 	//panic("Update method only one parameter is supported")
 	if len(vals) < 1 {
@@ -719,37 +674,6 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 	// }
 	return buffer.String()
 }
-
-// func (s *SQLSegments) buildValuesForUpdate() string {
-// 	var sql = " SET"
-// 	for i, param := range s.params {
-// 		v := reflect.ValueOf(param).Elem()
-// 		t := reflect.TypeOf(param).Elem()
-// 		if i == 0 {
-// 			for j := 0; j < v.NumField(); j++ {
-// 				if v.Interface() == nil {
-// 					continue
-// 				}
-// 				var arg string
-// 				if t.Field(j).Tag.Get(tagKey) == "" {
-// 					arg = t.Field(j).Name
-// 				} else {
-// 					arg = t.Field(j).Tag.Get(tagKey)
-// 				}
-// 				s.render.args = append(s.render.args, v.Field(j).Interface())
-// 				if j > 0 {
-// 					sql += ","
-// 				} else {
-// 					sql += " "
-// 				}
-// 				sql += arg + " = ?"
-// 			}
-// 		} else {
-// 			break
-// 		}
-// 	}
-// 	return sql
-// }
 
 //Delete ...
 func (s *SQLSegments) Delete() *SQLSegments {
