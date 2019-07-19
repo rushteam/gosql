@@ -14,10 +14,10 @@ import (
 type BuilderHandler func(*builder.SQLSegments)
 
 //QueryContextHandler ..
-type QueryContextHandler func(context.Context, string, ...interface{}) (*sql.Rows, error)
+type QueryContextHandler func(string, ...interface{}) (*sql.Rows, error)
 
 //ExecContextHandler ..
-type ExecContextHandler func(context.Context, string, ...interface{}) (sql.Result, error)
+type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 
 var defaultDb *sql.DB
 
@@ -67,11 +67,13 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	o.Query = func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-		return o.db.QueryContext(ctx, query, args)
+	ctx := context.Background()
+	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
+		return o.db.QueryContext(ctx, query, args...)
 	}
-	o.Exec = func(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-		return o.db.ExecContext(ctx, query, args)
+	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
+		rst, err := o.db.ExecContext(ctx, query, args...)
+		return rst, err
 	}
 	return nil
 }
@@ -100,7 +102,7 @@ func (o *ORM) Fetch() error {
 		panic("orm: must call Model() first, before call Find() ")
 	}
 	o.builder.Limit(1)
-	rows, err := o.Query(context.Background(), o.builder.BuildSelect(), o.builder.Args()...)
+	rows, err := o.Query(o.builder.BuildSelect(), o.builder.Args()...)
 	// rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
@@ -113,7 +115,7 @@ func (o *ORM) FetchAll() error {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Find() ")
 	}
-	rows, err := o.Query(context.Background(), o.builder.BuildSelect(), o.builder.Args()...)
+	rows, err := o.Query(o.builder.BuildSelect(), o.builder.Args()...)
 	// rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
@@ -199,10 +201,8 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 		}
 	}
 	o.builder.Update(o.fields)
-	rst, err := o.Exec(context.Background(), o.builder.BuildUpdate(), o.builder.Args()...)
-	// sql := o.builder.BuildUpdate()
-	// // fmt.Println(sql)
-	// rst, err := o.Db().Exec(sql, o.builder.Args()...)
+	rst, err := o.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	// rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (o *ORM) Insert() (sql.Result, error) {
 		}
 	}
 	o.builder.Insert(o.fields)
-	rst, err := o.Exec(context.Background(), o.builder.BuildInsert(), o.builder.Args()...)
+	rst, err := o.Exec(o.builder.BuildInsert(), o.builder.Args()...)
 	// sql := o.builder.BuildInsert()
 	// rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
@@ -245,7 +245,7 @@ func (o *ORM) Delete() (sql.Result, error) {
 		panic("orm: must call Model() first, before call Delete() ")
 	}
 	o.builder.Delete()
-	rst, err := o.Exec(context.Background(), o.builder.BuildDelete(), o.builder.Args()...)
+	rst, err := o.Exec(o.builder.BuildDelete(), o.builder.Args()...)
 	// rst, err := o.Db().Exec(o.builder.BuildDelete(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
