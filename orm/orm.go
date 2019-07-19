@@ -59,7 +59,6 @@ func (o *ORM) Ctor(dst interface{}) error {
 	if err != nil {
 		return err
 	}
-	// o.pk := o.modelStruct.GetPk()
 	o.fields, err = scanner.ResolveModelToMap(o.dst)
 	if err != nil {
 		return err
@@ -90,10 +89,8 @@ func (o *ORM) Db() *sql.DB {
 }
 
 //Session ..begin()
-func (o *ORM) Session(endpoint, sql string) {
-	if endpoint == "master" {
+func (o *ORM) Session(name string, master bool) {
 
-	}
 }
 
 //Fetch 拉取

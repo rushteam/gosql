@@ -184,6 +184,11 @@ func main() {
 	}
 	defer db.Close()
 	orm.InitDefaultDb(db)
+	//mysql-master-def
+	var settings = make(map[string]string, 0)
+	settings["mysql-def"] = "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true"
+	dbpool.Init(settings)
+	orm.DbPool(dbpool)
 
 	// m := make(map[string]interface{}, 0)
 	// // m["a"] = 1
