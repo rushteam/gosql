@@ -67,9 +67,15 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
+<<<<<<< Updated upstream
 	ctx := context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
 		return o.db.QueryContext(ctx, query, args...)
+=======
+
+	o.Query = func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+		return o.db.QueryContext(ctx, query, args)
+>>>>>>> Stashed changes
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
 		rst, err := o.db.ExecContext(ctx, query, args...)
@@ -90,7 +96,7 @@ func (o *ORM) Db() *sql.DB {
 }
 
 //Session ..begin()
-func (o *ORM) Session(endpoint, sql string) {
+func (o *ORM) Session(endpoint string) {
 	if endpoint == "master" {
 
 	}
