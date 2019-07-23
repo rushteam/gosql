@@ -40,6 +40,7 @@ type ORM struct {
 	fields      map[string]interface{}
 	Query       QueryContextHandler
 	Exec        ExecContextHandler
+	ctx         context.Context
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
@@ -67,39 +68,15 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-<<<<<<< Updated upstream
-	ctx := context.Background()
+	o.ctx = context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		return o.db.QueryContext(ctx, query, args...)
-=======
-
-	o.Query = func(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-		return o.db.QueryContext(ctx, query, args)
->>>>>>> Stashed changes
+		return o.db.QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		rst, err := o.db.ExecContext(ctx, query, args...)
+		rst, err := o.db.ExecContext(o.ctx, query, args...)
 		return rst, err
 	}
 	return nil
-}
-
-//Db ..
-func (o *ORM) Db() *sql.DB {
-	if o.db == nil {
-		panic("orm: not found db, must init a db first")
-	}
-	if o.builder == nil {
-		panic("orm: must call Model() first, before call Db() ")
-	}
-	return o.db
-}
-
-//Session ..begin()
-func (o *ORM) Session(endpoint string) {
-	if endpoint == "master" {
-
-	}
 }
 
 //Fetch 拉取
@@ -122,7 +99,6 @@ func (o *ORM) FetchAll() error {
 		panic("orm: must call Model() first, before call Find() ")
 	}
 	rows, err := o.Query(o.builder.BuildSelect(), o.builder.Args()...)
-	// rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
@@ -208,7 +184,6 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	}
 	o.builder.Update(o.fields)
 	rst, err := o.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
-	// rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -232,8 +207,6 @@ func (o *ORM) Insert() (sql.Result, error) {
 	}
 	o.builder.Insert(o.fields)
 	rst, err := o.Exec(o.builder.BuildInsert(), o.builder.Args()...)
-	// sql := o.builder.BuildInsert()
-	// rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
