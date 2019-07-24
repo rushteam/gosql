@@ -33,19 +33,20 @@ func InitDefaultDb(db *sql.DB) {
 
 //ORM ..
 type ORM struct {
-	db          *sql.DB
 	dst         interface{}
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
 	fields      map[string]interface{}
 	Query       QueryContextHandler
 	Exec        ExecContextHandler
+	ctx         context.Context
+	dbRouting   string
+	db          *sql.DB
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.db = defaultDb
 	o.Ctor(dst)
 	return o
 }
@@ -66,31 +67,24 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	ctx := context.Background()
+	o.dbRouting = "salver"
+	o.ctx = context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		return o.db.QueryContext(ctx, query, args...)
+		//getdb
+		return o.Db().QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		rst, err := o.db.ExecContext(ctx, query, args...)
+		o.dbRouting = "master"
+		rst, err := o.Db().ExecContext(o.ctx, query, args...)
 		return rst, err
 	}
 	return nil
 }
-
-//Db ..
 func (o *ORM) Db() *sql.DB {
 	if o.db == nil {
-		panic("orm: not found db, must init a db first")
-	}
-	if o.builder == nil {
-		panic("orm: must call Model() first, before call Db() ")
+		o.db = pool.GetDB(o.dbRouting)
 	}
 	return o.db
-}
-
-//Session ..begin()
-func (o *ORM) Session(name string, master bool) {
-
 }
 
 //Fetch 拉取
@@ -113,7 +107,6 @@ func (o *ORM) FetchAll() error {
 		panic("orm: must call Model() first, before call Find() ")
 	}
 	rows, err := o.Query(o.builder.BuildSelect(), o.builder.Args()...)
-	// rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}
@@ -199,7 +192,6 @@ func (o *ORM) Update(fs ...BuilderHandler) (sql.Result, error) {
 	}
 	o.builder.Update(o.fields)
 	rst, err := o.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
-	// rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -223,8 +215,6 @@ func (o *ORM) Insert() (sql.Result, error) {
 	}
 	o.builder.Insert(o.fields)
 	rst, err := o.Exec(o.builder.BuildInsert(), o.builder.Args()...)
-	// sql := o.builder.BuildInsert()
-	// rst, err := o.Db().Exec(sql, o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}
@@ -243,7 +233,6 @@ func (o *ORM) Delete() (sql.Result, error) {
 	}
 	o.builder.Delete()
 	rst, err := o.Exec(o.builder.BuildDelete(), o.builder.Args()...)
-	// rst, err := o.Db().Exec(o.builder.BuildDelete(), o.builder.Args()...)
 	if err != nil {
 		return nil, err
 	}

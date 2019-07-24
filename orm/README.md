@@ -14,6 +14,11 @@ type UserModel struct {
 func (UserModel) TableName() string {
 	return "pay_trade"
 }
+## insert
+m := &UserModel{}
+rst, err := orm.Model(m).Insert()
+
 ## update
 m := &UserModel{}
-rst, err :orm.Model(m).Update()
+rst, err := orm.Model(m).Update()
+
