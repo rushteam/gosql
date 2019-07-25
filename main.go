@@ -1,9 +1,7 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/mlboy/godb/orm"
@@ -179,11 +177,11 @@ func main() {
 	// s.Insert(m, m)
 	// fmt.Println(s.BuildInsert())
 	// fmt.Println(s.Args())
-	db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
-	if err != nil {
-		log.Println(err)
-	}
-	defer db.Close()
+	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
+	// defer db.Close()
 
 	//mysql-master-def
 	var settings = make(map[string]map[string][]string, 0)
