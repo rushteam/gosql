@@ -13,7 +13,7 @@ type Cluster struct {
 	pool     map[string]*sql.DB
 }
 
-func (c Cluster) Get(name, node string) (*sql.DB, error) {
+func (c Cluster) Open(name, node string) (*sql.DB, error) {
 	var dsn string
 	if setting, ok := c.settings[name]; ok {
 		if _, ok := setting["master"]; !ok {

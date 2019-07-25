@@ -21,7 +21,7 @@ type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 
 //Cluster ..
 type Cluster interface {
-	Get(name, node string) (*sql.DB, error)
+	Open(name, node string) (*sql.DB, error)
 }
 
 var defaultCluster Cluster
@@ -93,7 +93,7 @@ func (o *ORM) Ctor(dst interface{}) error {
 	return nil
 }
 func (o *ORM) Db() *sql.DB {
-	db, _ := defaultCluster.Get(o.clusterName, o.clusterNode)
+	db, _ := defaultCluster.Open(o.clusterName, o.clusterNode)
 	return db
 }
 
