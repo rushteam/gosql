@@ -186,7 +186,10 @@ func main() {
 	//mysql-master-def
 	var settings = make(map[string]map[string][]string, 0)
 	settings["default"] = make(map[string][]string, 0)
-	settings["default"]["master"] = []string{"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true"}
+	settings["default"]["master"] = []string{
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
+	}
 	cluster := pool.Init("mysql", settings)
 	orm.InitCluster(cluster)
 
