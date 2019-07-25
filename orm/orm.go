@@ -19,16 +19,34 @@ type QueryContextHandler func(string, ...interface{}) (*sql.Rows, error)
 //ExecContextHandler ..
 type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 
-var defaultDb *sql.DB
+//Cluster ..
+type Cluster interface {
+	Get(name, node string) (*sql.DB, error)
+}
+
+var defaultCluster Cluster
 
 var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-//InitDefaultDb 设置默认db
-func InitDefaultDb(db *sql.DB) {
-	defaultDb = db
+func InitCluster(c Cluster) {
+	defaultCluster = c
+}
+
+//Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
+func Model(dst interface{}) *ORM {
+	o := &ORM{}
+	o.Ctor(dst)
+	return o
+}
+
+//Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
+func Db(dst interface{}) *ORM {
+	o := &ORM{}
+	o.Ctor(dst)
+	return o
 }
 
 //ORM ..
@@ -40,15 +58,8 @@ type ORM struct {
 	Query       QueryContextHandler
 	Exec        ExecContextHandler
 	ctx         context.Context
-	dbRouting   string
-	db          *sql.DB
-}
-
-//Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
-func Model(dst interface{}) *ORM {
-	o := &ORM{}
-	o.Ctor(dst)
-	return o
+	clusterNode string
+	clusterName string
 }
 
 //Ctor 初始化
@@ -67,24 +78,23 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	o.dbRouting = "salver"
+	o.clusterName = "default"
+	o.clusterNode = "salver"
 	o.ctx = context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
 		//getdb
 		return o.Db().QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		o.dbRouting = "master"
+		o.clusterNode = "master"
 		rst, err := o.Db().ExecContext(o.ctx, query, args...)
 		return rst, err
 	}
 	return nil
 }
 func (o *ORM) Db() *sql.DB {
-	if o.db == nil {
-		o.db = pool.GetDB(o.dbRouting)
-	}
-	return o.db
+	db, _ := defaultCluster.Get(o.clusterName, o.clusterNode)
+	return db
 }
 
 //Fetch 拉取
