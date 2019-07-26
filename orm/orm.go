@@ -31,21 +31,54 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
+//InitCluster ..
 func InitCluster(c Cluster) {
 	defaultCluster = c
+}
+
+//Session ..
+type Session struct {
+	ctx         context.Context
+	clusterNode string
+	clusterName string
+	db          *sql.DB
+	tx          *sql.Tx
+}
+
+//Open Session
+func (s *Session) Open(clusterName, clusterNode string) *sql.DB {
+	s.db, _ = defaultCluster.Open(clusterName, clusterNode)
+	return s.db
+}
+
+//Model Session
+func (s *Session) Model(dst interface{}) *ORM {
+	sess := &Session{}
+	o := &ORM{}
+	o.Ctor(dst, sess)
+	return o
+}
+
+//Commit Session
+func (s *Session) Commit() error {
+	return s.tx.Commit()
+}
+
+//Rollback Session
+func (s *Session) Rollback() error {
+	return s.tx.Rollback()
+}
+
+//Begin ..
+func Begin() *Session {
+	s := &Session{}
+	return s
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.Ctor(dst)
-	return o
-}
-
-//Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
-func Db(dst interface{}) *ORM {
-	o := &ORM{}
-	o.Ctor(dst)
+	o.Ctor(dst, &Session{})
 	return o
 }
 
@@ -60,12 +93,14 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
+	sess        *Session
 }
 
 //Ctor 初始化
-func (o *ORM) Ctor(dst interface{}) error {
+func (o *ORM) Ctor(dst interface{}, sess *Session) error {
 	var err error
 	o.dst = dst
+	o.sess = sess
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -82,19 +117,22 @@ func (o *ORM) Ctor(dst interface{}) error {
 	o.clusterNode = "salver"
 	o.ctx = context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		//getdb
-		return o.Db().QueryContext(o.ctx, query, args...)
+		db := o.sess.Open(o.clusterName, o.clusterNode)
+		return db.QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
 		o.clusterNode = "master"
-		rst, err := o.Db().ExecContext(o.ctx, query, args...)
+		db := o.sess.Open(o.clusterName, o.clusterNode)
+		rst, err := db.ExecContext(o.ctx, query, args...)
 		return rst, err
 	}
 	return nil
 }
-func (o *ORM) Db() *sql.DB {
-	db, _ := defaultCluster.Open(o.clusterName, o.clusterNode)
-	return db
+
+//Master 强制master
+func (o *ORM) Master() *ORM {
+	o.clusterNode = "master"
+	return o
 }
 
 //Fetch 拉取

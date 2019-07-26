@@ -216,6 +216,10 @@ func main() {
 	fmt.Println(t)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
+
+	ormx := orm.Begin()
+	ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
+	ormx.Commit()
 	// orm.Model(t).Fetch()
 
 	// var typ = "11"
