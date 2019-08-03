@@ -218,7 +218,11 @@ func main() {
 	fmt.Println(rst.RowsAffected())
 
 	ormx := orm.Begin()
-	ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
+	rst, err = ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("%t", rst)
 	ormx.Commit()
 	// orm.Model(t).Fetch()
 
