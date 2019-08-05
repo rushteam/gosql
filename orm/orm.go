@@ -24,56 +24,39 @@ type Cluster interface {
 	Open(name, node string) (*sql.DB, error)
 }
 
-var defaultCluster Cluster
+//Executor ..
+type Executor interface {
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	Prepare(query string) (*sql.Stmt, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	QueryRow(query string, args ...interface{}) *sql.Row
+	//db
+	// SetMaxIdleConns(n int)
+	// SetMaxOpenConns(n int)
+	// SetConnMaxLifetime(d time.Duration)
+	// Stats() sql.DBStats
+	// PingContext(ctx context.Context) error
+	// Ping() error
+	// Close() error
+	// BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+	// Begin() (*sql.Tx, error)
+	// Driver() driver.Driver
+	// Conn(ctx context.Context) (*sql.Conn, error)
+	//tx
+	// StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
+	// Stmt(stmt *sql.Stmt) *sql.Stmt
+	// Commit() error
+	// Rollback() error
+}
 
 var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
-
-//InitCluster ..
-func InitCluster(c Cluster) {
-	defaultCluster = c
-}
-
-//Session ..
-type Session struct {
-	ctx         context.Context
-	clusterNode string
-	clusterName string
-	db          *sql.DB
-	tx          *sql.Tx
-}
-
-//Open Session
-func (s *Session) Open(clusterName, clusterNode string) *sql.DB {
-	s.db, _ = defaultCluster.Open(clusterName, clusterNode)
-	return s.db
-}
-
-//Model Session
-func (s *Session) Model(dst interface{}) *ORM {
-	sess := &Session{}
-	o := &ORM{}
-	o.Ctor(dst, sess)
-	return o
-}
-
-//Commit Session
-func (s *Session) Commit() error {
-	return s.tx.Commit()
-}
-
-//Rollback Session
-func (s *Session) Rollback() error {
-	return s.tx.Rollback()
-}
-
-//Begin ..
-func Begin() *Session {
-	s := &Session{}
-	return s
-}
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
@@ -118,14 +101,11 @@ func (o *ORM) Ctor(dst interface{}, sess *Session) error {
 	o.clusterNode = "salver"
 	o.ctx = context.Background()
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		db := o.sess.Open(o.clusterName, o.clusterNode)
-		return db.QueryContext(o.ctx, query, args...)
+		return o.sess.exec.QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		o.clusterNode = "master"
-		db := o.sess.Open(o.clusterName, o.clusterNode)
-		rst, err := db.ExecContext(o.ctx, query, args...)
-		return rst, err
+		o.sess.clusterNode = "master"
+		return o.sess.exec.ExecContext(o.ctx, query, args...)
 	}
 	return nil
 }

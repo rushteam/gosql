@@ -191,7 +191,6 @@ func main() {
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 	}
 	cluster := pool.Init("mysql", settings)
-	orm.InitCluster(cluster)
 
 	// m := make(map[string]interface{}, 0)
 	// // m["a"] = 1
@@ -204,6 +203,10 @@ func main() {
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
 	// typ := "phone"
+	sess := pool.Session()
+	sess.Model()
+
+	sess.Commit()
 	t := &T{
 		// Typ: &typ,
 		Uid:     "1",
@@ -217,7 +220,7 @@ func main() {
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 
-	ormx := orm.Begin()
+	ormx, _ := orm.Begin()
 	rst, err = ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
 	if err != nil {
 		fmt.Println(err)
