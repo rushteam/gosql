@@ -4,44 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 )
+
+var defaultCluster Cluster
 
 //Cluster ..
 type Cluster struct {
 	dbType   string
 	settings map[string]map[string][]string
 	pool     map[string]*sql.DB
-}
-
-//Executor ..
-type Executor interface {
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-	Prepare(query string) (*sql.Stmt, error)
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-	QueryRow(query string, args ...interface{}) *sql.Row
-	//db
-	// SetMaxIdleConns(n int)
-	// SetMaxOpenConns(n int)
-	// SetConnMaxLifetime(d time.Duration)
-	// Stats() sql.DBStats
-	// PingContext(ctx context.Context) error
-	// Ping() error
-	// Close() error
-	// BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
-	// Begin() (*sql.Tx, error)
-	// Driver() driver.Driver
-	// Conn(ctx context.Context) (*sql.Conn, error)
-	//tx
-	// StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
-	// Stmt(stmt *sql.Stmt) *sql.Stmt
-	// Commit() error
-	// Rollback() error
 }
 
 //Open ..
@@ -78,12 +52,52 @@ func Init(dbType string, settings map[string]map[string][]string) *Cluster {
 	c.dbType = dbType
 	c.settings = settings
 	c.pool = make(map[string]*sql.DB, 0)
+	defaultCluster = c
 	return c
 }
 
-//Start ..
-func Start() {
-	go func() {
+//Session ..
+type Session struct {
+	ctx         context.Context
+	clusterNode string
+	clusterName string
+	// db          *sql.DB
+	// tx          *sql.Tx
+	exec *Executor
+}
 
-	}()
+// //Open Session
+// func (s *Session) Open(clusterName, clusterNode string) (*Executor error) {
+// 	var err error
+// 	s.exec, err = defaultCluster.Open(clusterName, clusterNode)
+// 	return s.exec, err
+// }
+
+// //Model Session
+// func (s *Session) Model(dst interface{}) *ORM {
+// 	o := &ORM{}
+// 	o.Ctor(dst, s)
+// 	return o
+// }
+
+//Begin ..
+func Begin() (*Session, error) {
+	s := &Session{}
+	return s, nil
+}
+
+//Commit Session
+func (s *Session) Commit() error {
+	if tx, ok := s.exec.(*sql.Tx); ok {
+		return s.tx.Commit()
+	}
+	return fmt.Errorf("not found trans")
+}
+
+//Rollback Session
+func (s *Session) Rollback() error {
+	if tx, ok := s.exec.(*sql.Tx); ok {
+		return s.tx.Rollback()
+	}
+	return fmt.Errorf("not found trans")
 }
