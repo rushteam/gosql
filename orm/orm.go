@@ -77,9 +77,8 @@ func Begin() *Session {
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
-	sess := &Session{}
 	o := &ORM{}
-	o.Ctor(dst, sess)
+	o.Ctor(dst, &Session{})
 	return o
 }
 
