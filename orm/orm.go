@@ -24,35 +24,6 @@ type Cluster interface {
 	Open(name, node string) (*sql.DB, error)
 }
 
-//Executor ..
-type Executor interface {
-	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
-	Prepare(query string) (*sql.Stmt, error)
-	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
-	Exec(query string, args ...interface{}) (sql.Result, error)
-	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
-	QueryRow(query string, args ...interface{}) *sql.Row
-	//db
-	// SetMaxIdleConns(n int)
-	// SetMaxOpenConns(n int)
-	// SetConnMaxLifetime(d time.Duration)
-	// Stats() sql.DBStats
-	// PingContext(ctx context.Context) error
-	// Ping() error
-	// Close() error
-	// BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
-	// Begin() (*sql.Tx, error)
-	// Driver() driver.Driver
-	// Conn(ctx context.Context) (*sql.Conn, error)
-	//tx
-	// StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
-	// Stmt(stmt *sql.Stmt) *sql.Stmt
-	// Commit() error
-	// Rollback() error
-}
-
 var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
@@ -60,8 +31,7 @@ var deletedAtField = "deleted_at"
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
-	o := &ORM{}
-	o.Ctor(dst, &Session{})
+	o, _ := newORM(dst)
 	return o
 }
 
@@ -76,22 +46,22 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	sess        *Session
+	sess        Session
 }
 
-//Ctor 初始化
-func (o *ORM) Ctor(dst interface{}, sess *Session) error {
+//orm 初始化
+func newORM(dst interface{}) (*ORM, error) {
 	var err error
+	o := &ORM{}
 	o.dst = dst
-	o.sess = sess
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	o.fields, err = scanner.ResolveModelToMap(o.dst)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	o.builder = builder.New()
 	//获取表名
@@ -99,14 +69,15 @@ func (o *ORM) Ctor(dst interface{}, sess *Session) error {
 	o.clusterName = "default"
 	o.clusterNode = "salver"
 	o.ctx = context.Background()
+	o.sess = newSession(o.ctx, db)
 	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
 		return o.sess.exec.QueryContext(o.ctx, query, args...)
 	}
 	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		o.sess.clusterNode = "master"
+		// o.sess.clusterNode = "master"
 		return o.sess.exec.ExecContext(o.ctx, query, args...)
 	}
-	return nil
+	return o, nil
 }
 
 //Master 强制master
@@ -122,7 +93,6 @@ func (o *ORM) Fetch() error {
 	}
 	o.builder.Limit(1)
 	rows, err := o.Query(o.builder.BuildSelect(), o.builder.Args()...)
-	// rows, err := o.Db().Query(o.builder.BuildSelect(), o.builder.Args()...)
 	if err != nil {
 		return err
 	}

@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mlboy/godb/orm"
-	"github.com/mlboy/godb/pool"
-
 	// "github.com/didi/gendry/scanner"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mlboy/godb/orm"
+	"upper.io/db.v3"
 )
 
 type S struct {
@@ -190,7 +189,7 @@ func main() {
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 	}
-	cluster := pool.Init("mysql", settings)
+	// cluster := pool.Init("mysql", settings)
 
 	// m := make(map[string]interface{}, 0)
 	// // m["a"] = 1
@@ -203,10 +202,14 @@ func main() {
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
 	// typ := "phone"
-	sess := pool.Session()
-	sess.Model()
+	// sess := pool.Session()
+	// sess.Model()
 
-	sess.Commit()
+	// sess.Commit()
+	// orm.InitSession(cluster)
+
+	sess, err := db.Open("mysql", settings)
+	sess.Model(t).
 	t := &T{
 		// Typ: &typ,
 		Uid:     "1",
@@ -220,13 +223,13 @@ func main() {
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 
-	ormx, _ := orm.Begin()
-	rst, err = ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Printf("%t", rst)
-	ormx.Commit()
+	// ormx, _ := orm.Begin()
+	// rst, err = ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// }
+	// fmt.Printf("%t", rst)
+	// ormx.Commit()
 	// orm.Model(t).Fetch()
 
 	// var typ = "11"

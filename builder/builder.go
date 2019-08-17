@@ -34,6 +34,8 @@ type SQLSegments struct {
 		args []interface{}
 	}
 	checks map[int]bool
+	//select|insert|repalce|update|delete
+	cmd string
 }
 
 //Table ..
@@ -505,6 +507,7 @@ func (s *SQLSegments) BuildSelect() string {
 		s.buildUnion(),
 		s.buildForUpdate(),
 	)
+	s.cmd = "select"
 	// fmt.Println(s.render.args)
 	return sql
 }
@@ -523,6 +526,7 @@ func (s *SQLSegments) BuildInsert() string {
 		s.buildValuesForInsert(),
 		s.buildReturning(),
 	)
+	s.cmd = "insert"
 	return sql
 }
 
@@ -534,6 +538,7 @@ func (s *SQLSegments) BuildReplace() string {
 		s.buildValuesForInsert(),
 		s.buildReturning(),
 	)
+	s.cmd = "replace"
 	return sql
 }
 
@@ -615,6 +620,7 @@ func (s *SQLSegments) BuildUpdate() string {
 		s.buildLimit(),
 		s.buildReturning(),
 	)
+	s.cmd = "replace"
 	// fmt.Println(s.render.args)
 	return sql
 }
@@ -690,6 +696,7 @@ func (s *SQLSegments) BuildDelete() string {
 		s.buildLimit(),
 		s.buildReturning(),
 	)
+	s.cmd = "replace"
 	// fmt.Println(s.render.args)
 	return sql
 }

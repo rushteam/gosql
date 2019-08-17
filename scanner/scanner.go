@@ -81,8 +81,10 @@ func (s StructData) GetStructField(k string) *StructField {
 }
 
 //反射结构体缓存
-var refStructCache = make(map[reflect.Type]*StructData)
-var refStructCacheMutex sync.Mutex
+var (
+	refStructCache      = make(map[reflect.Type]*StructData)
+	refStructCacheMutex sync.Mutex
+)
 
 //解析field tags to options
 func parseTagOpts(tags reflect.StructTag) map[string]string {
