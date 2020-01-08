@@ -106,12 +106,20 @@ func (o *ORM) Ctor(dst interface{}, cluster *Cluster) error {
 
 //Query ..
 func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	return o.cluster.Executor(o.clusterName, o.clusterNode).QueryContext(o.ctx, query, args...)
+	excutor, err := o.cluster.Executor(o.clusterName, o.clusterNode)
+	if err != nil {
+		return nil, err
+	}
+	return excutor.QueryContext(o.ctx, query, args...)
 }
 
 //Exec ..
 func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
-	return o.cluster.Executor(o.clusterName, o.clusterNode).ExecContext(o.ctx, query, args...)
+	excutor, err := o.cluster.Executor(o.clusterName, o.clusterNode)
+	if err != nil {
+		return nil, err
+	}
+	return excutor.ExecContext(o.ctx, query, args...)
 }
 
 //Master 强制master
