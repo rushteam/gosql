@@ -22,6 +22,8 @@ type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 //Cluster ..
 type Cluster interface {
 	Open(name, node string) (*sql.DB, error)
+	Db(name, node string) (*Executor, error)
+	Tx(name, node string) (*Executor, error)
 }
 
 //Executor ..
@@ -61,7 +63,7 @@ var deletedAtField = "deleted_at"
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.Ctor(dst, &Session{})
+	o.Ctor(dst, &Cluster{})
 	return o
 }
 
@@ -76,14 +78,14 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	sess        *Session
+	cluster     *Cluster
 }
 
 //Ctor 初始化
-func (o *ORM) Ctor(dst interface{}, sess *Session) error {
+func (o *ORM) Ctor(dst interface{}, cluster *Cluster) error {
 	var err error
 	o.dst = dst
-	o.sess = sess
+	o.cluster = cluster
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -99,14 +101,17 @@ func (o *ORM) Ctor(dst interface{}, sess *Session) error {
 	o.clusterName = "default"
 	o.clusterNode = "salver"
 	o.ctx = context.Background()
-	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		return o.sess.exec.QueryContext(o.ctx, query, args...)
-	}
-	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		o.sess.clusterNode = "master"
-		return o.sess.exec.ExecContext(o.ctx, query, args...)
-	}
 	return nil
+}
+
+//Query ..
+func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
+	return o.cluster.Executor(o.clusterName, o.clusterNode).QueryContext(o.ctx, query, args...)
+}
+
+//Exec ..
+func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return o.cluster.Executor(o.clusterName, o.clusterNode).ExecContext(o.ctx, query, args...)
 }
 
 //Master 强制master
