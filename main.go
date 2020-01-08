@@ -190,6 +190,9 @@ func main() {
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 	}
 	// cluster := pool.Init("mysql", settings)
+	cluster := pool.Init("mysql", settings)
+	// orm.InitDbPool()
+	// orm.New("de").Model()
 
 	// m := make(map[string]interface{}, 0)
 	// // m["a"] = 1

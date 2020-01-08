@@ -22,6 +22,8 @@ type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 //Cluster ..
 type Cluster interface {
 	Open(name, node string) (*sql.DB, error)
+	Db(name, node string) (*Executor, error)
+	Tx(name, node string) (*Executor, error)
 }
 
 var autoFillCreatedAndUpdatedField = true
@@ -31,7 +33,12 @@ var deletedAtField = "deleted_at"
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
+<<<<<<< HEAD
 	o, _ := newORM(dst)
+=======
+	o := &ORM{}
+	o.Ctor(dst)
+>>>>>>> f721608987cfe5c861921a291fdc7cd71e7bab43
 	return o
 }
 
@@ -41,19 +48,20 @@ type ORM struct {
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
 	fields      map[string]interface{}
-	Query       QueryContextHandler
-	Exec        ExecContextHandler
+	// Query       QueryContextHandler
+	// Exec        ExecContextHandler
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	sess        Session
+	cluster     *Cluster
 }
 
-//orm 初始化
-func newORM(dst interface{}) (*ORM, error) {
+//Ctor 初始化
+func (o *ORM) Ctor(dst interface{}) error {
 	var err error
 	o := &ORM{}
 	o.dst = dst
+	o.cluster = &Cluster{} //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -69,15 +77,25 @@ func newORM(dst interface{}) (*ORM, error) {
 	o.clusterName = "default"
 	o.clusterNode = "salver"
 	o.ctx = context.Background()
-	o.sess = newSession(o.ctx, db)
-	o.Query = func(query string, args ...interface{}) (*sql.Rows, error) {
-		return o.sess.exec.QueryContext(o.ctx, query, args...)
+	return nil
+}
+
+//Query ..
+func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
+	excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
+	if err != nil {
+		return nil, err
 	}
-	o.Exec = func(query string, args ...interface{}) (sql.Result, error) {
-		// o.sess.clusterNode = "master"
-		return o.sess.exec.ExecContext(o.ctx, query, args...)
+	return excutor.QueryContext(o.ctx, query, args...)
+}
+
+//Exec ..
+func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
+	excutor, err := o.cluster.Executor(o.clusterName, o.clusterNode)
+	if err != nil {
+		return nil, err
 	}
-	return o, nil
+	return excutor.ExecContext(o.ctx, query, args...)
 }
 
 //Master 强制master
