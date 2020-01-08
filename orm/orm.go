@@ -63,7 +63,7 @@ var deletedAtField = "deleted_at"
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.Ctor(dst, &Cluster{})
+	o.Ctor(dst)
 	return o
 }
 
@@ -82,10 +82,10 @@ type ORM struct {
 }
 
 //Ctor 初始化
-func (o *ORM) Ctor(dst interface{}, cluster *Cluster) error {
+func (o *ORM) Ctor(dst interface{}) error {
 	var err error
 	o.dst = dst
-	o.cluster = cluster
+	o.cluster = &Cluster{} //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -106,7 +106,7 @@ func (o *ORM) Ctor(dst interface{}, cluster *Cluster) error {
 
 //Query ..
 func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	excutor, err := o.cluster.Executor(o.clusterName, o.clusterNode)
+	excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
 	}
