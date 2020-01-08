@@ -73,8 +73,8 @@ type ORM struct {
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
 	fields      map[string]interface{}
-	Query       QueryContextHandler
-	Exec        ExecContextHandler
+	// Query       QueryContextHandler
+	// Exec        ExecContextHandler
 	ctx         context.Context
 	clusterNode string
 	clusterName string
