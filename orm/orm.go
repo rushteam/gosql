@@ -71,9 +71,6 @@ func (o *ORM) Db() (db.Executor, error) {
 	if o.executor != nil {
 		return o.executor, nil
 	}
-	if o.clusterNode == "master" {
-		return cluster.Master()
-	}
 	return cluster.Slave()
 
 }
