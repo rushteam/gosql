@@ -158,19 +158,19 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	if err != nil {
 		return list, err
 	}
-	structVal := reflect.ValueOf(dst).Elem()
+	structRV := reflect.ValueOf(dst).Elem()
 	for _, field := range modelStruct.fields {
-		if structVal.Field(field.index).Kind() == reflect.Ptr {
-			if structVal.Field(field.index).IsNil() {
+		if structRV.Field(field.index).Kind() == reflect.Ptr {
+			if structRV.Field(field.index).IsNil() {
 				//指针为nil时候的处理
 				continue
-				// list[field.column] = reflect.New(structVal.Field(field.index).Type()).Interface()
+				// list[field.column] = reflect.New(structRV.Field(field.index).Type()).Interface()
 				// list[field.column] = sql.NullString
 			} else {
-				list[field.column] = structVal.Field(field.index).Elem().Interface()
+				list[field.column] = structRV.Field(field.index).Elem().Interface()
 			}
-		} else if !isZeroVal(structVal.Field(field.index)) {
-			list[field.column] = structVal.Field(field.index).Addr().Interface()
+		} else if !isZeroVal(structRV.Field(field.index)) {
+			list[field.column] = structRV.Field(field.index).Addr().Interface()
 		}
 	}
 	return list, nil
