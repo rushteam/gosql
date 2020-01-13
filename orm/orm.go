@@ -14,12 +14,6 @@ import (
 //BuilderHandler ..
 type BuilderHandler func(*builder.SQLSegments)
 
-//QueryContextHandler ..
-type QueryContextHandler func(string, ...interface{}) (*sql.Rows, error)
-
-//ExecContextHandler ..
-type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
-
 var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
@@ -35,7 +29,7 @@ func Init(c db.Cluster) {
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.Ctor(dst)
+	o.new(dst)
 	return o
 }
 
@@ -45,19 +39,15 @@ type ORM struct {
 	builder     *builder.SQLSegments
 	modelStruct *scanner.StructData
 	fields      map[string]interface{}
-	// Query       QueryContextHandler
-	// Exec        ExecContextHandler
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	// cluster     db.Cluster
 }
 
-//Ctor 初始化
-func (o *ORM) Ctor(dst interface{}) error {
+//new 初始化
+func (o *ORM) new(dst interface{}) error {
 	var err error
 	o.dst = dst
-	// o.cluster = cluster //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
