@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/mlboy/godb/builder"
+	"github.com/mlboy/godb/db"
 	"github.com/mlboy/godb/scanner"
 )
 
@@ -56,7 +57,7 @@ type ORM struct {
 func (o *ORM) Ctor(dst interface{}) error {
 	var err error
 	o.dst = dst
-	o.cluster = &Cluster{} //todo 这里需要改进
+	o.cluster = &db.PoolCluster{} //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {

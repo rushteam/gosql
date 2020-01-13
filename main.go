@@ -7,7 +7,6 @@ import (
 	// "github.com/didi/gendry/scanner"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mlboy/godb/orm"
-	"upper.io/db.v3"
 )
 
 type S struct {
