@@ -6,6 +6,7 @@ import (
 
 	// "github.com/didi/gendry/scanner"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mlboy/godb/db"
 	"github.com/mlboy/godb/orm"
 )
 
@@ -182,15 +183,14 @@ func main() {
 	// defer db.Close()
 
 	//mysql-master-def
-	var settings = make(map[string]map[string][]string, 0)
-	settings["default"] = make(map[string][]string, 0)
-	settings["default"]["master"] = []string{
+	var settings = make(map[string][]string, 0)
+	settings["default"] = []string{
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 	}
 	// cluster := pool.Init("mysql", settings)
-	cluster := pool.Init("mysql", settings)
-	// orm.InitDbPool()
+	cluster := db.InitPool("mysql", settings)
+	orm.Init(cluster)
 	// orm.New("de").Model()
 
 	// m := make(map[string]interface{}, 0)
@@ -210,8 +210,6 @@ func main() {
 	// sess.Commit()
 	// orm.InitSession(cluster)
 
-	sess, err := db.Open("mysql", settings)
-	sess.Model(t).
 	t := &T{
 		// Typ: &typ,
 		Uid:     "1",
@@ -220,8 +218,10 @@ func main() {
 	rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	fmt.Println(t)
+	fmt.Println(rst)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 

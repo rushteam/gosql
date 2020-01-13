@@ -20,17 +20,17 @@ type QueryContextHandler func(string, ...interface{}) (*sql.Rows, error)
 //ExecContextHandler ..
 type ExecContextHandler func(string, ...interface{}) (sql.Result, error)
 
-//Cluster ..
-type Cluster interface {
-	Open(name, node string) (*sql.DB, error)
-	Db(name, node string) (*Executor, error)
-	Tx(name, node string) (*Executor, error)
-}
-
 var autoFillCreatedAndUpdatedField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
+
+var defClaster db.Cluster
+
+//Init ..
+func Init(c db.Cluster) {
+	defClaster = c
+}
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
@@ -50,14 +50,14 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	cluster     *Cluster
+	cluster     db.Cluster
 }
 
 //Ctor 初始化
 func (o *ORM) Ctor(dst interface{}) error {
 	var err error
 	o.dst = dst
-	o.cluster = &db.PoolCluster{} //todo 这里需要改进
+	o.cluster = defClaster //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -71,14 +71,15 @@ func (o *ORM) Ctor(dst interface{}) error {
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
 	o.clusterName = "default"
-	o.clusterNode = "salver"
+	o.clusterNode = "slave" //salver
 	o.ctx = context.Background()
 	return nil
 }
 
 //Query ..
 func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
+	excutor, err := o.cluster.Slave()
+	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,8 @@ func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //Exec ..
 func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
-	excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
+	excutor, err := o.cluster.Master()
+	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
 	}

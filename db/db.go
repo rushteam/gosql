@@ -37,6 +37,7 @@ type Executor interface {
 	// Rollback() error
 }
 
+//Db ..
 type Db interface {
 	SetMaxIdleConns(n int)
 	SetMaxOpenConns(n int)
@@ -50,6 +51,8 @@ type Db interface {
 	Driver() driver.Driver
 	Conn(ctx context.Context) (*sql.Conn, error)
 }
+
+//Tx ..
 type Tx interface {
 	StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
 	Stmt(stmt *sql.Stmt) *sql.Stmt
