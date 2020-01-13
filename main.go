@@ -187,6 +187,7 @@ func main() {
 	settings["default"] = []string{
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
 	}
 	// cluster := pool.Init("mysql", settings)
 	cluster := db.InitPool("mysql", settings)
@@ -220,8 +221,6 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(t)
-	fmt.Println(rst)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 
@@ -232,7 +231,14 @@ func main() {
 	// }
 	// fmt.Printf("%t", rst)
 	// ormx.Commit()
-	// orm.Model(t).Fetch()
+	err = orm.Model(t).Where("id", 68).Fetch()
+	err = orm.Model(t).Where("id", 68).Fetch()
+	err = orm.Model(t).Where("id", 68).Fetch()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(t)
 
 	// var typ = "11"
 	// t := &T{
