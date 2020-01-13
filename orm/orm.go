@@ -42,7 +42,6 @@ type ORM struct {
 	fields      map[string]interface{}
 	ctx         context.Context
 	clusterNode string
-	clusterName string
 	executor    db.Executor
 }
 
@@ -62,7 +61,6 @@ func (o *ORM) Model(dst interface{}) *ORM {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	o.clusterName = "default"
 	o.clusterNode = "slave" //salver
 	o.ctx = context.Background()
 	return o
@@ -135,7 +133,7 @@ func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
 
 //Master 强制master
 func (o *ORM) Master() *ORM {
-	o.clusterNode = "master"
+	o.executor, _ = cluster.Master()
 	return o
 }
 
