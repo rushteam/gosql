@@ -159,6 +159,10 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 		return list, err
 	}
 	structRV := reflect.ValueOf(dst).Elem()
+	//如果是数组则忽略
+	if structRV.Kind() == reflect.Slice {
+		return list, err
+	}
 	for _, field := range modelStruct.fields {
 		if structRV.Field(field.index).Kind() == reflect.Ptr {
 			if structRV.Field(field.index).IsNil() {
