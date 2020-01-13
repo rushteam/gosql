@@ -154,13 +154,13 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 //ResolveModelToMap 解析模型数据到 非零值不解析
 func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	var list = make(map[string]interface{}, 0)
-	modelStruct, err := ResolveModelStruct(dst)
-	if err != nil {
-		return list, err
-	}
 	structRV := reflect.ValueOf(dst).Elem()
 	//如果是数组则忽略
 	if structRV.Kind() == reflect.Slice {
+		return list, nil
+	}
+	modelStruct, err := ResolveModelStruct(dst)
+	if err != nil {
 		return list, err
 	}
 	for _, field := range modelStruct.fields {
