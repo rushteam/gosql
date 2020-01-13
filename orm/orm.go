@@ -41,7 +41,6 @@ type ORM struct {
 	modelStruct *scanner.StructData
 	fields      map[string]interface{}
 	ctx         context.Context
-	clusterNode string
 	executor    db.Executor
 }
 
@@ -61,7 +60,6 @@ func (o *ORM) Model(dst interface{}) *ORM {
 	o.builder = builder.New()
 	//获取表名
 	o.builder.Table(o.modelStruct.TableName())
-	o.clusterNode = "slave" //salver
 	o.ctx = context.Background()
 	return o
 }
@@ -72,7 +70,6 @@ func (o *ORM) Db() (db.Executor, error) {
 		return o.executor, nil
 	}
 	return cluster.Slave()
-
 }
 
 //Begin ..
@@ -111,7 +108,6 @@ func (o *ORM) Rollback() error {
 //Query ..
 func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
 	excutor, err := o.Db()
-	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +117,6 @@ func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
 //Exec ..
 func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
 	excutor, err := o.Db()
-	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
 	}
@@ -188,9 +183,6 @@ func (o *ORM) Where(key interface{}, vals ...interface{}) *ORM {
 	if o.builder == nil {
 		panic("orm: must call Model() first, before call Where() ")
 	}
-	// if len(vals) > 0 {
-	// 	o.fields[key] = vals[0]
-	// }
 	o.builder.Where(key, vals...)
 	return o
 }

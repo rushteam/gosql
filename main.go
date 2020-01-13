@@ -232,13 +232,24 @@ func main() {
 	// ormx.Commit()
 
 	err = orm.Model(t).Where("id", 68).Fetch()
-	err = orm.Model(t).Where("id", 68).Fetch()
-	err = orm.Model(t).Where("id", 68).Fetch()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 	fmt.Println(t)
+	var tt []*T
+	err = orm.Model(&tt).Where("id", 68).FetchAll()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(tt)
+	// err = orm.Model(t).Where("id", 68).Fetch()
+	// if err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
+	// fmt.Println(t)
 
 	// var typ = "11"
 	// t := &T{

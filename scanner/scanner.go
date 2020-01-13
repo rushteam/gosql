@@ -201,30 +201,49 @@ func FormatName(name string) string {
 
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dst interface{}) (*StructData, error) {
-	dstType := reflect.TypeOf(dst)
-
-	refStructCacheMutex.Lock()
-	defer refStructCacheMutex.Unlock()
-
-	if result, ok := refStructCache[dstType]; ok {
-		return result, nil
-	}
-	if dstType.Kind() != reflect.Ptr {
-		return nil, fmt.Errorf("scanner called with non-pointer destination %v", dstType)
-	}
-	structType := dstType.Elem()
-	if structType.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("scanner called with pointer to non-struct %v", dstType)
-	}
+	var structRV reflect.Value
+	var structRT reflect.Type
 	modelStruct := new(StructData)
-	//这里从value上获取到自定义method上的table name
-	// modelStruct.table = dstType.Elem().Name()
-	structVal := reflect.ValueOf(dst).Elem()
-	fnTableName := structVal.MethodByName(tableFuncName)
+	dstRV := reflect.ValueOf(dst).Elem()
+	//dst (slice)
+	if dstRV.Kind() == reflect.Slice {
+		ptrRT := dstRV.Type().Elem()
+		if ptrRT.Kind() == reflect.Ptr {
+			ptrRT = ptrRT.Elem()
+		}
+		if ptrRT.Kind() != reflect.Struct {
+			return nil, fmt.Errorf("scanner expects element to be pointers to structs, found %T", dst)
+		}
+		structRT = ptrRT
+		structRV = reflect.New(structRT)
+	} else {
+		//dst struct------------
+		structRT = reflect.TypeOf(dst)
+		refStructCacheMutex.Lock()
+		defer refStructCacheMutex.Unlock()
+
+		if modelStruct, ok := refStructCache[structRT]; ok {
+			return modelStruct, nil
+		}
+		if structRT.Kind() != reflect.Ptr {
+			return nil, fmt.Errorf("scanner called with non-pointer destination %v", structRT)
+		}
+		structRT = structRT.Elem() //struct
+		if structRT.Kind() != reflect.Struct {
+			return nil, fmt.Errorf("scanner called with pointer to non-struct %v", structRT)
+		}
+		//这里从value上获取到自定义method上的table name
+		// modelStruct.table = structRT.Elem().Name()
+		//structVal
+		structRV = reflect.ValueOf(dst).Elem()
+		// fmt.Println("test:", structRT, structRV)
+	}
+
+	fnTableName := structRV.MethodByName(tableFuncName)
 	if fnTableName.IsValid() {
 		modelStruct.table = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
 	} else {
-		modelStruct.table = structVal.Type().Name()
+		modelStruct.table = structRV.Type().Name()
 		//todo 大小写转换下划线的、自定义方法的
 		// if TableNameFormat == TableNameSnake {
 		// 	name = utils.SnakeString(name)
@@ -232,8 +251,8 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	}
 	modelStruct.fields = make(map[string]*StructField)
 
-	for i := 0; i < structType.NumField(); i++ {
-		f := structType.Field(i)
+	for i := 0; i < structRT.NumField(); i++ {
+		f := structRT.Field(i)
 		// skip non-exported fields
 		if f.PkgPath != "" {
 			continue
@@ -292,7 +311,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 			// plugins:    plugins,
 		}
 	}
-	refStructCache[dstType] = modelStruct
+	refStructCache[structRT] = modelStruct
 	return modelStruct, nil
 }
 func scanRow(rows *sql.Rows, dst interface{}) error {
