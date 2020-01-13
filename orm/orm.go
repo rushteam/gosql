@@ -3,6 +3,7 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"regexp"
 	"time"
 
@@ -29,7 +30,7 @@ func Init(c db.Cluster) {
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
 func Model(dst interface{}) *ORM {
 	o := &ORM{}
-	o.new(dst)
+	o.Model(dst)
 	return o
 }
 
@@ -42,20 +43,21 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
+	executor    db.Executor
 }
 
-//new 初始化
-func (o *ORM) new(dst interface{}) error {
+//Model 初始化
+func (o *ORM) Model(dst interface{}) *ORM {
 	var err error
 	o.dst = dst
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	o.fields, err = scanner.ResolveModelToMap(o.dst)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	o.builder = builder.New()
 	//获取表名
@@ -63,15 +65,52 @@ func (o *ORM) new(dst interface{}) error {
 	o.clusterName = "default"
 	o.clusterNode = "slave" //salver
 	o.ctx = context.Background()
-	return nil
+	return o
 }
 
 //Db ..
 func (o *ORM) Db() (db.Executor, error) {
+	if o.executor != nil {
+		return o.executor, nil
+	}
 	if o.clusterNode == "master" {
 		return cluster.Master()
 	}
 	return cluster.Slave()
+
+}
+
+//Begin ..
+func Begin() (*ORM, error) {
+	o := &ORM{}
+	var err error
+	o.executor, err = cluster.Master()
+	if err != nil {
+		return nil, err
+	}
+	if db, ok := o.executor.(*sql.DB); ok {
+		o.executor, err = db.Begin()
+	}
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
+//Commit ..
+func (o *ORM) Commit() error {
+	if tx, ok := o.executor.(*sql.Tx); ok {
+		return tx.Commit()
+	}
+	return errors.New("db: commit fail, not found trans")
+}
+
+//Rollback ..
+func (o *ORM) Rollback() error {
+	if tx, ok := o.executor.(*sql.Tx); ok {
+		return tx.Rollback()
+	}
+	return errors.New("db: rollback fail, not found trans")
 }
 
 //Query ..

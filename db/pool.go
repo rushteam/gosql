@@ -7,13 +7,6 @@ import (
 	"sync/atomic"
 )
 
-//Cluster ..
-type Cluster interface {
-	Open(name, node string) (*sql.DB, error)
-	Master() (Executor, error)
-	Slave() (Executor, error)
-}
-
 //PoolCluster ..
 type PoolCluster struct {
 	dbType   string
@@ -25,7 +18,7 @@ type PoolCluster struct {
 //Open ..
 func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
 	if dsn == "" {
-		return nil, errors.New("db DSN should be not empty")
+		return nil, errors.New("db: DSN should be not empty")
 	}
 	if db, ok := c.pool[dsn]; ok {
 		return db, nil
@@ -36,6 +29,18 @@ func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
 	}
 	c.pool[dsn] = db
 	return c.pool[dsn], nil
+}
+
+//Begin ..
+func (c *PoolCluster) Begin() (*sql.Tx, error) {
+	ex, err := c.Master()
+	if err != nil {
+		return nil, err
+	}
+	if db, ok := ex.(Db); ok {
+		return db.Begin()
+	}
+	return nil, errors.New("db: not Db type")
 }
 
 //Master ..
@@ -64,6 +69,7 @@ func (c *PoolCluster) Slave() (Executor, error) {
 	}
 	return nil, nil
 }
+
 func debugPrint(format string, vals ...interface{}) {
 	fmt.Printf(format, vals...)
 }

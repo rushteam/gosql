@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
-	"fmt"
 	"time"
 )
 
@@ -18,23 +17,6 @@ type Executor interface {
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 	QueryRow(query string, args ...interface{}) *sql.Row
-	//db
-	// SetMaxIdleConns(n int)
-	// SetMaxOpenConns(n int)
-	// SetConnMaxLifetime(d time.Duration)
-	// Stats() sql.DBStats
-	// PingContext(ctx context.Context) error
-	// Ping() error
-	// Close() error
-	// BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
-	// Begin() (*sql.Tx, error)
-	// Driver() driver.Driver
-	// Conn(ctx context.Context) (*sql.Conn, error)
-	//tx
-	// StmtContext(ctx context.Context, stmt *sql.Stmt) *sql.Stmt
-	// Stmt(stmt *sql.Stmt) *sql.Stmt
-	// Commit() error
-	// Rollback() error
 }
 
 //Db ..
@@ -60,36 +42,10 @@ type Tx interface {
 	Rollback() error
 }
 
-//Session ..
-type Session struct {
-	ctx  context.Context
-	exec Executor
-	// clusterNode string
-	// clusterName string
-}
-
-func newSession(ctx context.Context, exec Executor) *Session {
-	return &Session{ctx, exec}
-}
-
-//Begin ..
-func Begin() (*Session, error) {
-	s := &Session{}
-	return s, nil
-}
-
-//Commit Session
-func (s *Session) Commit() error {
-	if tx, ok := s.exec.(*sql.Tx); ok {
-		return tx.Commit()
-	}
-	return fmt.Errorf("not found trans")
-}
-
-//Rollback Session
-func (s *Session) Rollback() error {
-	if tx, ok := s.exec.(*sql.Tx); ok {
-		return tx.Rollback()
-	}
-	return fmt.Errorf("not found trans")
+//Cluster ..
+type Cluster interface {
+	Open(name, node string) (*sql.DB, error)
+	Master() (Executor, error)
+	Slave() (Executor, error)
+	Begin() (*sql.Tx, error)
 }

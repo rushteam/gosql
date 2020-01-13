@@ -210,7 +210,6 @@ func main() {
 
 	// sess.Commit()
 	// orm.InitSession(cluster)
-
 	t := &T{
 		// Typ: &typ,
 		Uid:     "1",
@@ -224,13 +223,14 @@ func main() {
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 
-	// ormx, _ := orm.Begin()
-	// rst, err = ormx.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// }
-	// fmt.Printf("%t", rst)
+	ormx, _ := orm.Begin()
+	rst, err = ormx.Model(t).UpdateField("[+]Expires", 100).Where("id", 68).Update()
+	if err != nil {
+		fmt.Println(err)
+	}
+	ormx.Rollback()
 	// ormx.Commit()
+
 	err = orm.Model(t).Where("id", 68).Fetch()
 	err = orm.Model(t).Where("id", 68).Fetch()
 	err = orm.Model(t).Where("id", 68).Fetch()
