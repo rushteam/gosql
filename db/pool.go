@@ -24,7 +24,6 @@ type PoolCluster struct {
 
 //Open ..
 func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
-	// dsn = "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true"
 	if dsn == "" {
 		return nil, errors.New("db DSN should be not empty")
 	}

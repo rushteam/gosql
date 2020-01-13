@@ -25,11 +25,11 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-var defClaster db.Cluster
+var cluster db.Cluster
 
 //Init ..
 func Init(c db.Cluster) {
-	defClaster = c
+	cluster = c
 }
 
 //Model 加载模型 orm.Model(&tt{}).Builder(func(){}).Find()
@@ -50,14 +50,14 @@ type ORM struct {
 	ctx         context.Context
 	clusterNode string
 	clusterName string
-	cluster     db.Cluster
+	// cluster     db.Cluster
 }
 
 //Ctor 初始化
 func (o *ORM) Ctor(dst interface{}) error {
 	var err error
 	o.dst = dst
-	o.cluster = defClaster //todo 这里需要改进
+	// o.cluster = cluster //todo 这里需要改进
 	//解析结构体
 	o.modelStruct, err = scanner.ResolveModelStruct(o.dst)
 	if err != nil {
@@ -76,9 +76,17 @@ func (o *ORM) Ctor(dst interface{}) error {
 	return nil
 }
 
+//Db ..
+func (o *ORM) Db() (db.Executor, error) {
+	if o.clusterNode == "master" {
+		return cluster.Master()
+	}
+	return cluster.Slave()
+}
+
 //Query ..
 func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	excutor, err := o.cluster.Slave()
+	excutor, err := o.Db()
 	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
@@ -88,7 +96,7 @@ func (o *ORM) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //Exec ..
 func (o *ORM) Exec(query string, args ...interface{}) (sql.Result, error) {
-	excutor, err := o.cluster.Master()
+	excutor, err := o.Db()
 	// excutor, err := o.cluster.Db(o.clusterName, o.clusterNode)
 	if err != nil {
 		return nil, err
