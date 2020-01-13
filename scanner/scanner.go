@@ -119,17 +119,17 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 			log.Printf(err.Error())
 		}
 	}
-	structVal := reflect.ValueOf(dst).Elem()
+	structRV := reflect.ValueOf(dst).Elem()
 	// fmt.Printf("%v", structVal.CanSet())
 	for k, v := range list {
 		if field, ok := modelStruct.fields[k]; ok {
-			if structVal.Field(field.index).Kind() == reflect.Ptr {
-				if structVal.Field(field.index).IsNil() && structVal.Field(field.index).CanSet() {
-					structVal.Field(field.index).Set(reflect.New(structVal.Field(field.index).Type().Elem()))
+			if structRV.Field(field.index).Kind() == reflect.Ptr {
+				if structRV.Field(field.index).IsNil() && structRV.Field(field.index).CanSet() {
+					structRV.Field(field.index).Set(reflect.New(structRV.Field(field.index).Type().Elem()))
 				}
-				structVal.Field(field.index).Elem().Set(reflect.ValueOf(v))
+				structRV.Field(field.index).Elem().Set(reflect.ValueOf(v))
 			} else {
-				structVal.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
+				structRV.Field(field.index).Set(reflect.Indirect(reflect.ValueOf(v)))
 			}
 		} else {
 			if Debug {
