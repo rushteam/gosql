@@ -753,11 +753,11 @@ func (s *SQLSegments) Args() []interface{} {
 type Query SQLSegments
 
 //Option ..
-type Option func(q *Query) *Query
+type Option func(q Query) Query
 
 //Select ..
-func Select(opts ...Option) *Query {
-	s := &Query{
+func Select(opts ...Option) Query {
+	s := Query{
 		cmd: _select,
 	}
 	for _, opt := range opts {
