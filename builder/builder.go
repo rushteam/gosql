@@ -765,14 +765,13 @@ func Select(opts ...Option) *Query {
 	}
 	return s
 }
-//Table ..
-func Table(name interface) Option {
+func Table(name interface{}) Option {
 	return func(s Query) Query {
 		s.Table(name)
 		return s
 	}
 }
-
+//Table ..
 //Columns ..
 func Columns(fields ...string) Option {
 	return func(s Query) Query {
