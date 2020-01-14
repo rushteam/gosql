@@ -771,6 +771,7 @@ func Table(name interface{}) Option {
 		return s
 	}
 }
+
 //Table ..
 //Columns ..
 func Columns(fields ...string) Option {
@@ -795,6 +796,7 @@ func Join(table string, conditionA, logic, conditionB string) Option {
 		return s
 	}
 }
+
 //LeftJoin ..
 func LeftJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s Query) Query {
@@ -802,6 +804,7 @@ func LeftJoin(table string, conditionA, logic, conditionB string) Option {
 		return s
 	}
 }
+
 //RightJoin ..
 func RightJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s Query) Query {
@@ -809,6 +812,7 @@ func RightJoin(table string, conditionA, logic, conditionB string) Option {
 		return s
 	}
 }
+
 //InnerJoin ..
 func InnerJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s Query) Query {
@@ -816,6 +820,7 @@ func InnerJoin(table string, conditionA, logic, conditionB string) Option {
 		return s
 	}
 }
+
 //CorssJoin ..
 func CorssJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s Query) Query {
@@ -843,17 +848,19 @@ func GroupBy(fields ...string) Option {
 //Offset ..
 func Offset(n int) Option {
 	return func(s Query) Query {
-		s.Offset(n int)
+		s.Offset(n)
 		return s
 	}
 }
-//Offset ..
+
+//Limit ..
 func Limit(n int) Option {
 	return func(s Query) Query {
-		s.Limit(n int)
+		s.Limit(n)
 		return s
 	}
 }
+
 //ForUpdate ..
 func ForUpdate(n int) Option {
 	return func(s Query) Query {
@@ -861,20 +868,23 @@ func ForUpdate(n int) Option {
 		return s
 	}
 }
+
 //Where ..
 func Where(key interface{}, vals ...interface{}) Option {
-    return func(s Query) Query {
-		s.Where(key,vals)
-        return s
-    }
+	return func(s Query) Query {
+		s.Where(key, vals)
+		return s
+	}
 }
+
 //OrWhere ..
 func OrWhere(key interface{}, vals ...interface{}) Option {
-    return func(s Query) Query {
-		s.OrWhere(key,vals)
-        return s
-    }
+	return func(s Query) Query {
+		s.OrWhere(key, vals)
+		return s
+	}
 }
+
 /*
 //Connect ...
 type Connect struct {
