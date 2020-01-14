@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/mlboy/godb/builder"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mlboy/godb/db"
 	"github.com/mlboy/godb/orm"
@@ -250,6 +252,11 @@ func main() {
 	// }
 	// fmt.Println(t)
 
+	builder.Select(
+		builder.Table("test"),
+		builder.Columns("id"),
+		builder.Where("id", 68),
+	)
 	// var typ = "11"
 	// t := &T{
 	// 	Typ:       &typ,
