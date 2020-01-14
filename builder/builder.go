@@ -758,14 +758,14 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 type Option func(q SQLSegments) SQLSegments
 
 //Select ..
-func Select(opts ...Option) SQLSegments {
+func Select(opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
 		cmd: _select,
 	}
 	for _, opt := range opts {
 		s = opt(s)
 	}
-	return s
+	return s.Build()
 }
 
 //Table ..

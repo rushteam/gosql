@@ -252,12 +252,11 @@ func main() {
 	// }
 	// fmt.Println(t)
 
-	s := builder.Select(
+	sql, args := builder.Select(
 		builder.Table("test"),
 		builder.Columns("id"),
 		builder.Where("id", 68),
 	)
-	sql, args := s.Build()
 	fmt.Println(sql, args)
 	// var typ = "11"
 	// t := &T{
