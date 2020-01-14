@@ -774,7 +774,7 @@ func Table(name interface{}) Option {
 //Columns ..
 func Columns(fields ...string) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.Field(fields)
+		s.Field(fields...)
 		return s
 	}
 }
@@ -782,7 +782,7 @@ func Columns(fields ...string) Option {
 //Flag ..
 func Flag(flags ...string) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.Flag(flags)
+		s.Flag(flags...)
 		return s
 	}
 }
@@ -831,7 +831,7 @@ func CorssJoin(table string, conditionA, logic, conditionB string) Option {
 //OrderBy ..
 func OrderBy(fields ...string) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.OrderBy(fields)
+		s.OrderBy(fields...)
 		return s
 	}
 }
@@ -839,7 +839,7 @@ func OrderBy(fields ...string) Option {
 //GroupBy ..
 func GroupBy(fields ...string) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.GroupBy(fields)
+		s.GroupBy(fields...)
 		return s
 	}
 }
