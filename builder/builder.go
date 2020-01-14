@@ -757,7 +757,7 @@ type Option func(q *Query) *Query
 
 //Select ..
 func Select(opts ...Option) *Query {
-	s := Query{
+	s := &Query{
 		cmd: _select,
 	}
 	for _, opt := range opts {
