@@ -22,3 +22,19 @@ rst, err := orm.Model(m).Insert()
 m := &UserModel{}
 rst, err := orm.Model(m).Update()
 
+## select
+
+### get one 
+m := &UserModel{}
+orm.Model(m).Fetch()
+
+### get list
+mm := []UserModel
+orm.Model(m).FetchAll()
+
+### where
+m := &UserModel{}
+orm.Model(m).Where("id",1).Fetch()
+
+
+

@@ -8,12 +8,20 @@ import (
 	"strings"
 )
 
+const (
+	_select uint8 = iota
+	_insert
+	_repalce
+	_update
+	_delete
+)
+
 var tagKey = "db"
 var identKey = "`"
 
 //SQLSegments ...
 type SQLSegments struct {
-	table   []Table
+	table   []TbName
 	fields  []string
 	flags   []string
 	join    []map[string]string
@@ -34,12 +42,12 @@ type SQLSegments struct {
 		args []interface{}
 	}
 	checks map[int]bool
-	//select|insert|repalce|update|delete
-	cmd string
+	//sql cmd type: select|insert|repalce|update|delete
+	cmd uint8
 }
 
-//Table ..
-type Table struct {
+//TbName ..
+type TbName struct {
 	Name  string
 	Alias string
 }
@@ -63,13 +71,12 @@ func NewSQLSegment() *SQLSegments {
 //Table SQLSegments
 func (s *SQLSegments) Table(name interface{}) *SQLSegments {
 	switch v := name.(type) {
-	case Table:
+	case TbName:
 		s.table = append(s.table, v)
-	case []Table:
+	case []TbName:
 		s.table = append(s.table, v...)
 	case string:
-		var t = &Table{v, ""}
-		s.table = append(s.table, *t)
+		s.table = append(s.table, TbName{v, ""})
 	}
 	return s
 }
@@ -507,7 +514,7 @@ func (s *SQLSegments) BuildSelect() string {
 		s.buildUnion(),
 		s.buildForUpdate(),
 	)
-	s.cmd = "select"
+	s.cmd = _select
 	// fmt.Println(s.render.args)
 	return sql
 }
@@ -526,7 +533,7 @@ func (s *SQLSegments) BuildInsert() string {
 		s.buildValuesForInsert(),
 		s.buildReturning(),
 	)
-	s.cmd = "insert"
+	s.cmd = _insert
 	return sql
 }
 
@@ -538,7 +545,7 @@ func (s *SQLSegments) BuildReplace() string {
 		s.buildValuesForInsert(),
 		s.buildReturning(),
 	)
-	s.cmd = "replace"
+	s.cmd = _replace
 	return sql
 }
 
@@ -620,7 +627,7 @@ func (s *SQLSegments) BuildUpdate() string {
 		s.buildLimit(),
 		s.buildReturning(),
 	)
-	s.cmd = "replace"
+	s.cmd = _update
 	// fmt.Println(s.render.args)
 	return sql
 }
@@ -696,7 +703,7 @@ func (s *SQLSegments) BuildDelete() string {
 		s.buildLimit(),
 		s.buildReturning(),
 	)
-	s.cmd = "replace"
+	s.cmd = _delete
 	// fmt.Println(s.render.args)
 	return sql
 }
@@ -738,6 +745,123 @@ func buildPlaceholder(l int, holder, sep string) string {
 //Args ..
 func (s *SQLSegments) Args() []interface{} {
 	return s.render.args
+}
+
+//-------- another style --------
+
+//Query ..
+type Query SQLSegments
+
+//Option ..
+type Option func(q *Query) *Query
+
+//Select ..
+func Select(opts ...Option) *Query {
+	q := Query{
+		stmt: _select,
+	}
+	for _, opt := range opts {
+		q = opt(q)
+	}
+	return q
+}
+
+//Table ..
+func Table(name interface) Option {
+	return func(s Query) Query {
+		s.Table(name)
+		return s
+	}
+}
+
+//Columns ..
+func Columns(fields ...string) Option {
+	return func(s Query) Query {
+		s.Field(fields)
+		return s
+	}
+}
+
+//Flag ..
+func Flag(flags ...string) Option {
+	return func(s Query) Query {
+		s.Flag(flags)
+		return s
+	}
+}
+
+//Join ..
+func Join(table string, conditionA, logic, conditionB string) Option {
+	return func(s Query) Query {
+		s.Join(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+//LeftJoin ..
+func LeftJoin(table string, conditionA, logic, conditionB string) Option {
+	return func(s Query) Query {
+		s.LeftJoin(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+//RightJoin ..
+func RightJoin(table string, conditionA, logic, conditionB string) Option {
+	return func(s Query) Query {
+		s.RightJoin(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+//InnerJoin ..
+func InnerJoin(table string, conditionA, logic, conditionB string) Option {
+	return func(s Query) Query {
+		s.InnerJoin(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+//CorssJoin ..
+func CorssJoin(table string, conditionA, logic, conditionB string) Option {
+	return func(s Query) Query {
+		s.CorssJoin(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+
+//OrderBy ..
+func OrderBy(fields ...string) Option {
+	return func(s Query) Query {
+		s.OrderBy(fields)
+		return s
+	}
+}
+
+//GroupBy ..
+func GroupBy(fields ...string) Option {
+	return func(s Query) Query {
+		s.GroupBy(fields)
+		return s
+	}
+}
+
+//Offset ..
+func Offset(n int) Option {
+	return func(s Query) Query {
+		s.Offset(n int)
+		return s
+	}
+}
+//Offset ..
+func Limit(n int) Option {
+	return func(s Query) Query {
+		s.Limit(n int)
+		return s
+	}
+}
+//ForUpdate ..
+func ForUpdate(n int) Option {
+	return func(s Query) Query {
+		s.ForUpdate()
+		return s
+	}
 }
 
 /*
