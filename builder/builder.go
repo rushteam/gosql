@@ -750,14 +750,14 @@ func (s *SQLSegments) Args() []interface{} {
 //-------- another style --------
 
 //Query ..
-type Query SQLSegments
+// type Query SQLSegments
 
 //Option ..
-type Option func(q Query) Query
+type Option func(q SQLSegments) SQLSegments
 
 //Select ..
-func Select(opts ...Option) Query {
-	s := Query{
+func Select(opts ...Option) SQLSegments {
+	s := SQLSegments{
 		cmd: _select,
 	}
 	for _, opt := range opts {
@@ -768,7 +768,7 @@ func Select(opts ...Option) Query {
 
 //Table ..
 func Table(name interface{}) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Table(name)
 		return s
 	}
@@ -776,7 +776,7 @@ func Table(name interface{}) Option {
 
 //Columns ..
 func Columns(fields ...string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Field(fields)
 		return s
 	}
@@ -784,7 +784,7 @@ func Columns(fields ...string) Option {
 
 //Flag ..
 func Flag(flags ...string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Flag(flags)
 		return s
 	}
@@ -792,7 +792,7 @@ func Flag(flags ...string) Option {
 
 //Join ..
 func Join(table string, conditionA, logic, conditionB string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Join(table, conditionA, logic, conditionB)
 		return s
 	}
@@ -800,7 +800,8 @@ func Join(table string, conditionA, logic, conditionB string) Option {
 
 //LeftJoin ..
 func LeftJoin(table string, conditionA, logic, conditionB string) Option {
-	return func(s Query) Query {
+	// return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.LeftJoin(table, conditionA, logic, conditionB)
 		return s
 	}
@@ -808,7 +809,7 @@ func LeftJoin(table string, conditionA, logic, conditionB string) Option {
 
 //RightJoin ..
 func RightJoin(table string, conditionA, logic, conditionB string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.RightJoin(table, conditionA, logic, conditionB)
 		return s
 	}
@@ -816,7 +817,7 @@ func RightJoin(table string, conditionA, logic, conditionB string) Option {
 
 //InnerJoin ..
 func InnerJoin(table string, conditionA, logic, conditionB string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.InnerJoin(table, conditionA, logic, conditionB)
 		return s
 	}
@@ -824,7 +825,7 @@ func InnerJoin(table string, conditionA, logic, conditionB string) Option {
 
 //CorssJoin ..
 func CorssJoin(table string, conditionA, logic, conditionB string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.CorssJoin(table, conditionA, logic, conditionB)
 		return s
 	}
@@ -832,7 +833,7 @@ func CorssJoin(table string, conditionA, logic, conditionB string) Option {
 
 //OrderBy ..
 func OrderBy(fields ...string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.OrderBy(fields)
 		return s
 	}
@@ -840,7 +841,7 @@ func OrderBy(fields ...string) Option {
 
 //GroupBy ..
 func GroupBy(fields ...string) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.GroupBy(fields)
 		return s
 	}
@@ -848,7 +849,7 @@ func GroupBy(fields ...string) Option {
 
 //Offset ..
 func Offset(n int) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Offset(n)
 		return s
 	}
@@ -856,7 +857,7 @@ func Offset(n int) Option {
 
 //Limit ..
 func Limit(n int) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.Limit(n)
 		return s
 	}
@@ -864,7 +865,7 @@ func Limit(n int) Option {
 
 //ForUpdate ..
 func ForUpdate(n int) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.ForUpdate()
 		return s
 	}
@@ -872,7 +873,7 @@ func ForUpdate(n int) Option {
 
 //Where ..
 func Where(key interface{}, vals ...interface{}) Option {
-	return func(s Query) Query {
+	rreturn func(s SQLSegments) SQLSegments {
 		s.Where(key, vals)
 		return s
 	}
@@ -880,7 +881,7 @@ func Where(key interface{}, vals ...interface{}) Option {
 
 //OrWhere ..
 func OrWhere(key interface{}, vals ...interface{}) Option {
-	return func(s Query) Query {
+	return func(s SQLSegments) SQLSegments {
 		s.OrWhere(key, vals)
 		return s
 	}
