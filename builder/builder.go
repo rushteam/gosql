@@ -744,6 +744,14 @@ func (s *SQLSegments) Args() []interface{} {
 	return s.render.args
 }
 
+//Build ..
+func (s *SQLSegments) Build() (string, []interface{}) {
+	if s.cmd == _select {
+		return s.BuildSelect(), s.Args()
+	}
+	return "", nil
+}
+
 //-------- another style --------
 
 //Option ..
