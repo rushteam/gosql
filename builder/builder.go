@@ -863,6 +863,20 @@ func ForUpdate(n int) Option {
 		return s
 	}
 }
+//Where ..
+func Where(key interface{}, vals ...interface{}) Option {
+    return func(s Query) Query {
+		s.Where(key,vals)
+        return q
+    }
+}
+//OrWhere ..
+func OrWhere(key interface{}, vals ...interface{}) Option {
+    return func(s Query) Query {
+		s.OrWhere(key,vals)
+        return q
+    }
+}
 
 /*
 //Connect ...
