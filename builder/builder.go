@@ -749,9 +749,6 @@ func (s *SQLSegments) Args() []interface{} {
 
 //-------- another style --------
 
-//Query ..
-// type Query SQLSegments
-
 //Option ..
 type Option func(q SQLSegments) SQLSegments
 
@@ -873,7 +870,7 @@ func ForUpdate(n int) Option {
 
 //Where ..
 func Where(key interface{}, vals ...interface{}) Option {
-	rreturn func(s SQLSegments) SQLSegments {
+	return func(s SQLSegments) SQLSegments {
 		s.Where(key, vals)
 		return s
 	}
