@@ -11,7 +11,7 @@ import (
 const (
 	_select uint8 = iota
 	_insert
-	_repalce
+	_replace
 	_update
 	_delete
 )
@@ -757,15 +757,14 @@ type Option func(q *Query) *Query
 
 //Select ..
 func Select(opts ...Option) *Query {
-	q := Query{
-		stmt: _select,
+	s := Query{
+		cmd: _select,
 	}
 	for _, opt := range opts {
-		q = opt(q)
+		s = opt(s)
 	}
-	return q
+	return s
 }
-
 //Table ..
 func Table(name interface) Option {
 	return func(s Query) Query {
@@ -867,17 +866,16 @@ func ForUpdate(n int) Option {
 func Where(key interface{}, vals ...interface{}) Option {
     return func(s Query) Query {
 		s.Where(key,vals)
-        return q
+        return s
     }
 }
 //OrWhere ..
 func OrWhere(key interface{}, vals ...interface{}) Option {
     return func(s Query) Query {
 		s.OrWhere(key,vals)
-        return q
+        return s
     }
 }
-
 /*
 //Connect ...
 type Connect struct {
