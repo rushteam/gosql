@@ -277,6 +277,11 @@ func (o *ORM) Delete() (sql.Result, error) {
 	return rst, nil
 }
 
+//Fetch ..
+func Fetch() {
+
+}
+
 //BuilderUpdate ..
 // func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
 // 	f(o.builder)
