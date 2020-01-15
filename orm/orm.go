@@ -278,8 +278,24 @@ func (o *ORM) Delete() (sql.Result, error) {
 }
 
 //Fetch ..
-func Fetch() {
-
+func Fetch(dst interface{}, opts builder.Option) error {
+	dstStruct, err := scanner.ResolveModelStruct(dst)
+	if err != nil {
+		return err
+	}
+	sql, args := builder.Select(
+		builder.Table(dstStruct.TableName()),
+	)
+	engine, err := cluster.Slave()
+	if err != nil {
+		return err
+	}
+	ctx := context.TODO()
+	rows, err := engine.QueryContext(ctx, sql, args...)
+	if err != nil {
+		return err
+	}
+	return scanner.Scan(rows, dst)
 }
 
 //BuilderUpdate ..

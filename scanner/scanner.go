@@ -208,7 +208,11 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	var structRV reflect.Value
 	var structRT reflect.Type
 	modelStruct := new(StructData)
-	dstRV := reflect.ValueOf(dst).Elem()
+	dstRV := reflect.ValueOf(dst)
+	//兼容指针逻辑
+	if dstRV.Kind() == reflect.Ptr {
+		dstRV = dstRV.Elem()
+	}
 	//dst (slice)
 	if dstRV.Kind() == reflect.Slice {
 		ptrRT := dstRV.Type().Elem()
@@ -221,7 +225,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 		structRT = ptrRT
 		structRV = reflect.New(structRT)
 	} else {
-		//dst struct------------
+		//dst (struct)
 		structRT = reflect.TypeOf(dst)
 		refStructCacheMutex.Lock()
 		defer refStructCacheMutex.Unlock()
@@ -236,13 +240,16 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 		if structRT.Kind() != reflect.Struct {
 			return nil, fmt.Errorf("scanner called with pointer to non-struct %v", structRT)
 		}
-		//这里从value上获取到自定义method上的table name
-		// modelStruct.table = structRT.Elem().Name()
-		//structVal
-		structRV = reflect.ValueOf(dst).Elem()
-		// fmt.Println("test:", structRT, structRV)
-	}
 
+		// modelStruct.table = structRT.Elem().Name()
+		//兼容
+		if reflect.ValueOf(dst).IsValid() {
+			structRV = reflect.New(structRT)
+		} else {
+			structRV = reflect.ValueOf(dst).Elem()
+		}
+	}
+	//这里从value上获取到自定义method上的table name
 	fnTableName := structRV.MethodByName(tableFuncName)
 	if fnTableName.IsValid() {
 		modelStruct.table = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
@@ -357,40 +364,46 @@ func scanRow(rows *sql.Rows, dst interface{}) error {
 
 //Targets ..
 func Targets(dst interface{}, columns []string) ([]interface{}, error) {
-	data, err := ResolveModelStruct(dst)
+	dstStruct, err := ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
 	}
-	structVal := reflect.ValueOf(dst).Elem()
+	// dstRT := reflect.TypeOf(dst)
+	// dstRT.Field()
+	dstRV := reflect.ValueOf(dst)
+	//兼容指针逻辑
+	if dstRV.Kind() == reflect.Ptr {
+		dstRV = dstRV.Elem()
+	}
 	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
-	//var targets = []interface{} targets = append(targets, fieldValue)
 	var targets = make([]interface{}, len(columns))
+	fmt.Println("::", dstRV.IsZero())
 	for i, name := range columns {
-		if field, ok := data.fields[name]; ok {
-			//fieldAddr
-			fieldValue := structVal.Field(field.index).Addr().Interface()
-			// fmt.Println(structVal.Field(field.index).Addr().Type())
-			// scanTarget, err := field.meddler.PreRead(fieldValue)
-			// if err != nil {
-			// 	return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
-			// }
-			switch fieldValue.(type) {
-			// case sql.Scanner:
-			//如果字段有scan方法 则调用
-			// case *time.Time:
-			// 	var scanAddr interface{}
-			// 	scanAddr = new([]uint8)
-			// 	targets = append(targets, scanAddr)
-			default:
-				targets[i] = fieldValue
+		if field, ok := dstStruct.fields[name]; ok {
+			if !dstRV.Field(field.index).IsZero() && dstRV.Field(field.index).CanAddr() {
+				fieldValue := dstRV.Field(field.index).Addr().Interface()
+				// scanTarget, err := field.meddler.PreRead(fieldValue)
+				// if err != nil {
+				// 	return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
+				// }
+				switch fieldValue.(type) {
+				// case sql.Scanner:
+				//如果字段有scan方法 则调用
+				// case *time.Time:
+				// 	var scanAddr interface{}
+				// 	scanAddr = new([]uint8)
+				// 	targets = append(targets, scanAddr)
+				default:
+					targets[i] = fieldValue
+				}
+			} else {
+				targets[i] = new(interface{})
+				// targets[i] = new(sql.RawBytes)
 			}
-			// targets = append(targets, fieldValue)
-			// targets = append(targets, fieldValue)
-			// targets = append(targets, scanTarget)
 		} else {
-			// no destination, so throw this away
-			// targets[i] = new(interface{})
-			targets[i] = new(sql.RawBytes)
+			//结构体不存在这个字段时候
+			// targets[i] = new(sql.RawBytes)
+			targets[i] = new(interface{})
 			if Debug {
 				log.Printf("scanner.Targets: column [%s] not found in struct", name)
 			}
@@ -401,19 +414,22 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 
 //https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
-	data, err := ResolveModelStruct(dst)
+	dstStruct, err := ResolveModelStruct(dst)
 	if err != nil {
 		return err
 	}
-	structVal := reflect.ValueOf(dst).Elem()
+	dstRV := reflect.ValueOf(dst)
+	//兼容指针逻辑
+	if dstRV.Kind() == reflect.Ptr {
+		dstRV = dstRV.Elem()
+	}
 	// for i, name := range data.columns {
 	for i, name := range columns {
-		if field, ok := data.fields[name]; ok {
-			// field.Value.Addr().Interface()
-			fieldAddr := structVal.Field(field.index).Addr().Interface()
-			// fmt.Println(targets[i])
-			// fmt.Println(i, name, fieldAddr, targets[i])
-			_, _, _ = i, name, fieldAddr
+		if field, ok := dstStruct.fields[name]; ok {
+			if dstRV.Field(field.index).CanAddr() {
+				fieldAddr := dstRV.Field(field.index).Addr().Interface()
+				_, _, _ = i, name, fieldAddr
+			}
 			// switch fieldAddr.(type) {
 			// case *time.Time:
 			// 	// fmt.Println(time.Unix(0, 0))
