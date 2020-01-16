@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-var cluster Cluster
-
 //Executor ..
 type Executor interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)

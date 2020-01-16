@@ -258,6 +258,7 @@ func main() {
 	)
 	fmt.Println(sql, args)
 
+	// dbx := db.Begin()
 	ot := &T{}
 	err = db.Fetch(
 		ot,
