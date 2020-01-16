@@ -377,10 +377,9 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	}
 	//InterfaceSlice see http://code.google.com/p/go-wiki/wiki/InterfaceSlice
 	var targets = make([]interface{}, len(columns))
-	fmt.Println("::", dstRV.IsZero())
 	for i, name := range columns {
 		if field, ok := dstStruct.fields[name]; ok {
-			if !dstRV.Field(field.index).IsZero() && dstRV.Field(field.index).CanAddr() {
+			if dstRV.Field(field.index).CanAddr() {
 				fieldValue := dstRV.Field(field.index).Addr().Interface()
 				// scanTarget, err := field.meddler.PreRead(fieldValue)
 				// if err != nil {
