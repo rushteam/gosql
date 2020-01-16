@@ -62,7 +62,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 
 //Commit ..
 func (s *Session) Commit() error {
-	executor, err := s.getExecetor(true)
+	executor, err := s.getExecetor(s.master)
 	if err != nil {
 		return err
 	}
@@ -72,14 +72,14 @@ func (s *Session) Commit() error {
 //Begin ..
 func Begin() (*Session, error) {
 	if commonSession == nil {
-		return nil, errors.New("not found session")
+		return nil, errors.New("db: not found session")
 	}
 	getExecetor := func(master bool) (Executor, error) {
 		executor, err := commonSession.getExecetor(true)
 		if err != nil {
 			return nil, err
 		}
-		return executor.(*sql.DB).Begin()
+		return executor.(DB).Begin()
 	}
 	return &Session{master: true, ctx: context.TODO(), getExecetor: getExecetor}, nil
 }
@@ -87,7 +87,7 @@ func Begin() (*Session, error) {
 //Fetch ..
 func Fetch(dst interface{}, opts ...builder.Option) error {
 	if commonSession == nil {
-		return errors.New("not found session")
+		return errors.New("db: not found session")
 	}
 	return commonSession.Fetch(dst, opts...)
 }
@@ -95,7 +95,7 @@ func Fetch(dst interface{}, opts ...builder.Option) error {
 //FetchAll ..
 func FetchAll(dst interface{}, opts ...builder.Option) error {
 	if commonSession == nil {
-		return errors.New("not found session")
+		return errors.New("db: not found session")
 	}
 	return commonSession.FetchAll(dst, opts...)
 }

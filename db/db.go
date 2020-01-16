@@ -20,8 +20,8 @@ type Executor interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
-//Db ..
-type Db interface {
+//DB ..
+type DB interface {
 	SetMaxIdleConns(n int)
 	SetMaxOpenConns(n int)
 	SetConnMaxLifetime(d time.Duration)
@@ -49,7 +49,6 @@ type Cluster interface {
 	// Open(driverName string, dataSourceName string) (*DB, error)
 	Master() (Executor, error)
 	Slave() (Executor, error)
-	Begin() (*sql.Tx, error)
 	// Fetch(dst interface{}, opts ...builder.Option) error
 	// FetchAll(dst interface{}, opts ...builder.Option) error
 }

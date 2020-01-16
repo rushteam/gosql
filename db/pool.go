@@ -83,18 +83,6 @@ func (c *PoolCluster) Slave() (Executor, error) {
 	return nil, nil
 }
 
-//Begin ..
-func (c *PoolCluster) Begin() (*sql.Tx, error) {
-	ex, err := c.Master()
-	if err != nil {
-		return nil, err
-	}
-	if db, ok := ex.(Db); ok {
-		return db.Begin()
-	}
-	return nil, errors.New("db: not Db type")
-}
-
 //InitPool ..
 func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCluster {
 	c := &PoolCluster{}
