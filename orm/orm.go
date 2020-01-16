@@ -277,48 +277,6 @@ func (o *ORM) Delete() (sql.Result, error) {
 	return rst, nil
 }
 
-//Fetch ..
-func Fetch(dst interface{}, opts ...builder.Option) error {
-	dstStruct, err := scanner.ResolveModelStruct(dst)
-	if err != nil {
-		return err
-	}
-	sql, args := builder.Select(
-		builder.Table(dstStruct.TableName()),
-	)
-	engine, err := cluster.Slave()
-	if err != nil {
-		return err
-	}
-	ctx := context.TODO()
-	rows, err := engine.QueryContext(ctx, sql, args...)
-	if err != nil {
-		return err
-	}
-	return scanner.Scan(rows, dst)
-}
-
-//FetchAll ..
-func FetchAll(dst interface{}, opts ...builder.Option) error {
-	dstStruct, err := scanner.ResolveModelStruct(dst)
-	if err != nil {
-		return err
-	}
-	sql, args := builder.Select(
-		builder.Table(dstStruct.TableName()),
-	)
-	engine, err := cluster.Slave()
-	if err != nil {
-		return err
-	}
-	ctx := context.TODO()
-	rows, err := engine.QueryContext(ctx, sql, args...)
-	if err != nil {
-		return err
-	}
-	return scanner.ScanAll(rows, dst)
-}
-
 //BuilderUpdate ..
 // func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
 // 	f(o.builder)

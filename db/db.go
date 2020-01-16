@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+var cluster Cluster
+
 //Executor ..
 type Executor interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
@@ -49,4 +51,6 @@ type Cluster interface {
 	Master() (Executor, error)
 	Slave() (Executor, error)
 	Begin() (*sql.Tx, error)
+	// Fetch(dst interface{}, opts ...builder.Option) error
+	// FetchAll(dst interface{}, opts ...builder.Option) error
 }

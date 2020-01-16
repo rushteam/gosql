@@ -186,9 +186,9 @@ func main() {
 	//mysql-master-def
 	var settings = make(map[string][]string, 0)
 	settings["default"] = []string{
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true",
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
+		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
 	}
 	// cluster := pool.Init("mysql", settings)
 	cluster := db.InitPool("mysql", settings)
@@ -259,19 +259,19 @@ func main() {
 	fmt.Println(sql, args)
 
 	ot := &T{}
-	err = orm.Fetch(
+	err = db.Fetch(
 		ot,
 		builder.Where("id", 68),
 	)
 	fmt.Println("--", err, ot)
 
-	ots := []T{}
-	orm.FetchAll(
-		ots,
-		orm.Where("id", 1),
-		orm.Limit(10),
-		orm.Offset(10),
-	)
+	// ots := []T{}
+	// orm.FetchAll(
+	// 	ots,
+	// 	orm.Where("id", 1),
+	// 	orm.Limit(10),
+	// 	orm.Offset(10),
+	// )
 	// orm.Insert(t)
 	// orm.Update(t, orm.Where("id", 1))
 	// orm.Delete(t, orm.Where("id", 1))
