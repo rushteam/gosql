@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -107,7 +108,7 @@ func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCl
 	c.settings = settings
 	c.pool = make(map[string]*sql.DB, len(settings))
 	c.opts = opts
-	commonSession = &Session{cluster: c, master: false}
+	commonSession = &Session{cluster: c, master: true, ctx: context.TODO()}
 	return c
 }
 
