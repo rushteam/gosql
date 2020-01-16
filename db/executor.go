@@ -10,9 +10,18 @@ import (
 
 var commonSession *Session
 
+//Session ..
 type Session struct {
-	readOnly bool
-	cluster  Cluster
+	master  bool
+	cluster Cluster
+}
+
+//getExcetor ..
+func (s *Session) getExcetor() (Executor, error) {
+	if s.master == true {
+		return s.cluster.Master()
+	}
+	return s.cluster.Slave()
 }
 
 //Fetch ..
@@ -24,7 +33,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
 	ctx := context.TODO()
-	executor, err := s.cluster.Slave()
+	executor, err := s.getExcetor()
 	if err != nil {
 		return err
 	}
@@ -45,7 +54,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 		builder.Table(dstStruct.TableName()),
 	)
 	ctx := context.TODO()
-	executor, err := s.cluster.Slave()
+	executor, err := s.getExcetor()
 	if err != nil {
 		return err
 	}
@@ -56,21 +65,9 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	return scanner.ScanAll(rows, dst)
 }
 
-// func Begin() *Session {
-// 	commonSession = &Session{cluster: cluster, readOnly: false}
-// 	return commonSession
-// }
-
-func Master() *Session {
-	return &Session{cluster: cluster, readOnly: false}
-}
-
-// func Slave() *Session {
-// 	commonSession = &Session{cluster: cluster, readOnly: true}
-// 	return commonSession
-// }
-func Init(cluster Cluster) {
-	commonSession = &Session{cluster: cluster}
+//Begin ..
+func Begin() *Session {
+	return &Session{cluster: commonSession.cluster, master: true}
 }
 
 //Fetch ..
