@@ -11,19 +11,13 @@ import (
 
 var commonSession *Session
 
+type executorFunc func(master bool) (Executor, error)
+
 //Session ..
 type Session struct {
-	master  bool
-	cluster Cluster
-	ctx     context.Context
-}
-
-//getExcetor ..
-func (s *Session) getExcetor() (Executor, error) {
-	if s.master == true {
-		return s.cluster.Master()
-	}
-	return s.cluster.Slave()
+	master      bool
+	ctx         context.Context
+	getExecetor executorFunc
 }
 
 //Fetch ..
@@ -34,7 +28,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.getExcetor()
+	executor, err := s.getExecetor(s.master)
 	if err != nil {
 		return err
 	}
@@ -55,7 +49,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	sql, args := builder.Select(
 		builder.Table(dstStruct.TableName()),
 	)
-	executor, err := s.getExcetor()
+	executor, err := s.getExecetor(s.master)
 	if err != nil {
 		return err
 	}
@@ -68,16 +62,26 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 
 //Commit ..
 func (s *Session) Commit() error {
-	excetor, err := s.getExcetor()
+	executor, err := s.getExecetor(true)
 	if err != nil {
 		return err
 	}
-	return excetor.(*sql.Tx).Commit()
+	return executor.(*sql.Tx).Commit()
 }
 
 //Begin ..
-func Begin() *Session {
-	return &Session{cluster: commonSession.cluster, master: true, ctx: context.TODO()}
+func Begin() (*Session, error) {
+	if commonSession == nil {
+		return nil, errors.New("not found session")
+	}
+	getExecetor := func(master bool) (Executor, error) {
+		executor, err := commonSession.getExecetor(true)
+		if err != nil {
+			return nil, err
+		}
+		return executor.(*sql.DB).Begin()
+	}
+	return &Session{master: true, ctx: context.TODO(), getExecetor: getExecetor}, nil
 }
 
 //Fetch ..

@@ -19,7 +19,7 @@ type PoolCluster struct {
 	idx      uint64
 	opts     []Opts
 	dbOpt    struct {
-		connMaxLifetime time.Duration
+		ConnMaxLifetime time.Duration
 		MaxIdleConns    int
 		MaxOpenConns    int
 	}
@@ -48,7 +48,7 @@ func (c *PoolCluster) open(dbType string, dsn string, opts ...Opts) (*sql.DB, er
 //Open ..
 func (c *PoolCluster) Open(dsn string) (*sql.DB, error) {
 	opt := func(db *sql.DB) *sql.DB {
-		db.SetConnMaxLifetime(c.dbOpt.connMaxLifetime)
+		db.SetConnMaxLifetime(c.dbOpt.ConnMaxLifetime)
 		db.SetMaxIdleConns(c.dbOpt.MaxIdleConns)
 		db.SetMaxOpenConns(c.dbOpt.MaxOpenConns)
 		return db
@@ -103,7 +103,13 @@ func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCl
 	c.settings = settings
 	c.pool = make(map[string]*sql.DB, len(settings))
 	c.opts = opts
-	commonSession = &Session{cluster: c, master: true, ctx: context.TODO()}
+	getExecetor := func(master bool) (Executor, error) {
+		if master == true {
+			return c.Master()
+		}
+		return c.Slave()
+	}
+	commonSession = &Session{master: false, ctx: context.TODO(), getExecetor: getExecetor}
 	return c
 }
 

@@ -267,7 +267,10 @@ func main() {
 	fmt.Println("->", err, ot)
 
 	fmt.Println("--trans")
-	dbx := db.Begin()
+	dbx, err := db.Begin()
+	if err != nil {
+		fmt.Println("->", err, ot)
+	}
 	dbx.Fetch(
 		ot,
 		builder.Where("id", 68),
