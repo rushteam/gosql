@@ -258,13 +258,22 @@ func main() {
 	)
 	fmt.Println(sql, args)
 
-	// dbx := db.Begin()
+	fmt.Println("--common")
 	ot := &T{}
 	err = db.Fetch(
 		ot,
 		builder.Where("id", 68),
 	)
-	fmt.Println("--", err, ot)
+	fmt.Println("->", err, ot)
+
+	fmt.Println("--trans")
+	dbx := db.Begin()
+	dbx.Fetch(
+		ot,
+		builder.Where("id", 68),
+	)
+	fmt.Println("->", err, ot)
+	dbx.Commit()
 
 	// ots := []T{}
 	// orm.FetchAll(

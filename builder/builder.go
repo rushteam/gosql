@@ -876,7 +876,7 @@ func ForUpdate(n int) Option {
 //Where ..
 func Where(key interface{}, vals ...interface{}) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.Where(key, vals)
+		s.Where(key, vals...)
 		return s
 	}
 }
@@ -884,7 +884,7 @@ func Where(key interface{}, vals ...interface{}) Option {
 //OrWhere ..
 func OrWhere(key interface{}, vals ...interface{}) Option {
 	return func(s SQLSegments) SQLSegments {
-		s.OrWhere(key, vals)
+		s.OrWhere(key, vals...)
 		return s
 	}
 }

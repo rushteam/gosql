@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 
 	"github.com/mlboy/godb/builder"
@@ -37,6 +38,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	if err != nil {
 		return err
 	}
+	debugPrint("db: [sql] %s %v", sql, args)
 	rows, err := executor.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
@@ -62,6 +64,13 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 		return err
 	}
 	return scanner.ScanAll(rows, dst)
+}
+
+//Commit ..
+func (s *Session) Commit() error {
+	excetor, err := s.getExcetor()
+
+	excetor.(*sql.DB).()
 }
 
 //Begin ..

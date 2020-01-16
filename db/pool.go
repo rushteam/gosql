@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"sync/atomic"
 	"time"
 )
@@ -61,7 +60,7 @@ func (c *PoolCluster) Open(dsn string) (*sql.DB, error) {
 func (c *PoolCluster) Master() (Executor, error) {
 	name := "default"
 	if setting, ok := c.settings[name]; ok {
-		debugPrint("db: [master] %s\r\n", setting[0])
+		debugPrint("db: [master] %s", setting[0])
 		return c.Open(setting[0])
 	}
 	return nil, nil
@@ -78,7 +77,7 @@ func (c *PoolCluster) Slave() (Executor, error) {
 		if n > 0 {
 			i = int(v)%(n) + 1
 		}
-		debugPrint("db: [slave#%d] %s\r\n", i, setting[i])
+		debugPrint("db: [slave#%d] %s", i, setting[i])
 		return c.Open(setting[0])
 	}
 	return nil, nil
@@ -94,10 +93,6 @@ func (c *PoolCluster) Begin() (*sql.Tx, error) {
 		return db.Begin()
 	}
 	return nil, errors.New("db: not Db type")
-}
-
-func debugPrint(format string, vals ...interface{}) {
-	fmt.Printf(format, vals...)
 }
 
 //InitPool ..

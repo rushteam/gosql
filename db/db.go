@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"database/sql/driver"
+	"fmt"
 	"time"
 )
 
@@ -51,4 +52,8 @@ type Cluster interface {
 	Begin() (*sql.Tx, error)
 	// Fetch(dst interface{}, opts ...builder.Option) error
 	// FetchAll(dst interface{}, opts ...builder.Option) error
+}
+
+func debugPrint(format string, vals ...interface{}) {
+	fmt.Printf(format+"\r\n", vals...)
 }
