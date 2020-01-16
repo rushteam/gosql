@@ -278,7 +278,7 @@ func (o *ORM) Delete() (sql.Result, error) {
 }
 
 //Fetch ..
-func Fetch(dst interface{}, opts builder.Option) error {
+func Fetch(dst interface{}, opts ...builder.Option) error {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
@@ -299,7 +299,7 @@ func Fetch(dst interface{}, opts builder.Option) error {
 }
 
 //FetchAll ..
-func FetchAll(dst interface{}, opts builder.Option) error {
+func FetchAll(dst interface{}, opts ...builder.Option) error {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err

@@ -44,7 +44,8 @@ type Tx interface {
 
 //Cluster ..
 type Cluster interface {
-	Open(name, node string) (*sql.DB, error)
+	// Open(name, node string) (*sql.DB, error)
+	// Open(driverName string, dataSourceName string) (*DB, error)
 	Master() (Executor, error)
 	Slave() (Executor, error)
 	Begin() (*sql.Tx, error)
