@@ -5,7 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"sync/atomic"
+	"time"
 )
+
+//Opts ..
+type Opts func(db *sql.DB) *sql.DB
 
 //PoolCluster ..
 type PoolCluster struct {
@@ -13,6 +17,7 @@ type PoolCluster struct {
 	settings map[string][]string
 	pool     map[string]*sql.DB
 	idx      uint64
+	opts     []Opts
 }
 
 //Open ..
@@ -26,6 +31,9 @@ func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
 	db, err := sql.Open(c.dbType, dsn)
 	if err != nil {
 		return nil, err
+	}
+	for _, opt := range c.opts {
+		db = opt(db)
 	}
 	c.pool[dsn] = db
 	return c.pool[dsn], nil
@@ -75,11 +83,36 @@ func debugPrint(format string, vals ...interface{}) {
 }
 
 //InitPool ..
-func InitPool(dbType string, settings map[string][]string) *PoolCluster {
+func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCluster {
 	c := &PoolCluster{}
 	c.idx = 0
 	c.dbType = dbType
 	c.settings = settings
 	c.pool = make(map[string]*sql.DB, len(settings))
+	c.opts = opts
 	return c
+}
+
+//SetConnMaxLifetime ..
+func SetConnMaxLifetime(d time.Duration) Opts {
+	return func(db *sql.DB) *sql.DB {
+		db.SetConnMaxLifetime(d)
+		return db
+	}
+}
+
+//SetMaxIdleConns ..
+func SetMaxIdleConns(n int) Opts {
+	return func(db *sql.DB) *sql.DB {
+		db.SetMaxIdleConns(n)
+		return db
+	}
+}
+
+//SetMaxOpenConns ..
+func SetMaxOpenConns(n int) Opts {
+	return func(db *sql.DB) *sql.DB {
+		db.SetMaxOpenConns(n)
+		return db
+	}
 }
