@@ -74,11 +74,11 @@ func Begin() (*Session, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
+	executor, err := commonSession.getExecetor(true)
+	if err != nil {
+		return nil, err
+	}
 	getExecetor := func(master bool) (Executor, error) {
-		executor, err := commonSession.getExecetor(true)
-		if err != nil {
-			return nil, err
-		}
 		return executor.(DB).Begin()
 	}
 	return &Session{master: true, ctx: context.TODO(), getExecetor: getExecetor}, nil
