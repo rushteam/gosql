@@ -69,8 +69,10 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 //Commit ..
 func (s *Session) Commit() error {
 	excetor, err := s.getExcetor()
-
-	excetor.(*sql.DB).()
+	if err != nil {
+		return err
+	}
+	return excetor.(*sql.Tx).Commit()
 }
 
 //Begin ..
