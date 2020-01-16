@@ -18,13 +18,19 @@ type PoolCluster struct {
 	pool     map[string]*sql.DB
 	idx      uint64
 	opts     []Opts
+	dbOpt    struct {
+		connMaxLifetime time.Duration
+		MaxIdleConns    int
+		MaxOpenConns    int
+	}
 }
 
-//Open ..
-func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
+//open ..
+func (c *PoolCluster) open(dbType string, dsn string, opts ...Opts) (*sql.DB, error) {
 	if dsn == "" {
 		return nil, errors.New("db: DSN should be not empty")
 	}
+	//如果已经存在
 	if db, ok := c.pool[dsn]; ok {
 		return db, nil
 	}
@@ -32,23 +38,22 @@ func (c *PoolCluster) Open(dbType string, dsn string) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	for _, opt := range c.opts {
+	for _, opt := range opts {
 		db = opt(db)
 	}
 	c.pool[dsn] = db
 	return c.pool[dsn], nil
 }
 
-//Begin ..
-func (c *PoolCluster) Begin() (*sql.Tx, error) {
-	ex, err := c.Master()
-	if err != nil {
-		return nil, err
+//Open ..
+func (c *PoolCluster) Open(dsn string) (*sql.DB, error) {
+	opt := func(db *sql.DB) *sql.DB {
+		db.SetConnMaxLifetime(c.dbOpt.connMaxLifetime)
+		db.SetMaxIdleConns(c.dbOpt.MaxIdleConns)
+		db.SetMaxOpenConns(c.dbOpt.MaxOpenConns)
+		return db
 	}
-	if db, ok := ex.(Db); ok {
-		return db.Begin()
-	}
-	return nil, errors.New("db: not Db type")
+	return c.open(c.dbType, dsn, opt)
 }
 
 //Master ..
@@ -56,7 +61,7 @@ func (c *PoolCluster) Master() (Executor, error) {
 	name := "default"
 	if setting, ok := c.settings[name]; ok {
 		debugPrint("db: [master] %s\r\n", setting[0])
-		return c.Open(c.dbType, setting[0])
+		return c.Open(setting[0])
 	}
 	return nil, nil
 }
@@ -73,9 +78,21 @@ func (c *PoolCluster) Slave() (Executor, error) {
 			i = int(v)%(n) + 1
 		}
 		debugPrint("db: [slave#%d] %s\r\n", i, setting[i])
-		return c.Open(c.dbType, setting[i])
+		return c.Open(setting[0])
 	}
 	return nil, nil
+}
+
+//Begin ..
+func (c *PoolCluster) Begin() (*sql.Tx, error) {
+	ex, err := c.Master()
+	if err != nil {
+		return nil, err
+	}
+	if db, ok := ex.(Db); ok {
+		return db.Begin()
+	}
+	return nil, errors.New("db: not Db type")
 }
 
 func debugPrint(format string, vals ...interface{}) {
