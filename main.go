@@ -258,10 +258,12 @@ func main() {
 	)
 	fmt.Println(sql, args)
 
-	ot := T{}
+	ot := &T{}
+	ots := []T{}
+	_ = ots
 	// var ot T
 	err = orm.Fetch(
-		&ot,
+		ot,
 		builder.Where("id", 68),
 	)
 	fmt.Println("--", err, ot)
