@@ -97,7 +97,7 @@ func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCl
 		}
 		return c.Slave()
 	}
-	commonSession = &Session{master: false, ctx: context.TODO(), getExecetor: getExecetor}
+	commonSession = NewSession(context.TODO(), false, getExecetor)
 	return c
 }
 
