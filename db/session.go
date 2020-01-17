@@ -82,6 +82,16 @@ func (s *Session) Commit() error {
 	return executor.(*sql.Tx).Commit()
 }
 
+//Rollback ..
+func (s *Session) Rollback() error {
+	debugPrint("db: [session #%v] Rollback", s.v)
+	executor, err := s.getExecetor(s.master)
+	if err != nil {
+		return err
+	}
+	return executor.(*sql.Tx).Rollback()
+}
+
 //Begin ..
 func Begin() (*Session, error) {
 	if commonSession == nil {

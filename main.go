@@ -187,6 +187,7 @@ func main() {
 		builder.Where("id", 68),
 	)
 	fmt.Println("->", err, ot)
+	dbx.Rollback()
 	dbx.Commit()
 
 	// ots := []T{}
