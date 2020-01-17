@@ -1,29 +1,32 @@
 # godb
 
-godb 是一个链式操作数据库的golang库
+A yet ORM for golang
+
+godb 是一个数据库的golang库
+
+### Why build the wheels?
 
 已经有那么多操作db的库了，为什么还要写godb？
 
-因为市面上所有的db库用起来总有不顺手的地方,比如gorm不支持读写分离,关联表使用频率少,比如sqlx语法不够简洁,比如gendry group by 、limit 语法怪异
+因为现有db类库（几乎是看遍所有github上开源的golang 的db项目)用起来总有不顺手的地方,比如gorm不支持读写分离,关联表使用频率少,比如sqlx语法不够简洁,比如gendry group by 、limit 语法怪异
 
 godb 是分模块化的一个db操作库 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql）分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
 
-## structure:
+## Structure:
 
-* builder 拼装sql
-* scanner 映射数据到结构体
-* orm
-* mannger 数据库管理（读写分离）
+* db: db pool，read and write 数据库管理（db池实现读写分离）
+* builder: 	for building SQL (拼接SQL)		
+* scanner: mapping struct and scan (映射数据到结构体)
+* orm: use chain operation （链式操作db）
 
-## feature:
+## Feature:
 
-* 链式操作
-* 查询条件无限嵌套
+* Versatile 功能多样的
+* Unlimited nesting query 查询条件无限嵌套
 * 读写分离
 * 数据库连接池
 
-
-## builder of DEMO:
+## Builder of DEMO:
 
 先看看这条复杂的sql用builder如何实现？
 

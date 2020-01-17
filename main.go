@@ -31,91 +31,8 @@ func (t T) TableName() string {
 	return "login"
 }
 func main() {
-	// s := builder.New()
-	// s.Flag("DISTINCT")
-	// s.Field("*")
-	// s.Table("tbl1.t1")
-	// s.Where("t1.status", "0")
-	// s.Where("type", "A")
-	// s.Where("[in]sts", []string{"1", "2", "3", "4"})
-	// s.Where("[in]sts2", 1)
-	// s.Where(func(s *builder.Clause) {
-	// 	s.Where("a", "200")
-	// 	s.Where("b", "100")
-	// })
-	// s.Where("aaa = 999")
-	// s.Where("[#]ccc = ?", 888)
-	// s.Join("tbl3", "a", "=", "b")
-	// s.Having("ss", "1")
-	// s.Where("[~]a", "AA")
-	// s.Where("[exists]", "select 1")
-	// s.Where("[exists]", func(s *builder.SQLSegments) {
-	// 	s.Table("tbl2.t2")
-	// 	s.Where("xx", 10000)
-	// })
-	// s.GroupBy("id")
-	// s.OrderBy("id desc", "id asc")
-	// s.Limit(30)
-	// s.Offset(10)
-	// s.ForUpdate()
-	// fmt.Println(s.BuildSelect())
-
-	// type Accounts struct{}
-	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth")
-
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// defer db.Close()
-	// err = db.Ping()
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// sq := builder.New()
-	// // sql.Field("*")
-	// sq.Table("accounts")
-	// // fmt.Println(sq.BuildSelect())
-	// // rows, _ := db.Query(sq.BuildSelect())
-	// rows, err := db.Query("SELECT * FROM `accounts`")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// var accts []Accounts
-	// // fmt.Println(rows == nil)
-	// err = scanner.Scan(rows, &accts)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// for _, acc := range accts {
-	// 	fmt.Println(acc)
-	// }
-
 	//id type client_id client_secret salt created updated metadata
 
-	// db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// defer db.Close()
-	// t := &T{}
-	// rows, err := db.Query("SELECT * FROM `login` order by id desc")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// err = scanner.Scan(rows, t)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// fmt.Println(t)
-	// var tt []*T
-	// rows, err := db.Query("SELECT * FROM `login`")
-	// err = scanner.ScanAll(rows, &tt)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-	// for _, v := range tt {
-	// 	fmt.Println(v)
-	// }
 	// orm.Db.(orm.Select(&T).Where())
 	// err := orm.Model().Where("id", 1).Find(&t)
 	// err := orm.Model().Where("id", 1).Update(&t)
@@ -183,7 +100,6 @@ func main() {
 	// }
 	// defer db.Close()
 
-	//mysql-master-def
 	var settings = make(map[string][]string, 0)
 	settings["default"] = []string{
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
@@ -205,12 +121,7 @@ func main() {
 	// s.Update(m)
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
-	// typ := "phone"
-	// sess := pool.Session()
-	// sess.Model()
 
-	// sess.Commit()
-	// orm.InitSession(cluster)
 	t := &T{
 		// Typ: &typ,
 		Uid:     "1",
