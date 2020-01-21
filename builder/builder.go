@@ -749,6 +749,9 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 	if s.cmd == _select {
 		return s.BuildSelect(), s.Args()
 	}
+	if s.cmd == _update {
+		return s.BuildUpdate(), s.Args()
+	}
 	return "", nil
 }
 
@@ -888,3 +891,31 @@ func OrWhere(key interface{}, vals ...interface{}) Option {
 		return s
 	}
 }
+
+//for update
+
+//Update ..
+func Update(opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: _update,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
+
+//
+
+//Set ..
+func Set(key string, val interface{}) Option {
+	return func(s SQLSegments) SQLSegments {
+		s.UpdateField(key, val)
+		return s
+	}
+}
+
+// o.fields, err = scanner.ResolveModelToMap(o.dst)
+// 	if err != nil {
+// 		panic(err)
+// 	}

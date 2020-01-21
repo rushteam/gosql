@@ -177,15 +177,17 @@ func main() {
 	)
 	fmt.Println("->", err, ot)
 
-	fmt.Println("--trans")
+	fmt.Println("--trans begin")
 	dbx, err := db.Begin()
 	if err != nil {
 		fmt.Println("->", err, ot)
 	}
+	fmt.Println("--fetch")
 	dbx.Fetch(
 		ot,
 		builder.Where("id", 68),
 	)
+	fmt.Println("--update")
 	dbx.Update(
 		ot,
 		builder.Where("id", 68),
@@ -193,6 +195,15 @@ func main() {
 	fmt.Println("->", err, ot)
 	dbx.Rollback()
 	dbx.Commit()
+
+	sql, args = builder.Update(
+		builder.Table("test"),
+		builder.Set("a", "1"),
+		builder.Set("b", "2"),
+		builder.Where("id", 68),
+		builder.Where("id2", 68),
+	)
+	fmt.Println(sql, args)
 
 	// ots := []T{}
 	// orm.FetchAll(

@@ -10,6 +10,8 @@ import (
 	"github.com/mlboy/godb/scanner"
 )
 
+var autoFillCreatedAtAndUpdatedAtField = true
+
 var commonSession *Session
 
 type executorFunc func(master bool) (Executor, error)
@@ -74,6 +76,34 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 
 //Update ..
 func (s *Session) Update(dst interface{}, opts ...builder.Option) error {
+	dstStruct, err := scanner.ResolveModelStruct(dst)
+	if err != nil {
+		return err
+	}
+	pk := dstStruct.GetPk()
+	if pk != "" {
+		// if id, ok := list[pk]; ok {
+		// 	o.Where(pk, id)
+		// 	delete(list, pk)
+		// }
+	}
+	//填充时间
+	if autoFillCreatedAtAndUpdatedAtField == true {
+		// if _, ok := o.fields[updatedAtField]; !ok {
+		// 	o.fields[updatedAtField] = time.Now()
+		// }
+	}
+	// sql, args := builder.Update(
+	// 	builder.Table(dstStruct.TableName()),
+	// 	// builder.Columns(dstStruct.Columns()...),
+	// )
+
+	// o.builder.Update(o.fields)
+	// rst, err := o.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// scanner.UpdateModel(o.dst, o.fields)
 	return nil
 }
 
