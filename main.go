@@ -186,6 +186,10 @@ func main() {
 		ot,
 		builder.Where("id", 68),
 	)
+	dbx.Update(
+		ot,
+		builder.Where("id", 68),
+	)
 	fmt.Println("->", err, ot)
 	dbx.Rollback()
 	dbx.Commit()

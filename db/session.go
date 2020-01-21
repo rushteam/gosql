@@ -72,6 +72,11 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	return scanner.ScanAll(rows, dst)
 }
 
+//Update ..
+func (s *Session) Update(dst interface{}, opts ...builder.Option) error {
+	return nil
+}
+
 //Commit ..
 func (s *Session) Commit() error {
 	debugPrint("db: [session #%v] Commit", s.v)
@@ -122,4 +127,12 @@ func FetchAll(dst interface{}, opts ...builder.Option) error {
 		return errors.New("db: not found session")
 	}
 	return commonSession.FetchAll(dst, opts...)
+}
+
+//Update ..
+func Update(dst interface{}, opts ...builder.Option) error {
+	if commonSession == nil {
+		return errors.New("db: not found session")
+	}
+	return commonSession.Update(dst, opts...)
 }
