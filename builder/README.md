@@ -56,4 +56,14 @@ s.Table("tbl1")
 s.Where("t1.status", "0")
 s.Update(m)
 fmt.Println(s.BuildUpdate())
+
+sql, args = builder.Update(
+    builder.Table("test"),
+    builder.Set("a", "1"),
+    builder.Set("b", "2"),
+    builder.Where("id", 68),
+    builder.Where("id2", 68),
+)
+fmt.Println(sql, args)
 ```
+
