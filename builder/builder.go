@@ -893,8 +893,6 @@ func OrWhere(key interface{}, vals ...interface{}) Option {
 	}
 }
 
-//for update
-
 //Update ..
 func Update(opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
@@ -906,10 +904,9 @@ func Update(opts ...Option) (string, []interface{}) {
 	return s.Build()
 }
 
-//
-
 //Set ..
 func Set(key string, val interface{}) Option {
+	//only use for update()
 	return func(s SQLSegments) SQLSegments {
 		s.UpdateField(key, val)
 		return s
