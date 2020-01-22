@@ -194,8 +194,10 @@ func main() {
 		builder.Where("id", 68),
 	)
 	fmt.Println("->", err, ot)
-	dbx.Rollback()
-	dbx.Commit()
+	err = dbx.Rollback()
+	fmt.Println("->>", err)
+	err = dbx.Commit()
+	fmt.Println("->>", err)
 	//todo 增加是否已经提交了事务的逻辑
 
 	// sql, args = builder.Update(
