@@ -184,7 +184,6 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 		if structRV.Field(field.index).IsZero() {
 			continue
 		}
-		fmt.Println("++", field.column, structRV.Field(field.index))
 		list[field.column] = structRV.Field(field.index).Addr().Interface()
 	}
 	return list, nil

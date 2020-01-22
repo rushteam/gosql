@@ -31,6 +31,7 @@ type Session struct {
 	master      bool
 	ctx         context.Context
 	getExecetor executorFunc
+	done        int32
 	v           uint64
 }
 
@@ -142,6 +143,9 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 
 //Commit ..
 func (s *Session) Commit() error {
+	if atomic.LoadInt32(&s.done) == 1 {
+		return errors.New("db: [] has done")
+	}
 	debugPrint("db: [session #%v] Commit", s.v)
 	executor, err := s.getExecetor(s.master)
 	if err != nil {
