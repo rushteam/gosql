@@ -201,7 +201,6 @@ func main() {
 		builder.Set("a", "1"),
 		builder.Set("b", "2"),
 		builder.Where("id", 68),
-		builder.Where("id2", 68),
 	)
 	fmt.Println(sql, args)
 

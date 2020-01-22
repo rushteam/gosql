@@ -668,11 +668,8 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 				j++
 			}
 		} else {
-			if len(vals) == 0 {
-				panic("just support one of vals")
-			}
 			//just support one of vals
-			break
+			panic("just support one of vals")
 		}
 	}
 	// for i, s := range fieldSlice {
