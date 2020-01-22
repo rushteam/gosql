@@ -187,7 +187,7 @@ func main() {
 		ot,
 		builder.Where("id", 68),
 	)
-	fmt.Println("--update")
+	fmt.Println("--update::")
 	dbx.Update(
 		ot,
 		builder.Where("id", 68),

@@ -94,8 +94,11 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	}
 	pk := dstStruct.GetPk()
 	if pk != "" {
+		//若主键值不为空则增加主键条件
 		if id, ok := fields[pk]; ok {
-			opts = append(opts, builder.Where(pk, id))
+			if id != "" && id != nil {
+				opts = append(opts, builder.Where(pk, id))
+			}
 			// delete(fields, pk)
 		}
 	}
@@ -108,6 +111,10 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 		if v == nil || v == "" {
 			//contine?
 		}
+		//过滤掉 model 中的主键 防止修改
+		// if pk != "" && k == pk {
+		// 	//contine?
+		// }
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
@@ -116,6 +123,11 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 		updateFields[updatedAtField] = time.Now()
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
+	//todo 这里增加批量操作直接setMap(updateFields)
+	for k, v := range updateFields {
+		opts = append(opts, builder.Set(k, v))
+	}
+
 	sql, args := builder.Update(opts...)
 	executor, err := s.getExecetor(s.master)
 	if err != nil {
