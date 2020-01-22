@@ -195,14 +195,15 @@ func main() {
 	fmt.Println("->", err, ot)
 	dbx.Rollback()
 	dbx.Commit()
+	//todo 增加是否已经提交了事务的逻辑
 
-	sql, args = builder.Update(
-		builder.Table("test"),
-		builder.Set("a", "1"),
-		builder.Set("b", "2"),
-		builder.Where("id", 68),
-	)
-	fmt.Println(sql, args)
+	// sql, args = builder.Update(
+	// 	builder.Table("test"),
+	// 	builder.Set("a", "1"),
+	// 	builder.Set("b", "2"),
+	// 	builder.Where("id", 68),
+	// )
+	// fmt.Println(sql, args)
 
 	// ots := []T{}
 	// orm.FetchAll(

@@ -105,15 +105,15 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	updateFields := make(map[string]interface{}, 0)
 	for k, v := range fields {
 		if k == pk || k == "" {
-			//contine?
+			continue
 		}
-		//过滤掉 v 是空的值
+		//过滤掉 v 是空的值 todo 指针怎么办?
 		if v == nil || v == "" {
-			//contine?
+			continue
 		}
 		//过滤掉 model 中的主键 防止修改
 		// if pk != "" && k == pk {
-		// 	//contine?
+		// 	continue
 		// }
 		updateFields[k] = v
 	}
