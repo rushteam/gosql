@@ -165,19 +165,27 @@ func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
 	}
 	for _, field := range modelStruct.fields {
 		if structRV.Field(field.index).Kind() == reflect.Ptr {
-			//忽略掉指针为nil
+			//忽略掉指针为nil 和 零值情况
 			if structRV.Field(field.index).IsNil() {
 				//指针为nil时候的处理
 				continue
 				// list[field.column] = reflect.New(structRV.Field(field.index).Type()).Interface()
 				// list[field.column] = sql.NullString
 			}
+			if structRV.Field(field.index).Elem().IsZero() || structRV.Field(field.index).Elem().IsValid() {
+				continue
+			}
 			list[field.column] = structRV.Field(field.index).Elem().Interface()
 			continue
 		}
-		if !isZeroVal(structRV.Field(field.index)) && !structRV.Field(field.index).IsZero() {
-			list[field.column] = structRV.Field(field.index).Addr().Interface()
+		// if isZeroVal(structRV.Field(field.index)) {
+		// 	continue
+		// }
+		if structRV.Field(field.index).IsZero() {
+			continue
 		}
+		fmt.Println("++", field.column, structRV.Field(field.index))
+		list[field.column] = structRV.Field(field.index).Addr().Interface()
 	}
 	return list, nil
 }
