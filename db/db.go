@@ -47,10 +47,10 @@ type Tx interface {
 type Cluster interface {
 	// Open(name, node string) (*sql.DB, error)
 	// Open(driverName string, dataSourceName string) (*DB, error)
-	Master() (Executor, error)
-	Slave() (Executor, error)
 	// Fetch(dst interface{}, opts ...builder.Option) error
 	// FetchAll(dst interface{}, opts ...builder.Option) error
+	Master() (Executor, error)
+	Slave() (Executor, error)
 }
 
 func debugPrint(format string, vals ...interface{}) {
