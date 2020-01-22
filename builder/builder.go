@@ -584,7 +584,7 @@ func (s *SQLSegments) UpdateField(key string, val interface{}) *SQLSegments {
 	if len(s.params) == 0 {
 		s.params = append(s.params, make(map[string]interface{}, 0))
 	}
-	//更新字段 只更新第一部分的
+	//update set 值只能是一行的维度（只用params[0]）
 	s.params[0][key] = val
 	return s
 }
@@ -668,8 +668,12 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 				j++
 			}
 		} else {
-			//just support one of vals
-			panic("just support one of vals")
+			if len(vals) == 0 {
+				//just support one of vals
+				panic("just support one of vals")
+			}
+			//todo 为啥update 会走到这里？
+			fmt.Println("test----------:", vals)
 		}
 	}
 	// for i, s := range fieldSlice {
@@ -911,8 +915,3 @@ func Set(key string, val interface{}) Option {
 		return s
 	}
 }
-
-// o.fields, err = scanner.ResolveModelToMap(o.dst)
-// 	if err != nil {
-// 		panic(err)
-// 	}

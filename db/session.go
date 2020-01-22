@@ -5,12 +5,20 @@ import (
 	"database/sql"
 	"errors"
 	"sync/atomic"
+	"time"
 
 	"github.com/mlboy/godb/builder"
 	"github.com/mlboy/godb/scanner"
 )
 
+//Result ..
+type Result sql.Result
+
+//自动更新时间
 var autoFillCreatedAtAndUpdatedAtField = true
+var createdAtField = "created_at"
+var updatedAtField = "updated_at"
+var deletedAtField = "deleted_at"
 
 var commonSession *Session
 
@@ -59,9 +67,8 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	if err != nil {
 		return err
 	}
-	sql, args := builder.Select(
-		builder.Table(dstStruct.TableName()),
-	)
+	opts = append(opts, builder.Table(dstStruct.TableName()))
+	sql, args := builder.Select(opts...)
 	executor, err := s.getExecetor(s.master)
 	if err != nil {
 		return err
@@ -75,36 +82,50 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 }
 
 //Update ..
-func (s *Session) Update(dst interface{}, opts ...builder.Option) error {
+func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error) {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	fields, err := scanner.ResolveModelToMap(dst)
+	if err != nil {
+		return nil, err
+		// panic(err)
 	}
 	pk := dstStruct.GetPk()
 	if pk != "" {
-		// if id, ok := list[pk]; ok {
-		// 	o.Where(pk, id)
-		// 	delete(list, pk)
-		// }
+		if id, ok := fields[pk]; ok {
+			opts = append(opts, builder.Where(pk, id))
+			// delete(fields, pk)
+		}
 	}
-	//填充时间
+	updateFields := make(map[string]interface{}, 0)
+	for k, v := range fields {
+		if k == pk || k == "" {
+			//contine?
+		}
+		//过滤掉 v 是空的值
+		if v == nil || v == "" {
+			//contine?
+		}
+		updateFields[k] = v
+	}
+	//若开启自动填充时间，则尝试自动填充时间
 	if autoFillCreatedAtAndUpdatedAtField == true {
-		// if _, ok := o.fields[updatedAtField]; !ok {
-		// 	o.fields[updatedAtField] = time.Now()
-		// }
+		//强制填充更新时间
+		updateFields[updatedAtField] = time.Now()
 	}
-	// sql, args := builder.Update(
-	// 	builder.Table(dstStruct.TableName()),
-	// 	// builder.Columns(dstStruct.Columns()...),
-	// )
-
-	// o.builder.Update(o.fields)
-	// rst, err := o.Exec(o.builder.BuildUpdate(), o.builder.Args()...)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// scanner.UpdateModel(o.dst, o.fields)
-	return nil
+	opts = append(opts, builder.Table(dstStruct.TableName()))
+	sql, args := builder.Update(opts...)
+	executor, err := s.getExecetor(s.master)
+	if err != nil {
+		return nil, err
+	}
+	rst, err := executor.ExecContext(s.ctx, sql, args...)
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	//将数据更新到结构体上
+	scanner.UpdateModel(dst, updateFields)
+	return rst, err
 }
 
 //Commit ..
@@ -160,9 +181,9 @@ func FetchAll(dst interface{}, opts ...builder.Option) error {
 }
 
 //Update ..
-func Update(dst interface{}, opts ...builder.Option) error {
+func Update(dst interface{}, opts ...builder.Option) (Result, error) {
 	if commonSession == nil {
-		return errors.New("db: not found session")
+		return nil, errors.New("db: not found session")
 	}
 	return commonSession.Update(dst, opts...)
 }
