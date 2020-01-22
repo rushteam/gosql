@@ -66,4 +66,3 @@ sql, args = builder.Update(
 )
 fmt.Println(sql, args)
 ```
-
