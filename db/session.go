@@ -147,7 +147,7 @@ func (s *Session) Commit() error {
 	// 	return errors.New("db: [] has done")
 	// }
 	debugPrint("db: [session #%v] Commit", s.v)
-	executor, err := s.getExecetor(s.master)
+	executor, err := s.getExecetor(true)
 	if err != nil {
 		return err
 	}
@@ -157,7 +157,7 @@ func (s *Session) Commit() error {
 //Rollback ..
 func (s *Session) Rollback() error {
 	debugPrint("db: [session #%v] Rollback", s.v)
-	executor, err := s.getExecetor(s.master)
+	executor, err := s.getExecetor(true)
 	if err != nil {
 		return err
 	}
