@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -34,6 +35,7 @@ type Session struct {
 	done        int32
 	v           uint64
 	executor    Executor
+	mutex       sync.RWMutex
 }
 
 //NewSession ..
