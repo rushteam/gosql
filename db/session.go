@@ -33,6 +33,7 @@ type Session struct {
 	getExecetor executorFunc
 	done        int32
 	v           uint64
+	executor    Executor
 }
 
 //NewSession ..
@@ -147,21 +148,29 @@ func (s *Session) Commit() error {
 	// 	return errors.New("db: [] has done")
 	// }
 	debugPrint("db: [session #%v] Commit", s.v)
-	executor, err := s.getExecetor(true)
-	if err != nil {
-		return err
+	// executor, err := s.getExecetor(true)
+	// if err != nil {
+	// 	return err
+	// }
+	// return executor.(*sql.Tx).Commit()
+	if s.executor == nil {
+		return errors.New("not found trans")
 	}
-	return executor.(*sql.Tx).Commit()
+	return s.executor.(*sql.Tx).Commit()
 }
 
 //Rollback ..
 func (s *Session) Rollback() error {
 	debugPrint("db: [session #%v] Rollback", s.v)
-	executor, err := s.getExecetor(true)
-	if err != nil {
-		return err
+	// executor, err := s.getExecetor(true)
+	// if err != nil {
+	// 	return err
+	// }
+	// return executor.(*sql.Tx).Commit()
+	if s.executor == nil {
+		return errors.New("not found trans")
 	}
-	return executor.(*sql.Tx).Rollback()
+	return s.executor.(*sql.Tx).Commit()
 }
 
 //Begin ..
@@ -174,10 +183,17 @@ func Begin() (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	getExecetor := func(master bool) (Executor, error) {
-		return executor.(DB).Begin()
+	executor, err = executor.(DB).Begin()
+	if err != nil {
+		return nil, err
 	}
-	return NewSession(context.TODO(), true, getExecetor), nil
+	//将 getExecetor 返回 主库-事务
+	getExecetor := func(master bool) (Executor, error) {
+		return executor, nil
+	}
+	s := NewSession(context.TODO(), true, getExecetor)
+	s.executor = executor
+	return s, nil
 }
 
 //Fetch ..
