@@ -25,15 +25,8 @@ type PoolCluster struct {
 	}
 }
 
-//open ..
-func (c *PoolCluster) open(dbType string, dsn string, opts ...Opts) (*sql.DB, error) {
-	if dsn == "" {
-		return nil, errors.New("db: DSN should be not empty")
-	}
-	//如果已经存在
-	if db, ok := c.pool[dsn]; ok {
-		return db, nil
-	}
+//connect ..
+func (c *PoolCluster) connect(dbType string, dsn string, opts ...Opts) (*sql.DB, error) {
 	db, err := sql.Open(c.dbType, dsn)
 	if err != nil {
 		return nil, err
@@ -41,19 +34,27 @@ func (c *PoolCluster) open(dbType string, dsn string, opts ...Opts) (*sql.DB, er
 	for _, opt := range opts {
 		db = opt(db)
 	}
-	c.pool[dsn] = db
-	return c.pool[dsn], nil
+	return db, nil
 }
 
 //Open ..
 func (c *PoolCluster) Open(dsn string) (*sql.DB, error) {
+	if dsn == "" {
+		return nil, errors.New("db: DSN should not be empty")
+	}
+	//如果已经存在
+	if db, ok := c.pool[dsn]; ok {
+		return db, nil
+	}
 	opt := func(db *sql.DB) *sql.DB {
 		db.SetConnMaxLifetime(c.dbOpt.ConnMaxLifetime)
 		db.SetMaxIdleConns(c.dbOpt.MaxIdleConns)
 		db.SetMaxOpenConns(c.dbOpt.MaxOpenConns)
 		return db
 	}
-	return c.open(c.dbType, dsn, opt)
+	db, err := c.connect(c.dbType, dsn, opt)
+	c.pool[dsn] = db
+	return db, err
 }
 
 //Master ..
