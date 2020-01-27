@@ -29,19 +29,20 @@ var vs uint64
 
 //Session ..
 type Session struct {
-	master      bool
-	ctx         context.Context
-	getExecetor executorFunc
-	done        int32
-	v           uint64
-	executor    Executor
-	mutex       sync.RWMutex
+	ctx      context.Context
+	done     int32
+	v        uint64
+	executor Executor
+	mutex    sync.RWMutex
+	// getExecetor executorFunc
+	// master      bool
+	cluster Cluster
 }
 
 //NewSession ..
-func NewSession(ctx context.Context, master bool, getExecetor executorFunc) *Session {
+func NewSession(ctx context.Context, c Cluster) *Session {
 	v := atomic.AddUint64(&vs, 1)
-	return &Session{ctx: ctx, master: master, getExecetor: getExecetor, v: v}
+	return &Session{ctx: ctx, cluster: c, v: v}
 }
 
 //Fetch ..
@@ -52,7 +53,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.getExecetor(s.master)
+	executor, err := s.cluster.Master()
 	if err != nil {
 		return err
 	}
@@ -73,7 +74,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.getExecetor(s.master)
+	executor, err := s.cluster.Master()
 	if err != nil {
 		return err
 	}
@@ -133,7 +134,7 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	}
 
 	sql, args := builder.Update(opts...)
-	executor, err := s.getExecetor(s.master)
+	executor, err := s.cluster.Master()
 	if err != nil {
 		return nil, err
 	}
@@ -180,8 +181,9 @@ func Begin() (*Session, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
+	s := NewSession(context.TODO(), commonSession.cluster)
 	debugPrint("db: [session #%v] Begin", commonSession.v)
-	executor, err := commonSession.getExecetor(true)
+	executor, err := commonSession.cluster.Master()
 	if err != nil {
 		return nil, err
 	}
@@ -189,11 +191,6 @@ func Begin() (*Session, error) {
 	if err != nil {
 		return nil, err
 	}
-	//将 getExecetor 返回 主库-事务
-	getExecetor := func(master bool) (Executor, error) {
-		return executor, nil
-	}
-	s := NewSession(context.TODO(), true, getExecetor)
 	s.executor = executor
 	return s, nil
 }

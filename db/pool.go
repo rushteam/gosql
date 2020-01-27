@@ -92,13 +92,7 @@ func InitPool(dbType string, settings map[string][]string, opts ...Opts) *PoolCl
 	c.settings = settings
 	c.pool = make(map[string]*sql.DB, len(settings))
 	c.opts = opts
-	getExecetor := func(master bool) (Executor, error) {
-		if master == true {
-			return c.Master()
-		}
-		return c.Slave()
-	}
-	commonSession = NewSession(context.TODO(), false, getExecetor)
+	commonSession = NewSession(context.TODO(), c)
 	return c
 }
 
