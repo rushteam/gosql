@@ -673,7 +673,7 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 				panic("just support one of vals")
 			}
 			//todo 为啥update 会走到这里？
-			fmt.Println("test----------:", vals)
+			fmt.Println("TEST----------:", vals)
 		}
 	}
 	// for i, s := range fieldSlice {
