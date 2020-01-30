@@ -145,6 +145,48 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	return rst, err
 }
 
+//Insert ..
+func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error) {
+	dstStruct, err := scanner.ResolveModelStruct(dst)
+	if err != nil {
+		return nil, err
+	}
+	fields, err := scanner.ResolveModelToMap(dst)
+	if err != nil {
+		return nil, err
+		// panic(err)
+	}
+	pk := dstStruct.GetPk()
+	updateFields := make(map[string]interface{}, 0)
+	for k, v := range fields {
+		if k == pk || k == "" {
+			continue
+		}
+		updateFields[k] = v
+	}
+	//若开启自动填充时间，则尝试自动填充时间
+	if autoFillCreatedAtAndUpdatedAtField == true {
+		//强制填充更新时间
+		updateFields[updatedAtField] = time.Now()
+	}
+	opts = append(opts, builder.Table(dstStruct.TableName()))
+	//todo 这里增加批量操作直接setMap(updateFields)
+	for k, v := range updateFields {
+		opts = append(opts, builder.Set(k, v))
+	}
+
+	sql, args := builder.Insert(opts...)
+	executor, err := s.cluster.Master()
+	if err != nil {
+		return nil, err
+	}
+	rst, err := executor.ExecContext(s.ctx, sql, args...)
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	//将数据更新到结构体上
+	scanner.UpdateModel(dst, updateFields)
+	return rst, err
+}
+
 //Commit ..
 func (s *Session) Commit() error {
 	// if atomic.LoadInt32(&s.done) == 1 {
@@ -217,4 +259,12 @@ func Update(dst interface{}, opts ...builder.Option) (Result, error) {
 		return nil, errors.New("db: not found session")
 	}
 	return commonSession.Update(dst, opts...)
+}
+
+//Insert ..
+func Insert(dst interface{}, opts ...builder.Option) (Result, error) {
+	if commonSession == nil {
+		return nil, errors.New("db: not found session")
+	}
+	return commonSession.Insert(dst, opts...)
 }

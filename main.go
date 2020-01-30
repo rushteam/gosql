@@ -190,16 +190,20 @@ func main() {
 	fmt.Println("--update::")
 	ot = &T{}
 	ot.Uid = "test"
-	dbx.Update(
+	rs, err := dbx.Update(
 		ot,
 		builder.Where("id", 68),
 	)
-	fmt.Println("->", err, ot)
+	n, err := rs.RowsAffected()
+	fmt.Println("->", n, err, ot)
 	err = dbx.Rollback()
 	fmt.Println("->>", err)
 	err = dbx.Commit()
 	fmt.Println("->>", err)
-	//todo 增加是否已经提交了事务的逻辑
+
+	rs, err = db.Insert(
+		ot,
+	)
 
 	// sql, args = builder.Update(
 	// 	builder.Table("test"),

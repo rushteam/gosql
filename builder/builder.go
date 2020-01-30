@@ -912,3 +912,14 @@ func Set(key string, val interface{}) Option {
 		return s
 	}
 }
+
+//Insert ..
+func Insert(opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: _insert,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
