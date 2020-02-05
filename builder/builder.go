@@ -753,6 +753,9 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 	if s.cmd == _update {
 		return s.BuildUpdate(), s.Args()
 	}
+	if s.cmd == _insert {
+		return s.BuildInsert(), s.Args()
+	}
 	return "", nil
 }
 
