@@ -204,6 +204,7 @@ func main() {
 	rs, err = db.Insert(
 		ot,
 	)
+	fmt.Println("->>", err)
 
 	// sql, args = builder.Update(
 	// 	builder.Table("test"),
