@@ -183,7 +183,7 @@ func main() {
 		builder.Where("id", 68),
 	)
 	n, err := rs.RowsAffected()
-	fmt.Println("->", n, err, ot)
+	fmt.Println("->>", n, err, ot)
 	err = dbx.Rollback()
 	fmt.Println("->>", err)
 	err = dbx.Commit()
@@ -193,20 +193,20 @@ func main() {
 	rs, err = db.Insert(
 		ot,
 	)
-	fmt.Println("->>", err)
+	fmt.Println("--Insert>", err, ot)
 
 	//Replace
 	rs, err = db.Replace(
 		ot,
 	)
-	fmt.Println("->>", err)
+	fmt.Println("--Replace>", err, ot)
 
 	//Delete
 	rs, err = db.Delete(
 		ot,
 		builder.Where("1 != 1"),
 	)
-	fmt.Println("->>", err)
+	fmt.Println("--Delete>", err)
 
 	// sql, args = builder.Update(
 	// 	builder.Table("test"),

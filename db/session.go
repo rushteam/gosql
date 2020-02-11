@@ -184,6 +184,9 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	rst, err := executor.ExecContext(s.ctx, sql, args...)
 	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
 	//将数据更新到结构体上
+	if err == nil {
+		updateFields[pk], _ = rst.LastInsertId()
+	}
 	scanner.UpdateModel(dst, updateFields)
 	return rst, err
 }
@@ -194,6 +197,7 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 	if err != nil {
 		return nil, err
 	}
+	pk := dstStruct.GetPk()
 	fields, err := scanner.ResolveModelToMap(dst)
 	if err != nil {
 		return nil, err
@@ -223,6 +227,9 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 	rst, err := executor.ExecContext(s.ctx, sql, args...)
 	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
 	//将数据更新到结构体上
+	if err == nil {
+		updateFields[pk], _ = rst.LastInsertId()
+	}
 	scanner.UpdateModel(dst, updateFields)
 	return rst, err
 }
