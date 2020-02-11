@@ -206,6 +206,12 @@ func main() {
 	)
 	fmt.Println("->>", err)
 
+	//ReplaReplacese
+	rs, err = db.Replace(
+		ot,
+	)
+	fmt.Println("->>", err)
+
 	// sql, args = builder.Update(
 	// 	builder.Table("test"),
 	// 	builder.Set("a", "1"),

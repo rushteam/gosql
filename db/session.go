@@ -166,8 +166,9 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	}
 	//若开启自动填充时间，则尝试自动填充时间
 	if autoFillCreatedAtAndUpdatedAtField == true {
-		//强制填充更新时间
+		//强制填充更新时间/创建时间
 		updateFields[updatedAtField] = time.Now()
+		updateFields[createdAtField] = time.Now()
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	//todo 这里增加批量操作直接setMap(updateFields)
@@ -187,17 +188,87 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	return rst, err
 }
 
+//Replace ..
+func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, error) {
+	dstStruct, err := scanner.ResolveModelStruct(dst)
+	if err != nil {
+		return nil, err
+	}
+	fields, err := scanner.ResolveModelToMap(dst)
+	if err != nil {
+		return nil, err
+		// panic(err)
+	}
+	pk := dstStruct.GetPk()
+	updateFields := make(map[string]interface{}, 0)
+	for k, v := range fields {
+		if k == pk || k == "" {
+			continue
+		}
+		updateFields[k] = v
+	}
+	//若开启自动填充时间，则尝试自动填充时间
+	if autoFillCreatedAtAndUpdatedAtField == true {
+		//强制填充更新时间/创建时间
+		updateFields[updatedAtField] = time.Now()
+		updateFields[createdAtField] = time.Now()
+	}
+	opts = append(opts, builder.Table(dstStruct.TableName()))
+	//todo 这里增加批量操作直接setMap(updateFields)
+	for k, v := range updateFields {
+		opts = append(opts, builder.Set(k, v))
+	}
+
+	sql, args := builder.Replace(opts...)
+	executor, err := s.cluster.Master()
+	if err != nil {
+		return nil, err
+	}
+	rst, err := executor.ExecContext(s.ctx, sql, args...)
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	//将数据更新到结构体上
+	scanner.UpdateModel(dst, updateFields)
+	return rst, err
+}
+
+//Delete ..
+func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error) {
+	dstStruct, err := scanner.ResolveModelStruct(dst)
+	if err != nil {
+		return nil, err
+	}
+	fields, err := scanner.ResolveModelToMap(dst)
+	if err != nil {
+		return nil, err
+		// panic(err)
+	}
+	pk := dstStruct.GetPk()
+	updateFields := make(map[string]interface{}, 0)
+	for k, v := range fields {
+		if k == pk || k == "" {
+			continue
+		}
+		updateFields[k] = v
+	}
+	opts = append(opts, builder.Table(dstStruct.TableName()))
+	//todo 这里增加批量操作直接setMap(updateFields)
+	for k, v := range updateFields {
+		opts = append(opts, builder.Set(k, v))
+	}
+
+	sql, args := builder.Delete(opts...)
+	executor, err := s.cluster.Master()
+	if err != nil {
+		return nil, err
+	}
+	rst, err := executor.ExecContext(s.ctx, sql, args...)
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	return rst, err
+}
+
 //Commit ..
 func (s *Session) Commit() error {
-	// if atomic.LoadInt32(&s.done) == 1 {
-	// 	return errors.New("db: [] has done")
-	// }
 	debugPrint("db: [session #%v] Commit", s.v)
-	// executor, err := s.getExecetor(true)
-	// if err != nil {
-	// 	return err
-	// }
-	// return executor.(*sql.Tx).Commit()
 	if s.executor == nil {
 		return errors.New("not found trans")
 	}
@@ -207,11 +278,6 @@ func (s *Session) Commit() error {
 //Rollback ..
 func (s *Session) Rollback() error {
 	debugPrint("db: [session #%v] Rollback", s.v)
-	// executor, err := s.getExecetor(true)
-	// if err != nil {
-	// 	return err
-	// }
-	// return executor.(*sql.Tx).Commit()
 	if s.executor == nil {
 		return errors.New("not found trans")
 	}
@@ -267,4 +333,12 @@ func Insert(dst interface{}, opts ...builder.Option) (Result, error) {
 		return nil, errors.New("db: not found session")
 	}
 	return commonSession.Insert(dst, opts...)
+}
+
+//Replace ..
+func Replace(dst interface{}, opts ...builder.Option) (Result, error) {
+	if commonSession == nil {
+		return nil, errors.New("db: not found session")
+	}
+	return commonSession.Replace(dst, opts...)
 }

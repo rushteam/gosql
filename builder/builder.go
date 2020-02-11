@@ -750,11 +750,17 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 	if s.cmd == _select {
 		return s.BuildSelect(), s.Args()
 	}
+	if s.cmd == _insert {
+		return s.BuildInsert(), s.Args()
+	}
+	if s.cmd == _replace {
+		return s.BuildReplace(), s.Args()
+	}
 	if s.cmd == _update {
 		return s.BuildUpdate(), s.Args()
 	}
-	if s.cmd == _insert {
-		return s.BuildInsert(), s.Args()
+	if s.cmd == _delete {
+		return s.BuildDelete(), s.Args()
 	}
 	return "", nil
 }
@@ -920,6 +926,28 @@ func Set(key string, val interface{}) Option {
 func Insert(opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
 		cmd: _insert,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
+
+//Replace ..
+func Replace(opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: _replace,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
+
+//Delete ..
+func Delete(opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: _delete,
 	}
 	for _, opt := range opts {
 		s = opt(s)
