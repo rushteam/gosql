@@ -128,34 +128,22 @@ func main() {
 		Expires: 3,
 	}
 	rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	fmt.Println("->", err, t, rst)
 	fmt.Println(rst.LastInsertId())
 	fmt.Println(rst.RowsAffected())
 
 	ormx, _ := orm.Begin()
 	rst, err = ormx.Model(t).UpdateField("[+]Expires", 100).Where("id", 68).Update()
-	if err != nil {
-		fmt.Println(err)
-	}
+	fmt.Println("->", err, t, rst)
 	ormx.Rollback()
 	// ormx.Commit()
 
 	err = orm.Model(t).Where("id", 68).Fetch()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(t)
+	fmt.Println("->", err, t)
+
 	var tt []*T
 	err = orm.Model(&tt).Where("id", 68).FetchAll()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-	fmt.Println(tt)
+	fmt.Println("->", err, tt)
 	// err = orm.Model(t).Where("id", 68).Fetch()
 	// if err != nil {
 	// 	fmt.Println(err)
@@ -216,6 +204,7 @@ func main() {
 	//Delete
 	rs, err = db.Delete(
 		ot,
+		builder.Where("1 != 1"),
 	)
 	fmt.Println("->>", err)
 

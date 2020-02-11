@@ -370,6 +370,11 @@ func (s *SQLSegments) buildWhereClause() string {
 	return sql
 }
 
+//IsEmptyWhereClause ...
+func (s *SQLSegments) IsEmptyWhereClause() bool {
+	return len(s.where.clause) < 1
+}
+
 //Having ...
 func (s *SQLSegments) Having(key interface{}, vals ...interface{}) *SQLSegments {
 	s.having.Where(key, vals...)

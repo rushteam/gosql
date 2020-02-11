@@ -199,12 +199,8 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 		return nil, err
 		// panic(err)
 	}
-	pk := dstStruct.GetPk()
 	updateFields := make(map[string]interface{}, 0)
 	for k, v := range fields {
-		if k == pk || k == "" {
-			continue
-		}
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
@@ -240,7 +236,6 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 	fields, err := scanner.ResolveModelToMap(dst)
 	if err != nil {
 		return nil, err
-		// panic(err)
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	pk := dstStruct.GetPk()
