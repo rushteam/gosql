@@ -240,8 +240,11 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	pk := dstStruct.GetPk()
 	for k, v := range fields {
-		//仅仅取model中的pk，其他一律忽略
 		if k == pk && k != "" {
+			//仅仅取model中的pk，其他一律忽略
+			opts = append(opts, builder.Where(k, v))
+			break
+		} else {
 			opts = append(opts, builder.Where(k, v))
 		}
 	}
