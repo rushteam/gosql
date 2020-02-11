@@ -242,20 +242,14 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 		return nil, err
 		// panic(err)
 	}
-	pk := dstStruct.GetPk()
-	updateFields := make(map[string]interface{}, 0)
-	for k, v := range fields {
-		if k == pk || k == "" {
-			continue
-		}
-		updateFields[k] = v
-	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
-	//todo 这里增加批量操作直接setMap(updateFields)
-	for k, v := range updateFields {
-		opts = append(opts, builder.Set(k, v))
+	pk := dstStruct.GetPk()
+	for k, v := range fields {
+		//仅仅取model中的pk，其他一律忽略
+		if k == pk && k != "" {
+			opts = append(opts, builder.Where(k, v))
+		}
 	}
-
 	sql, args := builder.Delete(opts...)
 	executor, err := s.cluster.Master()
 	if err != nil {
@@ -341,4 +335,12 @@ func Replace(dst interface{}, opts ...builder.Option) (Result, error) {
 		return nil, errors.New("db: not found session")
 	}
 	return commonSession.Replace(dst, opts...)
+}
+
+//Delete ..
+func Delete(dst interface{}, opts ...builder.Option) (Result, error) {
+	if commonSession == nil {
+		return nil, errors.New("db: not found session")
+	}
+	return commonSession.Delete(dst, opts...)
 }

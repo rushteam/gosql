@@ -201,13 +201,20 @@ func main() {
 	err = dbx.Commit()
 	fmt.Println("->>", err)
 
+	//Insert
 	rs, err = db.Insert(
 		ot,
 	)
 	fmt.Println("->>", err)
 
-	//ReplaReplacese
+	//Replace
 	rs, err = db.Replace(
+		ot,
+	)
+	fmt.Println("->>", err)
+
+	//Delete
+	rs, err = db.Delete(
 		ot,
 	)
 	fmt.Println("->>", err)
