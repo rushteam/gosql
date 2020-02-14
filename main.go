@@ -16,17 +16,20 @@ type S struct {
 	Val string `db:"val"`
 }
 type T struct {
-	ID      int64   `db:"id,pk"`
-	Uid     string  `db:",index"`
-	Typ     *string `db:"typ,index"`
-	Expires int     `db:"expires"`
-	XX      int     `db:"-"`
-	Scope   string  `db:"scope,csv"`
+	ID       int64   `db:"id,pk"`
+	Uid      string  `db:",index"`
+	Typ      *string `db:"typ,index"`
+	ClientID string  `db:"client_id"`
+	Token    string  `db:"token"`
+	Expires  int     `db:"expires"`
+	XX       int     `db:"-"`
+	Scope    string  `db:"scope,csv"`
 	// Scope     json.RawMessage `db:"scope,csv"`
 	UpdatedAt *time.Time `db:"updated_at"`
 	CreatedAt time.Time  `db:"created_at"`
 }
 
+//TableName ..
 func (t T) TableName() string {
 	return "login"
 }
@@ -178,6 +181,7 @@ func main() {
 	fmt.Println("--update::")
 	ot = &T{}
 	ot.Uid = "test"
+	ot.ClientID = "test"
 	rs, err := dbx.Update(
 		ot,
 		builder.Where("id", 68),
