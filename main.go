@@ -8,7 +8,6 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/mlboy/godb/db"
-	"github.com/mlboy/godb/orm"
 )
 
 type S struct {
@@ -110,8 +109,9 @@ func main() {
 		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
 	}
 	// cluster := pool.Init("mysql", settings)
-	cluster := db.InitPool("mysql", settings)
-	orm.Init(cluster)
+	_ = db.InitPool("mysql", settings)
+	// orm.Init(cluster)
+	var err error
 	// orm.New("de").Model()
 
 	// m := make(map[string]interface{}, 0)
@@ -125,40 +125,40 @@ func main() {
 	// fmt.Println(s.BuildUpdate())
 	// // fmt.Println(s.Args())
 
-	t := &T{
-		// Typ: &typ,
-		Uid:     "1",
-		Expires: 3,
-	}
-	rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
-	fmt.Println("->", err, t, rst)
-	fmt.Println(rst.LastInsertId())
-	fmt.Println(rst.RowsAffected())
-
-	ormx, _ := orm.Begin()
-	rst, err = ormx.Model(t).UpdateField("[+]Expires", 100).Where("id", 68).Update()
-	fmt.Println("->", err, t, rst)
-	ormx.Rollback()
-	// ormx.Commit()
-
-	err = orm.Model(t).Where("id", 68).Fetch()
-	fmt.Println("->", err, t)
-
-	var tt []*T
-	err = orm.Model(&tt).Where("id", 68).FetchAll()
-	fmt.Println("->", err, tt)
-	// err = orm.Model(t).Where("id", 68).Fetch()
-	// if err != nil {
-	// 	fmt.Println(err)
-	// 	return
+	// t := &T{
+	// 	// Typ: &typ,
+	// 	Uid:     "1",
+	// 	Expires: 3,
 	// }
-	// fmt.Println(t)
-	sql, args := builder.Select(
-		builder.Table("test"),
-		builder.Columns("id"),
-		builder.Where("id", 68),
-	)
-	fmt.Println(sql, args)
+	// rst, err := orm.Model(t).UpdateField("[+]Expires", 1).Where("id", 68).Update()
+	// fmt.Println("->", err, t, rst)
+	// fmt.Println(rst.LastInsertId())
+	// fmt.Println(rst.RowsAffected())
+
+	// ormx, _ := orm.Begin()
+	// rst, err = ormx.Model(t).UpdateField("[+]Expires", 100).Where("id", 68).Update()
+	// fmt.Println("->", err, t, rst)
+	// ormx.Rollback()
+	// // ormx.Commit()
+
+	// err = orm.Model(t).Where("id", 68).Fetch()
+	// fmt.Println("->", err, t)
+
+	// var tt []*T
+	// err = orm.Model(&tt).Where("id", 68).FetchAll()
+	// fmt.Println("->", err, tt)
+	// // err = orm.Model(t).Where("id", 68).Fetch()
+	// // if err != nil {
+	// // 	fmt.Println(err)
+	// // 	return
+	// // }
+	// // fmt.Println(t)
+	// sql, args := builder.Select(
+	// 	builder.Table("test"),
+	// 	builder.Columns("id"),
+	// 	builder.Where("id", 68),
+	// )
+	// fmt.Println(sql, args)
 
 	fmt.Println("--common")
 	ot := &T{}
