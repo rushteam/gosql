@@ -200,7 +200,6 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	fields, err := scanner.ResolveModelToMap(dst)
 	if err != nil {
 		return nil, err
-		// panic(err)
 	}
 	pk := dstStruct.GetPk()
 	updateFields := make(map[string]interface{}, 0)
@@ -242,7 +241,6 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 	fields, err := scanner.ResolveModelToMap(dst)
 	if err != nil {
 		return nil, err
-		// panic(err)
 	}
 	updateFields := make(map[string]interface{}, 0)
 	for k, v := range fields {
