@@ -29,13 +29,13 @@ var vs uint64
 
 //Session ..
 type Session struct {
-	ctx      context.Context
-	done     int32
-	v        uint64
-	executor Executor
-	mutex    sync.RWMutex
-	// master      bool
-	cluster Cluster
+	ctx         context.Context
+	done        int32
+	v           uint64
+	executor    Executor
+	mutex       sync.RWMutex
+	forceMaster bool
+	cluster     Cluster
 }
 
 //NewSession ..
@@ -48,7 +48,7 @@ func NewSession(ctx context.Context, c Cluster) *Session {
 func (s *Session) Executor(master bool) (Executor, error) {
 	var err error
 	if s.executor == nil {
-		if master == true {
+		if master == true || s.forceMaster {
 			s.executor, err = s.cluster.Master()
 		} else {
 			s.executor, err = s.cluster.Slave()
@@ -60,7 +60,6 @@ func (s *Session) Executor(master bool) (Executor, error) {
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
 		return nil, err
@@ -76,7 +75,6 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
 		return nil
