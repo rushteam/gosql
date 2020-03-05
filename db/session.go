@@ -59,6 +59,7 @@ func (s *Session) Executor(master bool) (Executor, error) {
 
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
 	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
@@ -74,6 +75,7 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
 	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
@@ -89,6 +91,7 @@ func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
 
 //ExecContext ..
 func (s *Session) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
 	db, err := s.Executor(true)
 	if err != nil {
 		return nil, err
@@ -109,13 +112,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.Executor(false)
-	if err != nil {
-		return err
-	}
-	// debugPrint("db: [sql] %s %v", sql, args)
-	debugPrint("db: [session #%v] Fetch", s.v)
-	rows, err := executor.QueryContext(s.ctx, sql, args...)
+	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
 	}
@@ -130,12 +127,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.Executor(false)
-	if err != nil {
-		return err
-	}
-	debugPrint("db: [session #%v] FetchAll", s.v)
-	rows, err := executor.QueryContext(s.ctx, sql, args...)
+	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
 	}
@@ -190,12 +182,7 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	}
 
 	sql, args := builder.Update(opts...)
-	executor, err := s.Executor(true)
-	if err != nil {
-		return nil, err
-	}
-	rst, err := executor.ExecContext(s.ctx, sql, args...)
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	scanner.UpdateModel(dst, updateFields)
 	return rst, err
@@ -233,12 +220,7 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	}
 
 	sql, args := builder.Insert(opts...)
-	executor, err := s.Executor(true)
-	if err != nil {
-		return nil, err
-	}
-	rst, err := executor.ExecContext(s.ctx, sql, args...)
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
 		updateFields[pk], _ = rst.LastInsertId()
@@ -276,12 +258,7 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 	}
 
 	sql, args := builder.Replace(opts...)
-	executor, err := s.Executor(true)
-	if err != nil {
-		return nil, err
-	}
-	rst, err := executor.ExecContext(s.ctx, sql, args...)
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
 		updateFields[pk], _ = rst.LastInsertId()
@@ -312,12 +289,7 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 		}
 	}
 	sql, args := builder.Delete(opts...)
-	executor, err := s.Executor(true)
-	if err != nil {
-		return nil, err
-	}
-	rst, err := executor.ExecContext(s.ctx, sql, args...)
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
 }
 
