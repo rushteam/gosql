@@ -34,7 +34,6 @@ type Session struct {
 	v        uint64
 	executor Executor
 	mutex    sync.RWMutex
-	// getExecetor executorFunc
 	// master      bool
 	cluster Cluster
 }
@@ -56,6 +55,50 @@ func (s *Session) Executor(master bool) (Executor, error) {
 		}
 	}
 	return s.executor, err
+}
+
+//QueryContext ..
+func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
+	//todo 增加强制master逻辑
+	db, err := s.Executor(false)
+	if err != nil {
+		return nil, err
+	}
+	return db.QueryContext(ctx, query, args)
+}
+
+//Query ..
+func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
+	return s.QueryContext(s.ctx, query, args)
+}
+
+//QueryRowContext ..
+func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
+	//todo 增加强制master逻辑
+	db, err := s.Executor(false)
+	if err != nil {
+		return nil
+	}
+	return db.QueryRowContext(ctx, query, args)
+}
+
+//QueryRow ..
+func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
+	return s.QueryRowContext(s.ctx, query, args)
+}
+
+//ExecContext ..
+func (s *Session) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
+	db, err := s.Executor(true)
+	if err != nil {
+		return nil, err
+	}
+	return db.ExecContext(ctx, query, args)
+}
+
+//Exec ..
+func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return s.ExecContext(s.ctx, query, args)
 }
 
 //Fetch ..
