@@ -44,6 +44,12 @@ func NewSession(ctx context.Context, c Cluster) *Session {
 	return &Session{ctx: ctx, cluster: c, v: v}
 }
 
+//Master 强制master
+func (s *Session) Master() *Session {
+	s.forceMaster = true
+	return s
+}
+
 //Executor ..
 func (s *Session) Executor(master bool) (Executor, error) {
 	var err error
