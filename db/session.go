@@ -59,49 +59,49 @@ func (s *Session) Executor(master bool) (Executor, error) {
 
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
 		return nil, err
 	}
-	return db.QueryContext(ctx, query, args)
+	return db.QueryContext(ctx, query, args...)
 }
 
 //Query ..
 func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	return s.QueryContext(s.ctx, query, args)
+	return s.QueryContext(s.ctx, query, args...)
 }
 
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	//todo 增加强制master逻辑
 	db, err := s.Executor(false)
 	if err != nil {
 		return nil
 	}
-	return db.QueryRowContext(ctx, query, args)
+	return db.QueryRowContext(ctx, query, args...)
 }
 
 //QueryRow ..
 func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
-	return s.QueryRowContext(s.ctx, query, args)
+	return s.QueryRowContext(s.ctx, query, args...)
 }
 
 //ExecContext ..
 func (s *Session) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, sql, args)
+	debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	db, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
-	return db.ExecContext(ctx, query, args)
+	return db.ExecContext(ctx, query, args...)
 }
 
 //Exec ..
 func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
-	return s.ExecContext(s.ctx, query, args)
+	return s.ExecContext(s.ctx, query, args...)
 }
 
 //Fetch ..
