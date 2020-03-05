@@ -147,7 +147,6 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	fields, err := scanner.ResolveModelToMap(dst)
 	if err != nil {
 		return nil, err
-		// panic(err)
 	}
 	pk := dstStruct.GetPk()
 	if pk != "" {
