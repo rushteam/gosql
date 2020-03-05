@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/mlboy/godb/builder"
-
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/mlboy/godb/builder"
 	"github.com/mlboy/godb/db"
 )
 
@@ -104,9 +103,9 @@ func main() {
 
 	var settings = make(map[string][]string, 0)
 	settings["default"] = []string{
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
-		"root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
+		"root:dream@tcp(127.0.0.1:3306)/rushteam?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s",
+		// "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
+		// "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true&timeout=5s&readTimeout=6s",
 	}
 	// cluster := pool.Init("mysql", settings)
 	_ = db.InitPool("mysql", settings)

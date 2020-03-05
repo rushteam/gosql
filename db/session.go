@@ -45,6 +45,19 @@ func NewSession(ctx context.Context, c Cluster) *Session {
 	return &Session{ctx: ctx, cluster: c, v: v}
 }
 
+//Executor ..
+func (s *Session) Executor(master bool) (Executor, error) {
+	var err error
+	if s.executor == nil {
+		if master == true {
+			s.executor, err = s.cluster.Master()
+		} else {
+			s.executor, err = s.cluster.Slave()
+		}
+	}
+	return s.executor, err
+}
+
 //Fetch ..
 func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
@@ -53,7 +66,7 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(false)
 	if err != nil {
 		return err
 	}
@@ -74,7 +87,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 	}
 	opts = append(opts, builder.Table(dstStruct.TableName()))
 	sql, args := builder.Select(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(false)
 	if err != nil {
 		return err
 	}
@@ -134,7 +147,7 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 	}
 
 	sql, args := builder.Update(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +190,7 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 	}
 
 	sql, args := builder.Insert(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +233,7 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 	}
 
 	sql, args := builder.Replace(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +269,7 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 		}
 	}
 	sql, args := builder.Delete(opts...)
-	executor, err := s.cluster.Master()
+	executor, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
@@ -280,7 +293,7 @@ func (s *Session) Rollback() error {
 	if s.executor == nil {
 		return errors.New("not found trans")
 	}
-	return s.executor.(*sql.Tx).Commit()
+	return s.executor.(*sql.Tx).Rollback()
 }
 
 //Begin ..
@@ -289,8 +302,8 @@ func Begin() (*Session, error) {
 		return nil, errors.New("db: not found session")
 	}
 	s := NewSession(context.TODO(), commonSession.cluster)
-	debugPrint("db: [session #%v] Begin", commonSession.v)
-	executor, err := commonSession.cluster.Master()
+	debugPrint("db: [session #%v] Begin", s.v)
+	executor, err := s.Executor(true)
 	if err != nil {
 		return nil, err
 	}
