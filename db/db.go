@@ -56,3 +56,13 @@ type Cluster interface {
 func debugPrint(format string, vals ...interface{}) {
 	fmt.Printf(format+"\r\n", vals...)
 }
+
+//SQLError ..
+type SQLError struct {
+	Number  uint16
+	Message string
+}
+
+func (e *SQLError) Error() string {
+	return fmt.Sprintf("Error %d: %s", e.Number, e.Message)
+}
