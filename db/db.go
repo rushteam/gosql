@@ -57,12 +57,12 @@ func debugPrint(format string, vals ...interface{}) {
 	fmt.Printf(format+"\r\n", vals...)
 }
 
-//SQLError ..
-type SQLError struct {
+//Error ..
+type Error struct {
 	Number  uint16
 	Message string
 }
 
-func (e *SQLError) Error() string {
+func (e *Error) Error() string {
 	return fmt.Sprintf("Error %d: %s", e.Number, e.Message)
 }
