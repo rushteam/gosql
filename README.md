@@ -76,6 +76,23 @@ FOR UPDATE
     fmt.Println(s.BuildSelect())
 ```
 
+## How to use
+
+1. init a db with config
+
+```golang
+var settings = make(map[string][]string, 0)
+settings["default"] = []string{
+    "user:pasword@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s",
+}
+err = db.InitPool("mysql", settings)
+if err != nil {
+    fmt.Println(err)
+}
+```
+
+the map key is group "default"  you can named it,if you want connect anther db.
+
 ## builder of API
 
 ### 创建语句
