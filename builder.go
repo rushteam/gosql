@@ -907,17 +907,6 @@ func OrWhere(key interface{}, vals ...interface{}) Option {
 	}
 }
 
-//Update ..
-func Update(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _update,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
-}
-
 //Set ..
 func Set(key string, val interface{}) Option {
 	//only use for update()
@@ -927,6 +916,18 @@ func Set(key string, val interface{}) Option {
 	}
 }
 
+//Build ..
+func Build(cmd uint8, opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: cmd,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
+
+/*
 //Insert ..
 func Insert(opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
@@ -949,6 +950,17 @@ func Replace(opts ...Option) (string, []interface{}) {
 	return s.Build()
 }
 
+//Update ..
+func Update(opts ...Option) (string, []interface{}) {
+	s := SQLSegments{
+		cmd: _update,
+	}
+	for _, opt := range opts {
+		s = opt(s)
+	}
+	return s.Build()
+}
+
 //Delete ..
 func Delete(opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
@@ -959,3 +971,4 @@ func Delete(opts ...Option) (string, []interface{}) {
 	}
 	return s.Build()
 }
+*/

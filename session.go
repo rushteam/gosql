@@ -1,4 +1,4 @@
-package db
+package godb
 
 import (
 	"context"
@@ -29,12 +29,12 @@ var vs uint64
 //Session ..
 type Session struct {
 	ctx         context.Context
+	cluster     Cluster
 	done        int32
 	v           uint64
 	executor    Executor
 	mutex       sync.RWMutex
 	forceMaster bool
-	cluster     Cluster
 }
 
 //NewSession ..
@@ -182,8 +182,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 	for k, v := range updateFields {
 		opts = append(opts, Set(k, v))
 	}
-
-	sql, args := Update(opts...)
+	sql, args := Build(_update, opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	scanner.UpdateModel(dst, updateFields)
@@ -220,7 +219,7 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := Insert(opts...)
+	sql, args := Build(_insert, opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -257,7 +256,7 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := Replace(opts...)
+	sql, args := Build(_replace, opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -288,7 +287,7 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 			opts = append(opts, Where(k, v))
 		}
 	}
-	sql, args := Delete(opts...)
+	sql, args := Build(_delete, opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
 }
