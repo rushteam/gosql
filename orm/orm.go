@@ -276,13 +276,3 @@ func (o *ORM) Delete() (sql.Result, error) {
 	}
 	return rst, nil
 }
-
-//BuilderUpdate ..
-// func (o *ORM) BuilderUpdate(f BuilderHandler) (sql.Result, error) {
-// 	f(o.builder)
-// 	rst, err := o.Db().Exec(o.builder.BuildUpdate(), o.builder.Args()...)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return rst, nil
-// }

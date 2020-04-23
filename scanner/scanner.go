@@ -137,18 +137,6 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 			}
 		}
 	}
-	// listValue := reflect.ValueOf(list)
-	// for _, field := range modelStruct.fields {
-	// 	// if !structVal.Field(field.index).Addr().CanSet() {
-	// 	// 	return fmt.Errorf("struct addr ")
-	// 	// }
-	// 	// fmt.Println(structVal.Field(field.index).Addr().CanSet())
-	// 	// fmt.Println(structVal.Field(field.index).Addr().Elem().CanSet())
-	// 	fieldValue := listValue.MapIndex(reflect.ValueOf(field.column))
-	// 	if fieldValue.IsValid() {
-	// 		structVal.Field(field.index).Addr().Elem().Set(listValue.MapIndex(reflect.ValueOf(field.column)))
-	// 	}
-	// }
 }
 
 //ResolveModelToMap 解析模型数据到 非零值不解析
@@ -381,8 +369,6 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	// dstRT := reflect.TypeOf(dst)
-	// dstRT.Field()
 	dstRV := reflect.ValueOf(dst)
 	//兼容指针逻辑
 	if dstRV.Kind() == reflect.Ptr {
@@ -394,10 +380,6 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 		if field, ok := dstStruct.fields[name]; ok {
 			if dstRV.Field(field.index).CanAddr() {
 				fieldValue := dstRV.Field(field.index).Addr().Interface()
-				// scanTarget, err := field.meddler.PreRead(fieldValue)
-				// if err != nil {
-				// 	return nil, fmt.Errorf("scanner.Targets: PreRead error on column %s: %v", name, err)
-				// }
 				switch fieldValue.(type) {
 				// case sql.Scanner:
 				//如果字段有scan方法 则调用
@@ -424,7 +406,8 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 	return targets, nil
 }
 
-//https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
+//Plugins ..
+//see https://github.com/russross/meddler/blob/038a8ef02b66198d4db78da3e9830fde52a7e072/meddler.go
 func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 	dstStruct, err := ResolveModelStruct(dst)
 	if err != nil {
@@ -442,15 +425,6 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 				fieldAddr := dstRV.Field(field.index).Addr().Interface()
 				_, _, _ = i, name, fieldAddr
 			}
-			// switch fieldAddr.(type) {
-			// case *time.Time:
-			// 	// fmt.Println(time.Unix(0, 0))
-			// 	// fieldAddr = targets[i].(time.Time)
-			// 	reflect.ValueOf(targets[i])
-			// 	// fieldAddr = time.Unix(12312314, 0)
-			// default:
-			// 	// targets = append(targets, fieldAddr)
-			// }
 			if err != nil {
 				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
 			}
@@ -480,7 +454,6 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		return fmt.Errorf("ScanAll called with pointer to non-slice: %T", dst)
 	}
 	ptrType := sliceVal.Type().Elem()
-
 	var eltType reflect.Type
 	if ptrType.Kind() != reflect.Ptr {
 		eltType = ptrType
@@ -497,9 +470,9 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		elt := eltVal.Interface()
 		// scan it
 		if err := scanRow(rows, elt); err != nil {
-			if err == sql.ErrNoRows {
-				return nil
-			}
+			// if err == sql.ErrNoRows {
+			// 	return nil
+			// }
 			return err
 		}
 		// add to the result slice
