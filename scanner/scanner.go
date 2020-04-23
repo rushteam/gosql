@@ -470,9 +470,9 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		elt := eltVal.Interface()
 		// scan it
 		if err := scanRow(rows, elt); err != nil {
-			// if err == sql.ErrNoRows {
-			// 	return nil
-			// }
+			if err == sql.ErrNoRows {
+				return nil
+			}
 			return err
 		}
 		// add to the result slice

@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+//ErrNoRows ..
+// var ErrNoRows = sql.ErrNoRows
+
 //Executor ..
 type Executor interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
