@@ -1,4 +1,4 @@
-package builder
+package godb
 
 import (
 	"bytes"

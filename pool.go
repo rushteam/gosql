@@ -1,4 +1,4 @@
-package db
+package godb
 
 import (
 	"context"
@@ -73,7 +73,6 @@ func (c *PoolCluster) Slave() (Executor, error) {
 	if setting, ok := c.settings[name]; ok {
 		var i int
 		n := len(setting) - 1
-		//idx := rand.New(rand.NewSource(time.Now().UnixNano())).Intn(len(setting[node]))
 		v := atomic.AddUint64(&c.idx, 1)
 		if n > 0 {
 			i = int(v)%(n) + 1

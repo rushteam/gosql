@@ -8,7 +8,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/mlboy/godb/builder"
 	"github.com/mlboy/godb/scanner"
 )
 
@@ -109,13 +108,13 @@ func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
 }
 
 //Fetch ..
-func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
+func (s *Session) Fetch(dst interface{}, opts ...Option) error {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
-	sql, args := builder.Select(opts...)
+	opts = append(opts, Table(dstStruct.TableName()))
+	sql, args := Select(opts...)
 	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
@@ -124,13 +123,13 @@ func (s *Session) Fetch(dst interface{}, opts ...builder.Option) error {
 }
 
 //FetchAll ..
-func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
+func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
-	sql, args := builder.Select(opts...)
+	opts = append(opts, Table(dstStruct.TableName()))
+	sql, args := Select(opts...)
 	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
@@ -139,7 +138,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...builder.Option) error {
 }
 
 //Update ..
-func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error) {
+func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -153,7 +152,7 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 		//若主键值不为空则增加主键条件
 		if id, ok := fields[pk]; ok {
 			if id != "" && id != nil {
-				opts = append(opts, builder.Where(pk, id))
+				opts = append(opts, Where(pk, id))
 			}
 			// delete(fields, pk)
 		}
@@ -178,13 +177,13 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 		//强制填充更新时间
 		updateFields[updatedAtField] = time.Now()
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
+	opts = append(opts, Table(dstStruct.TableName()))
 	//todo 这里增加批量操作直接setMap(updateFields)
 	for k, v := range updateFields {
-		opts = append(opts, builder.Set(k, v))
+		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := builder.Update(opts...)
+	sql, args := Update(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	scanner.UpdateModel(dst, updateFields)
@@ -192,7 +191,7 @@ func (s *Session) Update(dst interface{}, opts ...builder.Option) (Result, error
 }
 
 //Insert ..
-func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error) {
+func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -215,13 +214,13 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 		updateFields[updatedAtField] = time.Now()
 		updateFields[createdAtField] = time.Now()
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
+	opts = append(opts, Table(dstStruct.TableName()))
 	//todo 这里增加批量操作直接setMap(updateFields)
 	for k, v := range updateFields {
-		opts = append(opts, builder.Set(k, v))
+		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := builder.Insert(opts...)
+	sql, args := Insert(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -232,7 +231,7 @@ func (s *Session) Insert(dst interface{}, opts ...builder.Option) (Result, error
 }
 
 //Replace ..
-func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, error) {
+func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -252,13 +251,13 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 		updateFields[updatedAtField] = time.Now()
 		updateFields[createdAtField] = time.Now()
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
+	opts = append(opts, Table(dstStruct.TableName()))
 	//todo 这里增加批量操作直接setMap(updateFields)
 	for k, v := range updateFields {
-		opts = append(opts, builder.Set(k, v))
+		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := builder.Replace(opts...)
+	sql, args := Replace(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -269,7 +268,7 @@ func (s *Session) Replace(dst interface{}, opts ...builder.Option) (Result, erro
 }
 
 //Delete ..
-func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error) {
+func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -278,18 +277,18 @@ func (s *Session) Delete(dst interface{}, opts ...builder.Option) (Result, error
 	if err != nil {
 		return nil, err
 	}
-	opts = append(opts, builder.Table(dstStruct.TableName()))
+	opts = append(opts, Table(dstStruct.TableName()))
 	pk := dstStruct.GetPk()
 	for k, v := range fields {
 		if k == pk && k != "" {
 			//仅仅取model中的pk，其他一律忽略
-			opts = append(opts, builder.Where(k, v))
+			opts = append(opts, Where(k, v))
 			break
 		} else {
-			opts = append(opts, builder.Where(k, v))
+			opts = append(opts, Where(k, v))
 		}
 	}
-	sql, args := builder.Delete(opts...)
+	sql, args := Delete(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
 }
@@ -332,7 +331,7 @@ func Begin() (*Session, error) {
 }
 
 //Fetch ..
-func Fetch(dst interface{}, opts ...builder.Option) error {
+func Fetch(dst interface{}, opts ...Option) error {
 	if commonSession == nil {
 		return errors.New("db: not found session")
 	}
@@ -340,7 +339,7 @@ func Fetch(dst interface{}, opts ...builder.Option) error {
 }
 
 //FetchAll ..
-func FetchAll(dst interface{}, opts ...builder.Option) error {
+func FetchAll(dst interface{}, opts ...Option) error {
 	if commonSession == nil {
 		return errors.New("db: not found session")
 	}
@@ -348,7 +347,7 @@ func FetchAll(dst interface{}, opts ...builder.Option) error {
 }
 
 //Update ..
-func Update(dst interface{}, opts ...builder.Option) (Result, error) {
+func Update(dst interface{}, opts ...Option) (Result, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
@@ -356,7 +355,7 @@ func Update(dst interface{}, opts ...builder.Option) (Result, error) {
 }
 
 //Insert ..
-func Insert(dst interface{}, opts ...builder.Option) (Result, error) {
+func Insert(dst interface{}, opts ...Option) (Result, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
@@ -364,7 +363,7 @@ func Insert(dst interface{}, opts ...builder.Option) (Result, error) {
 }
 
 //Replace ..
-func Replace(dst interface{}, opts ...builder.Option) (Result, error) {
+func Replace(dst interface{}, opts ...Option) (Result, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
@@ -372,7 +371,7 @@ func Replace(dst interface{}, opts ...builder.Option) (Result, error) {
 }
 
 //Delete ..
-func Delete(dst interface{}, opts ...builder.Option) (Result, error) {
+func Delete(dst interface{}, opts ...Option) (Result, error) {
 	if commonSession == nil {
 		return nil, errors.New("db: not found session")
 	}
