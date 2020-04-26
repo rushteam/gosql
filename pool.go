@@ -1,7 +1,6 @@
 package godb
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"sync/atomic"
@@ -11,39 +10,7 @@ import (
 //DbOpts ..
 type DbOpts func(db *sql.DB) *sql.DB
 
-//PoolCluster ..
-type PoolCluster struct {
-	dbType   string
-	settings map[string][]string
-	pool     map[string]*sql.DB
-	idx      uint64
-	opts     []DbOpts
-	dbOpt    struct {
-		ConnMaxLifetime time.Duration
-		MaxIdleConns    int
-		MaxOpenConns    int
-	}
-}
-
-type PoolCluster2 struct {
-	driver string
-	dsn    []string
-	opts   []DbOpts
-}
-
-var cluster *PoolCluster2
-
-//NewCluster ..
-func NewCluster(driver string, dsn []string, opts ...DbOpts) {
-	cluster = &PoolCluster2{}
-	cluster.driver = driver
-	cluster.dsn = dsn
-	cluster.opts = opts
-	// poolCluster.dbType = dbType
-	// poolCluster.settings = settings
-	// poolCluster.pool = make(map[string]*sql.DB, len(settings))
-}
-
+/*
 //connect ..
 func (c *PoolCluster) connect(dbType string, dsn string, opts ...DbOpts) (*sql.DB, error) {
 	db, err := sql.Open(c.dbType, dsn)
@@ -102,6 +69,31 @@ func (c *PoolCluster) Slave() (Executor, error) {
 	return nil, nil
 }
 
+// //SetConnMaxLifetime ..
+// func SetConnMaxLifetime(d time.Duration) DbOpts {
+// 	return func(db *sql.DB) *sql.DB {
+// 		db.SetConnMaxLifetime(d)
+// 		return db
+// 	}
+// }
+
+// //SetMaxIdleConns ..
+// func SetMaxIdleConns(n int) DbOpts {
+// 	return func(db *sql.DB) *sql.DB {
+// 		db.SetMaxIdleConns(n)
+// 		return db
+// 	}
+// }
+
+// //SetMaxOpenConns ..
+// func SetMaxOpenConns(n int) DbOpts {
+// 	return func(db *sql.DB) *sql.DB {
+// 		db.SetMaxOpenConns(n)
+// 		return db
+// 	}
+// }
+
+
 //InitPool ..
 func InitPool(dbType string, settings map[string][]string, opts ...DbOpts) *PoolCluster {
 	c := &PoolCluster{}
@@ -113,19 +105,70 @@ func InitPool(dbType string, settings map[string][]string, opts ...DbOpts) *Pool
 	commonSession = NewSession(context.TODO(), c)
 	return c
 }
+*/
 
+//PoolClusterOpts ..
+type PoolClusterOpts func(p *PoolCluster) *PoolCluster
+
+//NewCluster ..
+func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
+	c := &PoolCluster{}
+	for _, opt := range opts {
+		c = opt(c)
+	}
+	return c
+}
+
+type dbEngine struct {
+	Db              *sql.DB
+	Dsn             string
+	Driver          string
+	ConnMaxLifetime time.Duration
+	MaxIdleConns    int
+	MaxOpenConns    int
+}
+
+func (d *dbEngine) Connect() (*sql.DB, error) {
+	if d.Db == nil {
+		db, err := sql.Open(d.Driver, d.Dsn)
+		if err != nil {
+			return nil, err
+		}
+		d.Db = db
+	}
+	return d.Db, nil
+}
+
+//PoolCluster ..
+type PoolCluster struct {
+	pools []*dbEngine
+	idx   uint64
+}
+
+//AddCluster ..
+func AddCluster(driver, dsn string) PoolClusterOpts {
+	return func(p *PoolCluster) *PoolCluster {
+		p.pools = append(p.pools, &dbEngine{
+			Driver: driver,
+			Dsn:    dsn,
+		})
+		return p
+	}
+}
+
+/*
 //SetConnMaxLifetime ..
-func SetConnMaxLifetime(d time.Duration) DbOpts {
-	return func(db *sql.DB) *sql.DB {
-		db.SetConnMaxLifetime(d)
-		return db
+func SetConnMaxLifetime(d time.Duration) PoolClusterOpts {
+	return func(p *PoolCluster) *PoolCluster {
+		p.ConnMaxLifetime = d
+		return p
 	}
 }
 
 //SetMaxIdleConns ..
 func SetMaxIdleConns(n int) DbOpts {
 	return func(db *sql.DB) *sql.DB {
-		db.SetMaxIdleConns(n)
+		p.MaxIdleConns = n
 		return db
 	}
 }
@@ -133,7 +176,34 @@ func SetMaxIdleConns(n int) DbOpts {
 //SetMaxOpenConns ..
 func SetMaxOpenConns(n int) DbOpts {
 	return func(db *sql.DB) *sql.DB {
-		db.SetMaxOpenConns(n)
+		p.MaxOpenConns = n
 		return db
 	}
+}
+*/
+
+//Master ..
+func (c *PoolCluster) Master() (Executor, error) {
+	if len(c.pools) > 0 {
+		dbx := c.pools[0]
+		debugPrint("db: [master] %s", dbx.Dsn)
+		return dbx.Connect()
+	}
+	return nil, errors.New("not found master db")
+}
+
+//Slave ..
+func (c *PoolCluster) Slave() (Executor, error) {
+	var i int
+	n := len(c.pools) - 1
+	v := atomic.AddUint64(&c.idx, 1)
+	if n > 0 {
+		i = int(v)%(n) + 1
+	}
+	if len(c.pools) > 0 {
+		dbx := c.pools[i]
+		debugPrint("db: [slave#%d] %s", dbx.Dsn)
+		return dbx.Connect()
+	}
+	return nil, errors.New("not found slave db")
 }
