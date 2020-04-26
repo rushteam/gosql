@@ -678,16 +678,9 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 				panic("just support one of vals")
 			}
 			//todo 为啥update 会走到这里？
-			fmt.Println("TEST----------:", vals)
+			panic(fmt.Sprintf("error vals: %v", vals))
 		}
 	}
-	// for i, s := range fieldSlice {
-	// 	if i > 0 {
-	// 		buffer.WriteString(", ")
-	// 	}
-	// 	buffer.WriteString(buildIdent(s))
-	// 	buffer.WriteString(" = ?")
-	// }
 	return buffer.String()
 }
 
@@ -916,8 +909,8 @@ func Set(key string, val interface{}) Option {
 	}
 }
 
-//Build ..
-func Build(cmd uint8, opts ...Option) (string, []interface{}) {
+//BuildSQL ..
+func buildSQL(cmd uint8, opts ...Option) (string, []interface{}) {
 	s := SQLSegments{
 		cmd: cmd,
 	}
@@ -927,48 +920,22 @@ func Build(cmd uint8, opts ...Option) (string, []interface{}) {
 	return s.Build()
 }
 
-/*
-//Insert ..
-func Insert(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _insert,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
+//InsertSQL ..
+func InsertSQL(opts ...Option) (string, []interface{}) {
+	return buildSQL(_insert, opts...)
 }
 
-//Replace ..
-func Replace(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _replace,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
+//ReplaceSQL ..
+func ReplaceSQL(opts ...Option) (string, []interface{}) {
+	return buildSQL(_replace, opts...)
 }
 
-//Update ..
-func Update(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _update,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
+//UpdateSQL ..
+func UpdateSQL(opts ...Option) (string, []interface{}) {
+	return buildSQL(_update, opts...)
 }
 
-//Delete ..
-func Delete(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _delete,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
+//DeleteSQL ..
+func DeleteSQL(opts ...Option) (string, []interface{}) {
+	return buildSQL(_delete, opts...)
 }
-*/

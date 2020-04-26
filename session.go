@@ -20,6 +20,8 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
+var sessionMaps map[uint64]*Session
+
 var commonSession *Session
 
 type executorFunc func(master bool) (Executor, error)
@@ -182,7 +184,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 	for k, v := range updateFields {
 		opts = append(opts, Set(k, v))
 	}
-	sql, args := Build(_update, opts...)
+	sql, args := UpdateSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	scanner.UpdateModel(dst, updateFields)
@@ -219,7 +221,7 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := Build(_insert, opts...)
+	sql, args := InsertSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -256,7 +258,7 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		opts = append(opts, Set(k, v))
 	}
 
-	sql, args := Build(_replace, opts...)
+	sql, args := ReplaceSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
@@ -287,7 +289,7 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 			opts = append(opts, Where(k, v))
 		}
 	}
-	sql, args := Build(_delete, opts...)
+	sql, args := DeleteSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
 }

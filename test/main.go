@@ -244,5 +244,6 @@ func main() {
 	// 	fmt.Println(err)
 	// }
 	// fmt.Println(rst)
+	db := gosql.NewSession()
 
 }
