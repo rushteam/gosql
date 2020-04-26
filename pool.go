@@ -8,7 +8,7 @@ import (
 )
 
 //DbOpts ..
-type DbOpts func(db *sql.DB) *sql.DB
+// type DbOpts func(db *sql.DB) *sql.DB
 
 /*
 //connect ..
@@ -145,8 +145,8 @@ type PoolCluster struct {
 	idx   uint64
 }
 
-//AddCluster ..
-func AddCluster(driver, dsn string) PoolClusterOpts {
+//AddDb ..
+func AddDb(driver, dsn string) PoolClusterOpts {
 	return func(p *PoolCluster) *PoolCluster {
 		p.pools = append(p.pools, &dbEngine{
 			Driver: driver,
@@ -154,6 +154,32 @@ func AddCluster(driver, dsn string) PoolClusterOpts {
 		})
 		return p
 	}
+}
+
+//Master ..
+func (c *PoolCluster) Master() (Executor, error) {
+	if len(c.pools) > 0 {
+		dbx := c.pools[0]
+		debugPrint("db: [master] %s", dbx.Dsn)
+		return dbx.Connect()
+	}
+	return nil, errors.New("not found master db")
+}
+
+//Slave ..
+func (c *PoolCluster) Slave() (Executor, error) {
+	var i int
+	n := len(c.pools) - 1
+	v := atomic.AddUint64(&c.idx, 1)
+	if n > 0 {
+		i = int(v)%(n) + 1
+	}
+	if len(c.pools) > 0 {
+		dbx := c.pools[i]
+		debugPrint("db: [slave#%d] %s", dbx.Dsn)
+		return dbx.Connect()
+	}
+	return nil, errors.New("not found slave db")
 }
 
 /*
@@ -181,29 +207,3 @@ func SetMaxOpenConns(n int) DbOpts {
 	}
 }
 */
-
-//Master ..
-func (c *PoolCluster) Master() (Executor, error) {
-	if len(c.pools) > 0 {
-		dbx := c.pools[0]
-		debugPrint("db: [master] %s", dbx.Dsn)
-		return dbx.Connect()
-	}
-	return nil, errors.New("not found master db")
-}
-
-//Slave ..
-func (c *PoolCluster) Slave() (Executor, error) {
-	var i int
-	n := len(c.pools) - 1
-	v := atomic.AddUint64(&c.idx, 1)
-	if n > 0 {
-		i = int(v)%(n) + 1
-	}
-	if len(c.pools) > 0 {
-		dbx := c.pools[i]
-		debugPrint("db: [slave#%d] %s", dbx.Dsn)
-		return dbx.Connect()
-	}
-	return nil, errors.New("not found slave db")
-}
