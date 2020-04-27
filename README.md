@@ -132,8 +132,32 @@ ret,err := db.Replace(&user,gosql.Where("id",1))
 
 ```
 ### UPDATE: Update(dst interface{}, opts ...Option) (Result, error)
-### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
+```
+type UserModel struct{
+    ID int `db:"id"`
+    Name string ``
+}
+func (u *UserModel) TableName() {
+    return "my_world"
+}
+user := &WorldModel{}
+user.Name = "jack Ma"
+ret,err := db.Update(&user,gosql.Where("id",1))
 
+```
+### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
+```
+type UserModel struct{
+    ID int `db:"id"`
+    Name string ``
+}
+func (u *UserModel) TableName() {
+    return "my_world"
+}
+user := &WorldModel{}
+ret,err := db.Delete(&user,gosql.Where("id",1))
+//sql: delete from my_world where id = 1
+```
 ## QUERY
 
 ### Get a record: db.Fetch(dst interface{}, opts ...Option) error
