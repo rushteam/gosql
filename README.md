@@ -4,10 +4,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rushteam/gosql)](https://goreportcard.com/report/github.com/rushteam/gosql)
 [![LICENSE](https://img.shields.io/github/license/rushteam/gosql)](https://github.com/rushteam/gosql/blob/master/LICENSE)
 
-
 # gosql
 
-A golang ORM 
+A golang ORM
 
 gosql 是一个数据库的golang库
 
@@ -34,7 +33,6 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 * session.go: session and maping to model 会话和模型
 * builder.go: for building SQL 构建sql
 * scanner/*: mapping struct and scan 映射模型
-
 
 ## Feature 功能
 
@@ -93,67 +91,79 @@ FOR UPDATE
     fmt.Println(s.BuildSelect())
 ```
 
-## How to use 如何使用
-1. Init db
+## Getting Started 开始使用
 
 ```golang
-db,err := gosql.NewCluster(
-    gosql.AddDb("mysql","user:pasword@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+package main
+
+import (
+    "fmt"
+
+    _ "github.com/go-sql-driver/mysql"
+    "github.com/rushteam/gosql"
 )
-if err != nil {
-    fmt.Println(err)
-}
-```
 
-2. define a model
-```golang
-type UserModel struct{
-    ID int `db:"id"`
+type UserModel struct {
+    ID   int    `db:"id"`
     Name string `db:"name"`
 }
-func (u *UserModel) TableName() {
+
+func (u *UserModel) TableName() string {
     return "my_user"
 }
-```
-3. write gosql
-```golang
-user := &UserModel{}
-err := db.Fetch(user,gosql.Where("id",1),gosql.Where("[like]name","j%"))
-```
 
+func main() {
+    db := gosql.NewCluster(
+        gosql.AddDb("mysql", "root:dream@tcp(127.0.0.1:3306)/rushteam?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+    )
+    user := &UserModel{}
+    err := db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
+    if err != nil {
+        fmt.Println(err)
+    }
+    fmt.Println(user)
+}
+
+```
 
 ## Doc 文档
 
 ## Auto
 
 ## Exec
+
 ### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
-```
+
+```golang
 user := &UserModel{}
 user.Name = "jack"
 ret,err := db.Insert(&user)
+```
 
-```
 ### REPALCE: db.Replace(dst interface{}, opts ...Option) (Result, error)
-```
+
+```golang
 user := &UserModel{}
 user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
+```
 
-```
 ### UPDATE: Update(dst interface{}, opts ...Option) (Result, error)
-```
+
+```golang
 user := &UserModel{}
 user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
+```
 
-```
 ### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
-```
+
+```golang
 user := &UserModel{}
 ret,err := db.Delete(&user,gosql.Where("id",1))
 //sql: delete from my_user where id = 1
 ```
+
 ## QUERY
 
 ### Get a record: db.Fetch(dst interface{}, opts ...Option) error
@@ -165,116 +175,143 @@ ret,err := db.Delete(&user,gosql.Where("id",1))
 ### WHERE
 
 #### gosql.Where("id",1)
-eq sql:
-```sql
-id = 1
-```
-#### gosql.Where("age[>]",18)
-eq sql:
-```sql
-age > 18
-```
-#### gosql.Where("id[in]",[]int{1,2})
-eq sql:
-```sql
-id in (1,2)
-```
-#### gosql.Where("id[!in]",[]int{1,2})
-eq sql:
-```sql
-id not in (1,2)
-```
-#### gosql.Where("name[~]","ja%")
 
-eq sql:
-```sql
-name like 'ja%'
+```golang
+gosql.Where("id",1)
+//sql: id = 1
 ```
 
-#### gosql.Where("name[!~]","ja%")
+#### gosql.Where("[>]age",18)
 
-eq sql:
-```sql
-name not like 'ja%'
+```golang
+gosql.Where("[>]age",18)
+//sql: age > 18
+```
+
+#### gosql.Where("[in]id",[]int{1,2})
+
+```golang
+gosql.Where("[in]id",[]int{1,2})
+//sql: id in (1,2)
+```
+
+#### gosql.Where("[!in]id",[]int{1,2})
+
+```golang
+gosql.Where("[!in]id",[]int{1,2})
+//sql: id not in (1,2)
+```
+
+#### gosql.Where("[~]name","ja%")
+
+```golang
+gosql.Where("[~]name","ja%")
+//sql: name like 'ja%'
+```
+
+#### gosql.Where("[!~]name","ja%")
+
+```golang
+gosql.Where("[!~]name","ja%")
+//sql: name not like 'ja%'
 ```
 
 ### 条件表达式 [?]
 
 #### [=] equal
-```
+
+```golang
 gosql.Where("[=]id",1)
 //sql: id = 1
 ```
+
 #### [!=] not equal 
-```
+
+```golang
 gosql.Where("[!=]id",1)
 //sql: id != 1
 ```
+
 #### [>] greater than
-```
+
+```golang
 gosql.Where("[>]id",1)
 //sql: id > 1
 ```
+
 #### [>=] greater or equal
-```
+
+```golang
 gosql.Where("[>=]id",1)
 //sql: id >= 1
 ```
 
 #### [<] less
-```
+
+```golang
 gosql.Where("[<]id",1)
 //sql: id < 1
 ```
+
 #### [<=] less or equal
-```
+
+```golang
 gosql.Where("[<=]id",1)
 //sql: id <= 1
 ```
 
 #### [in] in
-```
+
+```golang
 gosql.Where("[in]id",[]int{1,2})
 //sql: id in (1,2)
 ```
 
 #### [!in] not in
-```
+
+```golang
 gosql.Where("[!in]id",[]int{1,2})
 //sql: id not in (1,2)
 ```
 
 #### [is] is
-```
+
+```golang
 gosql.Where("[is]name",nil)
 //sql: name is null
 ```
 
 #### [!is] not is
-```
+
+```golang
 gosql.Where("[!is]name","")
 //sql: id is not ""
 ```
 
 #### [exists] exists
-```
+
+```golang
 gosql.Where("[exists]name","select 1")
 //sql: name exists(select 1)
 ```
+
 #### [!exists] not exists
-```
+
+```golang
 gosql.Where("[!exists]name","select 1")
 //sql: name not exists(select 1)
 ```
 
 #### [#] sql
-```
+
+```golang
 gosql.Where("[#]age=age-1")
-//sql: age = age-1 
+//sql: age = age-1
 ```
 
 ## Raw SQL: db.Query()
-```
+
+```golang
 rows,err := db.Query("select * from my_user where id = ?",1)
 //sql: select * from my_user where id = 1
 ```
@@ -282,18 +319,18 @@ rows,err := db.Query("select * from my_user where id = ?",1)
 ## select master or slave
 
 ### change to master: db.Master()
-```
+
+```golang
 db := db.Master()
 db.Fetch(...)
 ```
 
 ### change to slave: db.Slave()
 
-```
+```golang
 db := db.Slave()
 db.Fetch(...)
 ```
-
 
 ## builder of API
 
