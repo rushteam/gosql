@@ -102,6 +102,8 @@ if err != nil {
 
 ## Doc 文档
 
+## Auto
+
 ## Exec
 ### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
 ```
@@ -287,15 +289,15 @@ rows,err := db.Query("select * from world where id = ?",1)
 
 ### change to master: db.Master()
 ```
-master := db.Master()
-master.Fetch()
+db := db.Master()
+db.Fetch(...)
 ```
 
 ### change to slave: db.Slave()
 
 ```
-master := db.Slave()
-master.Fetch()
+db := db.Slave()
+db.Fetch(...)
 ```
 
 

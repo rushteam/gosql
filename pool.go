@@ -1,4 +1,4 @@
-package godb
+package gosql
 
 import (
 	"context"
