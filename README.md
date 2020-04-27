@@ -1,5 +1,3 @@
-
-[![Test](https://github.com/rushteam/gosql/workflows/Test/badge.svg?branch=master&event=push)
 [![GoDoc](https://godoc.org/github.com/rushteam/gosql?status.png)](http://godoc.org/github.com/rushteam/gosql)
 [![codecov](https://codecov.io/gh/rushteam/gosql/branch/master/graph/badge.svg)](https://codecov.io/gh/rushteam/gosql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rushteam/gosql)](https://goreportcard.com/report/github.com/rushteam/gosql)
