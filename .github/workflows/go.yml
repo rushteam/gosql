@@ -32,3 +32,8 @@ jobs:
 
     - name: Build
       run: go build -v .
+      
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.6
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
