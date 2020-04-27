@@ -102,7 +102,7 @@ if err != nil {
 ```golang
 type UserModel struct{
     ID int `db:"id"`
-    Name string ``
+    Name string `db:"name"`
 }
 func (u *UserModel) TableName() {
     return "my_user"
