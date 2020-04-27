@@ -49,7 +49,7 @@ type Tx interface {
 //Cluster ..
 type Cluster interface {
 	Master() (Executor, error)
-	Slave(v int) (Executor, error)
+	Slave(v uint64) (Executor, error)
 	Session() (*Session, error)
 	SessionContext(ctx context.Context) (*Session, error)
 	Begin() (*Session, error)

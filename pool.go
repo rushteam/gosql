@@ -162,7 +162,7 @@ func (c *PoolCluster) Master() (Executor, error) {
 }
 
 //Slave ..
-func (c *PoolCluster) Slave(v int) (Executor, error) {
+func (c *PoolCluster) Slave(v uint64) (Executor, error) {
 	var i int
 	n := len(c.pools) - 1
 	if n > 0 {
