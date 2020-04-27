@@ -51,3 +51,44 @@ func TestBuildInsert(t *testing.T) {
 		t.Errorf("SQLSegment.BuildInsert() = %v, want %v", result, want)
 	}
 }
+
+func TestBuildUpdate(t *testing.T) {
+	data := make(map[string]interface{})
+	data["name"] = "jack"
+	s := NewSQLSegment()
+	s.Table("test")
+	s.Where("[in]id", []int{1, 2, 3})
+	s.Update(data)
+	result := s.BuildUpdate()
+	want := "UPDATE `test` SET `name` = ? WHERE `id` IN (? ,? ,?)"
+	if result != want {
+		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+	}
+}
+
+func TestBuildReplace(t *testing.T) {
+	data := make(map[string]interface{})
+	data["name"] = "jack"
+	s := NewSQLSegment()
+	s.Table("test")
+	s.Insert(data)
+	result := s.BuildReplace()
+	want := "REPLACE INTO `test` (`name`) VALUES (?)"
+	if result != want {
+		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+	}
+}
+
+func TestBuildDelete(t *testing.T) {
+	data := make(map[string]interface{})
+	data["name"] = "jack"
+	s := NewSQLSegment()
+	s.Table("test")
+	s.Where("id", 1)
+	s.Delete()
+	result := s.BuildDelete()
+	want := "DELETE FROM `test` WHERE `id` = ?"
+	if result != want {
+		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+	}
+}
