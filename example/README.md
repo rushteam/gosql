@@ -1,3 +1,4 @@
+还没写例子,这里全是测试的代码请忽略
 ```
     db, err := sql.Open("mysql", "root:123321@tcp(192.168.33.10:3306)/auth?parseTime=true")
 	if err != nil {
