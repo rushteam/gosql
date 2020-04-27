@@ -189,34 +189,44 @@ func (c *PoolCluster) Begin() (*Session, error) {
 
 //Fetch ..
 func (c *PoolCluster) Fetch(dst interface{}, opts ...Option) error {
-	s := NewSession(context.TODO(), c)
-	debugPrint("db: [session #%v] Begin", s.v)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] Fetch", s.v)
 	return s.Fetch(dst, opts...)
 }
 
 //FetchAll ..
 func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
-	return c.FetchAll(dst, opts...)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] FetchAll", s.v)
+	return s.FetchAll(dst, opts...)
 }
 
 //Update ..
 func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
-	return c.Update(dst, opts...)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] Update", s.v)
+	return s.Update(dst, opts...)
 }
 
 //Insert ..
 func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
-	return c.Insert(dst, opts...)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] Insert", s.v)
+	return s.Insert(dst, opts...)
 }
 
 //Replace ..
 func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
-	return c.Replace(dst, opts...)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] Replace", s.v)
+	return s.Replace(dst, opts...)
 }
 
 //Delete ..
 func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
-	return c.Delete(dst, opts...)
+	s, _ := c.Session()
+	debugPrint("db: [session #%v] Delete", s.v)
+	return s.Delete(dst, opts...)
 }
 
 //NewCluster ..
