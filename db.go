@@ -56,6 +56,9 @@ type Cluster interface {
 	Fetch(dst interface{}, opts ...Option) error
 	FetchAll(dst interface{}, opts ...Option) error
 	Update(dst interface{}, opts ...Option) (Result, error)
+	Insert(dst interface{}, opts ...Option) (Result, error)
+	Replace(dst interface{}, opts ...Option) (Result, error)
+	Delete(dst interface{}, opts ...Option) (Result, error)
 }
 
 func debugPrint(format string, vals ...interface{}) {
