@@ -38,3 +38,16 @@ func TestBuildSelect(t *testing.T) {
 		t.Errorf("SQLSegment.BuildSelect() = %v, want %v", result, want)
 	}
 }
+
+func TestBuildInsert(t *testing.T) {
+	data := make(map[string]interface{})
+	data["name"] = "jack"
+	s := NewSQLSegment()
+	s.Table("test")
+	s.Insert(data)
+	result := s.BuildInsert()
+	want := "INSERT INTO `test` (`name`) VALUES (?)"
+	if result != want {
+		t.Errorf("SQLSegment.BuildInsert() = %v, want %v", result, want)
+	}
+}
