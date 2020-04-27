@@ -2,33 +2,38 @@
 
 A yet ORM for golang
 
-godb 是一个数据库的golang库
+gosql 是一个数据库的golang库
 
 ## Why build this wheels
 
-已经有那么多操作db的库了，为什么还要写godb？
+几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
+gorm不支持读写分离,关联表使用频率少
+gendry 是didi开源的一款,比较简洁但部分语法怪异 如group by 和 limit 依赖字段的约定
+sqlx 相比起来不错,但语法不够简洁,不支持读写分离,
 
-因为现有db类库（几乎是看遍所有github上开源的golang 的db项目)用起来总有不顺手的地方,比如gorm不支持读写分离,关联表使用频率少,比如sqlx语法不够简洁,比如gendry group by 、limit 语法怪异
-
-godb 是分模块化的一个db操作库 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql）分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
+gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql等
+本数据库参阅了大量现有数据库架构,参阅各种文献,自定义语法习惯,从零实现
+其中灵感来自:分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
 
 ## Structure
 
-* db: db pool，read and write 数据库管理（db池实现读写分离）
-* builder: for building SQL (拼接SQL)
-* scanner: mapping struct and scan (映射数据到结构体)
-* orm: use chain operation （链式操作db）
+* db.go: 基本结构定义
+* pool.go: 实现主从链接管理
+* session.go: 实现会话,model映射
+* builder.go: 主要负责拼接SQL for building SQL
+* scanner/: 映射数据到结构体 mapping struct and scan
+
 
 ## Feature
 
 * Versatile 功能多样的
 * Unlimited nesting query 查询条件无限嵌套
-* 读写分离
-* 数据库连接池
+* Reading and Writing Separation 读写分离
 
 ## Builder of DEMO
 
-先看看这条复杂的sql用builder如何实现？
+先举个例子说明gosql的能力
+下面这条复杂的sql用,如何用编写？
 
 ```sql
 SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b`
@@ -78,20 +83,191 @@ FOR UPDATE
 
 ## How to use
 
-1. init a db with config
+1. 初始化DB Init db
 
 ```golang
-var settings = make(map[string][]string, 0)
-settings["default"] = []string{
-    "user:pasword@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s",
-}
-err = db.InitPool("mysql", settings)
+db,err := gosql.NewCluster(
+    gosql.AddDb("mysql","user:pasword@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+)
 if err != nil {
     fmt.Println(err)
 }
 ```
 
-the map key is group "default"  you can named it,if you want connect anther db.
+
+## 文档 Doc
+
+## 操作 exec
+### 插入 db.Insert(dst interface{}, opts ...Option) (Result, error)
+```
+type UserModel struct{
+    ID int `db:"id"`
+    Name string ``
+}
+func (u *UserModel) TableName() {
+    return "my_world"
+}
+user := &WorldModel{}
+user.Name = "jack"
+ret,err := db.Insert(&user)
+
+```
+### 替换 db.Replace(dst interface{}, opts ...Option) (Result, error)
+```
+type UserModel struct{
+    ID int `db:"id"`
+    Name string ``
+}
+func (u *UserModel) TableName() {
+    return "my_world"
+}
+user := &WorldModel{}
+user.Name = "jack"
+ret,err := db.Replace(&user,gosql.Where("id",1))
+
+```
+### 修改 Update(dst interface{}, opts ...Option) (Result, error)
+### 删除 db.Delete(dst interface{}, opts ...Option) (Result, error)
+
+## 查询 query
+
+### 查询一条记录 db.Fetch(dst interface{}, opts ...Option) error
+
+### 查询多条记录 db.FetchAll(dst interface{}, opts ...Option) error
+
+## 选项 option
+
+### 条件 gosql.Where()
+
+#### gosql.Where("id",1)
+eq sql:
+```sql
+id = 1
+```
+#### gosql.Where("age[>]",18)
+eq sql:
+```sql
+age > 18
+```
+#### gosql.Where("id[in]",[]int{1,2})
+eq sql:
+```sql
+id in (1,2)
+```
+#### gosql.Where("id[!in]",[]int{1,2})
+eq sql:
+```sql
+id not in (1,2)
+```
+#### gosql.Where("name[~]","ja%")
+
+eq sql:
+```sql
+name like 'ja%'
+```
+
+#### gosql.Where("name[!~]","ja%")
+
+eq sql:
+```sql
+name not like 'ja%'
+```
+
+### 条件表达式 [?]
+
+#### [=] 等于 
+```
+gosql.Where("[=]id",1)
+//sql: id = 1
+```
+#### [!=] 不等于 
+```
+gosql.Where("[!=]id",1)
+//sql: id != 1
+```
+#### [>] 大于
+```
+gosql.Where("[>]id",1)
+//sql: id > 1
+```
+#### [>=] 大于等于
+```
+gosql.Where("[>=]id",1)
+//sql: id >= 1
+```
+
+#### [<] 小于
+```
+gosql.Where("[<]id",1)
+//sql: id < 1
+```
+#### [<=] 小于等于
+```
+gosql.Where("[<=]id",1)
+//sql: id <= 1
+```
+
+#### [in] in()
+```
+gosql.Where("[in]id",[]int{1,2})
+//sql: id in (1,2)
+```
+
+#### [!in] not in()
+```
+gosql.Where("[!in]id",[]int{1,2})
+//sql: id not in (1,2)
+```
+
+#### [is] is
+```
+gosql.Where("[is]name",nil)
+//sql: name is null
+```
+
+#### [!is] not is
+```
+gosql.Where("[!is]name","")
+//sql: id is not ""
+```
+
+#### [exists] not is
+```
+gosql.Where("[exists]name","select 1")
+//sql: name exists(select 1)
+```
+#### [!exists] not is
+```
+gosql.Where("[!exists]name","select 1")
+//sql: name not exists(select 1)
+```
+
+#### [#] sql
+```
+gosql.Where("[#]age=age-1")
+//sql: age = age-1 
+```
+
+## 原生SQL db.Query()
+```
+rows,err := db.Query("select * from world where id = ?",1)
+```
+
+## 主从选择
+
+### 强制选择主 db.Master()
+```
+master := db.Master()
+master.Fetch()
+```
+
+### 强制选择从 db.Slave()
+
+```
+master := db.Slave()
+master.Fetch()
+```
+
 
 ## builder of API
 
@@ -131,7 +307,7 @@ the map key is group "default"  you can named it,if you want connect anther db.
 
 * 不等于查询
 
-**用法** s.Where("[!]t1.status", "0")
+**用法** s.Where("[!=]t1.status", "0")
 
 **等效SQL** t1.status != 0
 
