@@ -114,7 +114,7 @@ func (u *UserModel) TableName() string {
 
 func main() {
     db := gosql.NewCluster(
-        gosql.AddDb("mysql", "root:dream@tcp(127.0.0.1:3306)/rushteam?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+        gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
     )
     user := &UserModel{}
     err := db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
