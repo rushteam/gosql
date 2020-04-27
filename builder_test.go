@@ -92,3 +92,27 @@ func TestBuildDelete(t *testing.T) {
 		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
 	}
 }
+
+func TestTbName(t *testing.T) {
+	s := NewSQLSegment()
+	s.Field("*")
+	s.Table(TbName{"table_1", "t1"})
+	result := s.BuildSelect()
+	want := "SELECT * FROM `table_1` AS `t1`"
+	if result != want {
+		t.Errorf("SQLSegment.TestTbName() = %v, want %v", result, want)
+	}
+}
+func TestTbNames(t *testing.T) {
+	var tables []TbName
+	tables = append(tables, TbName{"table_1", "t1"})
+	tables = append(tables, TbName{"table_2", "t2"})
+	s := NewSQLSegment()
+	s.Field("*")
+	s.Table(tables)
+	result := s.BuildSelect()
+	want := "SELECT * FROM `table_1` AS `t1`, `table_2` AS `t2`"
+	if result != want {
+		t.Errorf("SQLSegment.TestTbNames() = %v, want %v", result, want)
+	}
+}
