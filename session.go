@@ -106,7 +106,7 @@ func (s *Session) Fetch(dst interface{}, opts ...Option) error {
 		return err
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
-	sql, args := Select(opts...)
+	sql, args := SelectSQL(opts...)
 	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err
@@ -121,7 +121,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
 		return err
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
-	sql, args := Select(opts...)
+	sql, args := SelectSQL(opts...)
 	rows, err := s.QueryContext(s.ctx, sql, args...)
 	if err != nil {
 		return err

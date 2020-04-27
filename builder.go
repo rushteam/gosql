@@ -762,17 +762,6 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 //Option ..
 type Option func(q SQLSegments) SQLSegments
 
-//Select ..
-func Select(opts ...Option) (string, []interface{}) {
-	s := SQLSegments{
-		cmd: _select,
-	}
-	for _, opt := range opts {
-		s = opt(s)
-	}
-	return s.Build()
-}
-
 //Table ..
 func Table(name interface{}) Option {
 	return func(s SQLSegments) SQLSegments {
@@ -912,6 +901,11 @@ func buildSQL(cmd uint8, opts ...Option) (string, []interface{}) {
 		s = opt(s)
 	}
 	return s.Build()
+}
+
+//SelectSQL ..
+func SelectSQL(opts ...Option) (string, []interface{}) {
+	return buildSQL(_select, opts...)
 }
 
 //InsertSQL ..
