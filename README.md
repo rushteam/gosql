@@ -7,15 +7,20 @@ gosql 是一个数据库的golang库
 ## Why build this wheels
 
 几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
+
 gorm不支持读写分离,关联表使用频率少
+
 gendry 是didi开源的一款,比较简洁但部分语法怪异 如group by 和 limit 依赖字段的约定
+
 sqlx 相比起来不错,但语法不够简洁,不支持读写分离,
 
 gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql等
+
 本数据库参阅了大量现有数据库架构,参阅各种文献,自定义语法习惯,从零实现
+
 其中灵感来自:分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
 
-## Structure
+## Structure 结构
 
 * db.go: defined base struct define 基本结构定义
 * pool.go: db manger 管理db
@@ -24,13 +29,13 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 * scanner/*: mapping struct and scan 映射模型
 
 
-## Feature
+## Feature 功能
 
 * Versatile 功能多样的
 * Unlimited nesting query 查询条件无限嵌套
 * Reading and Writing Separation 读写分离
 
-## Builder of DEMO
+## Builder of DEMO 例子
 
 为了展示gosql的能力,先展示个例子:
 Let's look a demo:
@@ -81,7 +86,7 @@ FOR UPDATE
     fmt.Println(s.BuildSelect())
 ```
 
-## How to use
+## How to use 如何使用
 
 1. Init db
 
@@ -95,7 +100,7 @@ if err != nil {
 ```
 
 
-## Doc
+## Doc 文档
 
 ## Exec
 ### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
