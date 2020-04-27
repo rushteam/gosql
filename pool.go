@@ -129,8 +129,8 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 
 //PoolCluster ..
 type PoolCluster struct {
+	vs      uint64
 	pools   []*dbEngine
-	idx     uint64
 	session *Session
 }
 
@@ -139,8 +139,14 @@ type PoolClusterOpts func(p *PoolCluster) *PoolCluster
 
 //Session ..
 func (c *PoolCluster) Session() (*Session, error) {
+	return c.SessionContext(context.TODO())
+}
+
+//SessionContext ..
+func (c *PoolCluster) SessionContext(ctx context.Context) (*Session, error) {
 	if c.session == nil {
-		c.session = NewSession(context.TODO(), c)
+		v := atomic.AddUint64(&(c.vs), 1)
+		c.session = &Session{ctx: ctx, cluster: c, v: v}
 	}
 	return c.session, nil
 }
@@ -156,10 +162,9 @@ func (c *PoolCluster) Master() (Executor, error) {
 }
 
 //Slave ..
-func (c *PoolCluster) Slave() (Executor, error) {
+func (c *PoolCluster) Slave(v int) (Executor, error) {
 	var i int
 	n := len(c.pools) - 1
-	v := atomic.AddUint64(&c.idx, 1)
 	if n > 0 {
 		i = int(v)%(n) + 1
 	}
@@ -173,7 +178,7 @@ func (c *PoolCluster) Slave() (Executor, error) {
 
 //Begin ..
 func (c *PoolCluster) Begin() (*Session, error) {
-	s := NewSession(context.TODO(), c)
+	s, _ := c.Session()
 	debugPrint("db: [session #%v] Begin", s.v)
 	executor, err := s.Executor(true)
 	if err != nil {

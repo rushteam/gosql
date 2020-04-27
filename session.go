@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/mlboy/godb/scanner"
@@ -20,27 +19,20 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-var commonSession *Session
-
 type executorFunc func(master bool) (Executor, error)
 
-var vs uint64
+//SessionOpts ..
+type SessionOpts func(s *Session) *Session
 
 //Session ..
 type Session struct {
-	ctx         context.Context
 	cluster     Cluster
+	ctx         context.Context
 	done        int32
 	v           uint64
 	executor    Executor
 	mutex       sync.RWMutex
 	forceMaster bool
-}
-
-//NewSession ..
-func NewSession(ctx context.Context, c Cluster) *Session {
-	v := atomic.AddUint64(&vs, 1)
-	return &Session{ctx: ctx, cluster: c, v: v}
 }
 
 //Master 强制master
@@ -56,7 +48,7 @@ func (s *Session) Executor(master bool) (Executor, error) {
 		if master == true || s.forceMaster {
 			s.executor, err = s.cluster.Master()
 		} else {
-			s.executor, err = s.cluster.Slave()
+			s.executor, err = s.cluster.Slave(s.v)
 		}
 	}
 	return s.executor, err

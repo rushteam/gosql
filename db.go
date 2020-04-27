@@ -49,7 +49,13 @@ type Tx interface {
 //Cluster ..
 type Cluster interface {
 	Master() (Executor, error)
-	Slave() (Executor, error)
+	Slave(v int) (Executor, error)
+	Session() (*Session, error)
+	SessionContext(ctx context.Context) (*Session, error)
+	Begin() (*Session, error)
+	Fetch(dst interface{}, opts ...Option) error
+	FetchAll(dst interface{}, opts ...Option) error
+	Update(dst interface{}, opts ...Option) (Result, error)
 }
 
 func debugPrint(format string, vals ...interface{}) {
