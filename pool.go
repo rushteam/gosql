@@ -1,6 +1,7 @@
 package godb
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"sync/atomic"
@@ -106,19 +107,6 @@ func InitPool(dbType string, settings map[string][]string, opts ...DbOpts) *Pool
 	return c
 }
 */
-
-//PoolClusterOpts ..
-type PoolClusterOpts func(p *PoolCluster) *PoolCluster
-
-//NewCluster ..
-func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
-	c := &PoolCluster{}
-	for _, opt := range opts {
-		c = opt(c)
-	}
-	return c
-}
-
 type dbEngine struct {
 	Db              *sql.DB
 	Dsn             string
@@ -141,19 +129,20 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 
 //PoolCluster ..
 type PoolCluster struct {
-	pools []*dbEngine
-	idx   uint64
+	pools   []*dbEngine
+	idx     uint64
+	session *Session
 }
 
-//AddDb ..
-func AddDb(driver, dsn string) PoolClusterOpts {
-	return func(p *PoolCluster) *PoolCluster {
-		p.pools = append(p.pools, &dbEngine{
-			Driver: driver,
-			Dsn:    dsn,
-		})
-		return p
+//PoolClusterOpts ..
+type PoolClusterOpts func(p *PoolCluster) *PoolCluster
+
+//Session ..
+func (c *PoolCluster) Session() (*Session, error) {
+	if c.session == nil {
+		c.session = NewSession(context.TODO(), c)
 	}
+	return c.session, nil
 }
 
 //Master ..
@@ -180,6 +169,74 @@ func (c *PoolCluster) Slave() (Executor, error) {
 		return dbx.Connect()
 	}
 	return nil, errors.New("not found slave db")
+}
+
+//Begin ..
+func (c *PoolCluster) Begin() (*Session, error) {
+	s := NewSession(context.TODO(), c)
+	debugPrint("db: [session #%v] Begin", s.v)
+	executor, err := s.Executor(true)
+	if err != nil {
+		return nil, err
+	}
+	executor, err = executor.(DB).Begin()
+	if err != nil {
+		return nil, err
+	}
+	s.executor = executor
+	return s, nil
+}
+
+//Fetch ..
+func (c *PoolCluster) Fetch(dst interface{}, opts ...Option) error {
+	s := NewSession(context.TODO(), c)
+	debugPrint("db: [session #%v] Begin", s.v)
+	return s.Fetch(dst, opts...)
+}
+
+//FetchAll ..
+func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
+	return c.FetchAll(dst, opts...)
+}
+
+//Update ..
+func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
+	return c.Update(dst, opts...)
+}
+
+//Insert ..
+func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
+	return c.Insert(dst, opts...)
+}
+
+//Replace ..
+func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
+	return c.Replace(dst, opts...)
+}
+
+//Delete ..
+func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
+	return c.Delete(dst, opts...)
+}
+
+//NewCluster ..
+func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
+	c := &PoolCluster{}
+	for _, opt := range opts {
+		c = opt(c)
+	}
+	return c
+}
+
+//AddDb ..
+func AddDb(driver, dsn string) PoolClusterOpts {
+	return func(p *PoolCluster) *PoolCluster {
+		p.pools = append(p.pools, &dbEngine{
+			Driver: driver,
+			Dsn:    dsn,
+		})
+		return p
+	}
 }
 
 /*

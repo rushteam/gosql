@@ -20,8 +20,6 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-var sessionMaps map[uint64]*Session
-
 var commonSession *Session
 
 type executorFunc func(master bool) (Executor, error)
@@ -310,71 +308,4 @@ func (s *Session) Rollback() error {
 		return errors.New("not found trans")
 	}
 	return s.executor.(*sql.Tx).Rollback()
-}
-
-//Begin ..
-func Begin() (*Session, error) {
-	if commonSession == nil {
-		return nil, errors.New("db: not found session")
-	}
-	s := NewSession(context.TODO(), commonSession.cluster)
-	debugPrint("db: [session #%v] Begin", s.v)
-	executor, err := s.Executor(true)
-	if err != nil {
-		return nil, err
-	}
-	executor, err = executor.(DB).Begin()
-	if err != nil {
-		return nil, err
-	}
-	s.executor = executor
-	return s, nil
-}
-
-//Fetch ..
-func Fetch(dst interface{}, opts ...Option) error {
-	if commonSession == nil {
-		return errors.New("db: not found session")
-	}
-	return commonSession.Fetch(dst, opts...)
-}
-
-//FetchAll ..
-func FetchAll(dst interface{}, opts ...Option) error {
-	if commonSession == nil {
-		return errors.New("db: not found session")
-	}
-	return commonSession.FetchAll(dst, opts...)
-}
-
-//Update ..
-func Update(dst interface{}, opts ...Option) (Result, error) {
-	if commonSession == nil {
-		return nil, errors.New("db: not found session")
-	}
-	return commonSession.Update(dst, opts...)
-}
-
-//Insert ..
-func Insert(dst interface{}, opts ...Option) (Result, error) {
-	if commonSession == nil {
-		return nil, errors.New("db: not found session")
-	}
-	return commonSession.Insert(dst, opts...)
-}
-
-//Replace ..
-func Replace(dst interface{}, opts ...Option) (Result, error) {
-	if commonSession == nil {
-		return nil, errors.New("db: not found session")
-	}
-	return commonSession.Replace(dst, opts...)
-}
-
-//Delete ..
-func Delete(dst interface{}, opts ...Option) (Result, error) {
-	if commonSession == nil {
-		return nil, errors.New("db: not found session")
-	}
-	return commonSession.Delete(dst, opts...)
 }
