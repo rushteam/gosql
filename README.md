@@ -98,7 +98,7 @@ if err != nil {
 ## Doc
 
 ## Exec
-### insert db.Insert(dst interface{}, opts ...Option) (Result, error)
+### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
 ```
 type UserModel struct{
     ID int `db:"id"`
@@ -112,7 +112,7 @@ user.Name = "jack"
 ret,err := db.Insert(&user)
 
 ```
-### replace db.Replace(dst interface{}, opts ...Option) (Result, error)
+### REPALCE: db.Replace(dst interface{}, opts ...Option) (Result, error)
 ```
 type UserModel struct{
     ID int `db:"id"`
@@ -126,18 +126,18 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 
 ```
-### update Update(dst interface{}, opts ...Option) (Result, error)
-### delete db.Delete(dst interface{}, opts ...Option) (Result, error)
+### UPDATE: Update(dst interface{}, opts ...Option) (Result, error)
+### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
 
-## query
+## QUERY
 
 ### Get a record: db.Fetch(dst interface{}, opts ...Option) error
 
 ### Get multiple records: db.FetchAll(dst interface{}, opts ...Option) error
 
-## option
+## OPTION
 
-### where
+### WHERE
 
 #### gosql.Where("id",1)
 eq sql:
@@ -254,15 +254,15 @@ rows,err := db.Query("select * from world where id = ?",1)
 //sql: select * from world where id = 1
 ```
 
-## 主从选择
+## select master or slave
 
-### 强制选择主 db.Master()
+### change to master: db.Master()
 ```
 master := db.Master()
 master.Fetch()
 ```
 
-### 强制选择从 db.Slave()
+### change to slave: db.Slave()
 
 ```
 master := db.Slave()
