@@ -5,8 +5,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/mlboy/godb/builder"
-	"github.com/mlboy/godb/db"
+	"github.com/rushteam/gosql"
 )
 
 type S struct {
