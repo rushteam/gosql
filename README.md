@@ -56,7 +56,7 @@ FOR UPDATE
 ```
 
 ```golang
-    s := builder.New()
+    s := gosql.NewSQLSegment()
     s.Flag("DISTINCT")
     s.Field("*")
     s.Table("tbl1.t1")
@@ -64,7 +64,7 @@ FOR UPDATE
     s.Where("type", "A")
     s.Where("[in]sts", []string{"1", "2", "3", "4"})
     s.Where("[in]sts2", 1)
-    s.Where(func(s *builder.Clause) {
+    s.Where(func(s *gosql.Clause) {
         s.Where("a", "200")
         s.Where("b", "100")
     })
@@ -74,7 +74,7 @@ FOR UPDATE
     s.Having("ss", "1")
     s.Where("[~]a", "AA")
     s.Where("[exists]", "select 1")
-    s.Where("[exists]", func(s *builder.SQLSegments) {
+    s.Where("[exists]", func(s *gosql.SQLSegments) {
         s.Table("tbl2.t2")
         s.Where("xx", 10000)
     })

@@ -41,7 +41,6 @@ type SQLSegments struct {
 	render struct {
 		args []interface{}
 	}
-	checks map[int]bool
 	//sql cmd type: select|insert|repalce|update|delete
 	cmd uint8
 }
@@ -57,11 +56,6 @@ type Add int
 
 //Sub ..
 type Sub int
-
-//New ..
-func New() *SQLSegments {
-	return &SQLSegments{checks: make(map[int]bool, 0)}
-}
 
 //NewSQLSegment ..
 func NewSQLSegment() *SQLSegments {
