@@ -87,7 +87,6 @@ FOR UPDATE
 ```
 
 ## How to use 如何使用
-
 1. Init db
 
 ```golang
@@ -99,6 +98,22 @@ if err != nil {
 }
 ```
 
+2. define a model
+```golang
+type UserModel struct{
+    ID int `db:"id"`
+    Name string ``
+}
+func (u *UserModel) TableName() {
+    return "my_user"
+}
+```
+3. write gosql
+```golang
+user := &UserModel{}
+err := db.Fetch(user,gosql.Where("id",1),gosql.Where("[like]name","j%"))
+```
+
 
 ## Doc 文档
 
@@ -107,58 +122,30 @@ if err != nil {
 ## Exec
 ### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
 ```
-type UserModel struct{
-    ID int `db:"id"`
-    Name string ``
-}
-func (u *UserModel) TableName() {
-    return "my_world"
-}
-user := &WorldModel{}
+user := &UserModel{}
 user.Name = "jack"
 ret,err := db.Insert(&user)
 
 ```
 ### REPALCE: db.Replace(dst interface{}, opts ...Option) (Result, error)
 ```
-type UserModel struct{
-    ID int `db:"id"`
-    Name string ``
-}
-func (u *UserModel) TableName() {
-    return "my_world"
-}
-user := &WorldModel{}
+user := &UserModel{}
 user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 
 ```
 ### UPDATE: Update(dst interface{}, opts ...Option) (Result, error)
 ```
-type UserModel struct{
-    ID int `db:"id"`
-    Name string ``
-}
-func (u *UserModel) TableName() {
-    return "my_world"
-}
-user := &WorldModel{}
+user := &UserModel{}
 user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
 
 ```
 ### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
 ```
-type UserModel struct{
-    ID int `db:"id"`
-    Name string ``
-}
-func (u *UserModel) TableName() {
-    return "my_world"
-}
-user := &WorldModel{}
+user := &UserModel{}
 ret,err := db.Delete(&user,gosql.Where("id",1))
-//sql: delete from my_world where id = 1
+//sql: delete from my_user where id = 1
 ```
 ## QUERY
 
@@ -281,8 +268,8 @@ gosql.Where("[#]age=age-1")
 
 ## Raw SQL: db.Query()
 ```
-rows,err := db.Query("select * from world where id = ?",1)
-//sql: select * from world where id = 1
+rows,err := db.Query("select * from my_user where id = ?",1)
+//sql: select * from my_user where id = 1
 ```
 
 ## select master or slave
