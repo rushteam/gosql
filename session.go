@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mlboy/godb/scanner"
+	"github.com/rushteam/gosql/scanner"
 )
 
 //Result ..

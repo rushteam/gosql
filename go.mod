@@ -1,4 +1,4 @@
-module github.com/mlboy/godb
+module github.com/rushteam/gosql
 
 go 1.13
 
