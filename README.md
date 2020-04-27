@@ -1,6 +1,6 @@
-# godb
+# gosql
 
-A yet ORM for golang
+A golang ORM 
 
 gosql 是一个数据库的golang库
 
@@ -17,11 +17,11 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 
 ## Structure
 
-* db.go: 基本结构定义
-* pool.go: 实现主从链接管理
-* session.go: 实现会话,model映射
-* builder.go: 主要负责拼接SQL for building SQL
-* scanner/: 映射数据到结构体 mapping struct and scan
+* db.go: defined base struct define 基本结构定义
+* pool.go: db manger 管理db
+* session.go: session and maping to model 会话和模型
+* builder.go: for building SQL 构建sql
+* scanner/*: mapping struct and scan 映射模型
 
 
 ## Feature
@@ -32,8 +32,8 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 
 ## Builder of DEMO
 
-先举个例子说明gosql的能力
-下面这条复杂的sql用,如何用编写？
+为了展示gosql的能力,先展示个例子:
+Let's look a demo:
 
 ```sql
 SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b`
@@ -83,7 +83,7 @@ FOR UPDATE
 
 ## How to use
 
-1. 初始化DB Init db
+1. Init db
 
 ```golang
 db,err := gosql.NewCluster(
@@ -95,10 +95,10 @@ if err != nil {
 ```
 
 
-## 文档 Doc
+## Doc
 
-## 操作 exec
-### 插入 db.Insert(dst interface{}, opts ...Option) (Result, error)
+## Exec
+### insert db.Insert(dst interface{}, opts ...Option) (Result, error)
 ```
 type UserModel struct{
     ID int `db:"id"`
@@ -112,7 +112,7 @@ user.Name = "jack"
 ret,err := db.Insert(&user)
 
 ```
-### 替换 db.Replace(dst interface{}, opts ...Option) (Result, error)
+### replace db.Replace(dst interface{}, opts ...Option) (Result, error)
 ```
 type UserModel struct{
     ID int `db:"id"`
@@ -126,18 +126,18 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 
 ```
-### 修改 Update(dst interface{}, opts ...Option) (Result, error)
-### 删除 db.Delete(dst interface{}, opts ...Option) (Result, error)
+### update Update(dst interface{}, opts ...Option) (Result, error)
+### delete db.Delete(dst interface{}, opts ...Option) (Result, error)
 
-## 查询 query
+## query
 
-### 查询一条记录 db.Fetch(dst interface{}, opts ...Option) error
+### Get a record: db.Fetch(dst interface{}, opts ...Option) error
 
-### 查询多条记录 db.FetchAll(dst interface{}, opts ...Option) error
+### Get multiple records: db.FetchAll(dst interface{}, opts ...Option) error
 
-## 选项 option
+## option
 
-### 条件 gosql.Where()
+### where
 
 #### gosql.Where("id",1)
 eq sql:
@@ -175,45 +175,45 @@ name not like 'ja%'
 
 ### 条件表达式 [?]
 
-#### [=] 等于 
+#### [=] equal
 ```
 gosql.Where("[=]id",1)
 //sql: id = 1
 ```
-#### [!=] 不等于 
+#### [!=] not equal 
 ```
 gosql.Where("[!=]id",1)
 //sql: id != 1
 ```
-#### [>] 大于
+#### [>] greater than
 ```
 gosql.Where("[>]id",1)
 //sql: id > 1
 ```
-#### [>=] 大于等于
+#### [>=] greater or equal
 ```
 gosql.Where("[>=]id",1)
 //sql: id >= 1
 ```
 
-#### [<] 小于
+#### [<] less
 ```
 gosql.Where("[<]id",1)
 //sql: id < 1
 ```
-#### [<=] 小于等于
+#### [<=] less or equal
 ```
 gosql.Where("[<=]id",1)
 //sql: id <= 1
 ```
 
-#### [in] in()
+#### [in] in
 ```
 gosql.Where("[in]id",[]int{1,2})
 //sql: id in (1,2)
 ```
 
-#### [!in] not in()
+#### [!in] not in
 ```
 gosql.Where("[!in]id",[]int{1,2})
 //sql: id not in (1,2)
@@ -231,12 +231,12 @@ gosql.Where("[!is]name","")
 //sql: id is not ""
 ```
 
-#### [exists] not is
+#### [exists] exists
 ```
 gosql.Where("[exists]name","select 1")
 //sql: name exists(select 1)
 ```
-#### [!exists] not is
+#### [!exists] not exists
 ```
 gosql.Where("[!exists]name","select 1")
 //sql: name not exists(select 1)
@@ -248,9 +248,10 @@ gosql.Where("[#]age=age-1")
 //sql: age = age-1 
 ```
 
-## 原生SQL db.Query()
+## Raw SQL: db.Query()
 ```
 rows,err := db.Query("select * from world where id = ?",1)
+//sql: select * from world where id = 1
 ```
 
 ## 主从选择

@@ -17,6 +17,7 @@ type dbEngine struct {
 	MaxOpenConns    int
 }
 
+//Connect real open a db
 func (d *dbEngine) Connect() (*sql.DB, error) {
 	if d.Db == nil {
 		db, err := sql.Open(d.Driver, d.Dsn)
@@ -52,7 +53,7 @@ func (c *PoolCluster) SessionContext(ctx context.Context) (*Session, error) {
 	return c.session, nil
 }
 
-//Master ..
+//Master select db to master
 func (c *PoolCluster) Master() (Executor, error) {
 	if len(c.pools) > 0 {
 		dbx := c.pools[0]
@@ -62,7 +63,7 @@ func (c *PoolCluster) Master() (Executor, error) {
 	return nil, errors.New("not found master db")
 }
 
-//Slave ..
+//Slave select db to slave
 func (c *PoolCluster) Slave(v uint64) (Executor, error) {
 	var i int
 	n := len(c.pools) - 1
@@ -77,7 +78,7 @@ func (c *PoolCluster) Slave(v uint64) (Executor, error) {
 	return nil, errors.New("not found slave db")
 }
 
-//Begin ..
+//Begin a transaction
 func (c *PoolCluster) Begin() (*Session, error) {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Begin", s.v)
@@ -93,49 +94,49 @@ func (c *PoolCluster) Begin() (*Session, error) {
 	return s, nil
 }
 
-//Fetch ..
+//Fetch fetch record to model
 func (c *PoolCluster) Fetch(dst interface{}, opts ...Option) error {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Fetch", s.v)
 	return s.Fetch(dst, opts...)
 }
 
-//FetchAll ..
+//FetchAll fetch records to models
 func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] FetchAll", s.v)
 	return s.FetchAll(dst, opts...)
 }
 
-//Update ..
+//Update update from model
 func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Update", s.v)
 	return s.Update(dst, opts...)
 }
 
-//Insert ..
+//Insert insert from model
 func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Insert", s.v)
 	return s.Insert(dst, opts...)
 }
 
-//Replace ..
+//Replace replace from model
 func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Replace", s.v)
 	return s.Replace(dst, opts...)
 }
 
-//Delete ..
+//Delete delete record
 func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
 	s, _ := c.Session()
 	debugPrint("db: [session #%v] Delete", s.v)
 	return s.Delete(dst, opts...)
 }
 
-//NewCluster ..
+//NewCluster start
 func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
 	c := &PoolCluster{}
 	for _, opt := range opts {
@@ -144,7 +145,7 @@ func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
 	return c
 }
 
-//AddDb ..
+//AddDb add a db
 func AddDb(driver, dsn string) PoolClusterOpts {
 	return func(p *PoolCluster) *PoolCluster {
 		p.pools = append(p.pools, &dbEngine{

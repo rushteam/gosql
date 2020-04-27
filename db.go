@@ -11,7 +11,7 @@ import (
 //ErrNoRows ..
 // var ErrNoRows = sql.ErrNoRows
 
-//Executor ..
+//Executor is a Executor
 type Executor interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 	Prepare(query string) (*sql.Stmt, error)
