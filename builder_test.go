@@ -138,7 +138,7 @@ func TestSelectSQL(t *testing.T) {
 		Offset(0),
 		Limit(10),
 	)
-	want := "SELECT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10, want SELECT * FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) AND `age` IS NOT NUL"
+	want := "SELECT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10"
 	if result != want {
 		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
 	}
