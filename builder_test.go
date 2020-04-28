@@ -155,3 +155,21 @@ func TestInsertSQL(t *testing.T) {
 		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
 	}
 }
+
+func TestBatchInsertSQL(t *testing.T) {
+	v1 := make(map[string]interface{}, 0)
+	v1["a"] = 1
+	v1["b"] = "jack"
+	v2 := make(map[string]interface{}, 0)
+	v2["a"] = 2
+	v2["b"] = "tom"
+	result, _ := InsertSQL(
+		Table("table_1"),
+		Params(v1),
+		Params(v2),
+	)
+	want := "INSERT INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
+	if result != want {
+		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+	}
+}
