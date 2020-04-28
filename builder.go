@@ -518,6 +518,12 @@ func (s *SQLSegments) BuildSelect() string {
 	return sql
 }
 
+//Params ...
+func (s *SQLSegments) Params(vals ...map[string]interface{}) *SQLSegments {
+	s.params = append(s.params, vals...)
+	return s
+}
+
 //Insert ...
 func (s *SQLSegments) Insert(vals ...map[string]interface{}) *SQLSegments {
 	s.params = append(s.params, vals...)
@@ -888,6 +894,14 @@ func Set(key string, val interface{}) Option {
 	//only use for update()
 	return func(s SQLSegments) SQLSegments {
 		s.UpdateField(key, val)
+		return s
+	}
+}
+
+//Params ...
+func Params(vals ...map[string]interface{}) Option {
+	return func(s SQLSegments) SQLSegments {
+		s.Params(vals...)
 		return s
 	}
 }
