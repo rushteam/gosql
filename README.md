@@ -10,6 +10,25 @@ A golang ORM
 
 gosql 是一个数据库的golang库
 
+## Feature 功能
+
+* Goalng Style SQL Builder go语言风格sql生成
+* Unlimited nesting query 查询条件无限嵌套
+* Reading and Writing Separation 读写分离
+* Delay connection creation 延迟创建连接
+* ORM maping to sturct ORM映射结构体
+* Versatile 功能多样的
+* Clean Code 简洁的代码
+
+## Structure 结构
+
+* db.go: defined base struct define 基本结构定义
+* pool.go: db manger 管理db
+* session.go: session and maping to model 会话和模型
+* builder.go: for building SQL 构建sql
+* scanner/*: mapping struct and scan 映射模型
+
+
 ## Why build this wheels
 
 几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
@@ -25,20 +44,6 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 本数据库参阅了大量现有数据库架构,参阅各种文献,自定义语法习惯,从零实现
 
 其中灵感来自:分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
-
-## Structure 结构
-
-* db.go: defined base struct define 基本结构定义
-* pool.go: db manger 管理db
-* session.go: session and maping to model 会话和模型
-* builder.go: for building SQL 构建sql
-* scanner/*: mapping struct and scan 映射模型
-
-## Feature 功能
-
-* Versatile 功能多样的
-* Unlimited nesting query 查询条件无限嵌套
-* Reading and Writing Separation 读写分离
 
 ## Builder of DEMO 例子
 
