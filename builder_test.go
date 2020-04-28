@@ -116,3 +116,19 @@ func TestTbNames(t *testing.T) {
 		t.Errorf("SQLSegment.TestTbNames() = %v, want %v", result, want)
 	}
 }
+
+func TestSelectSQL(t *testing.T) {
+	result, _ := SelectSQL(
+		Table("table_1"),
+		Where("[!=]id", 1),
+		Where(func(s *Clause) {
+			s.OrWhere("[<]age", "20")
+			s.OrWhere("[>]age", "30")
+		}),
+		Where("[!is]age", nil),
+	)
+	want := "SELECT * FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) AND `age` IS NOT NULL"
+	if result != want {
+		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+	}
+}
