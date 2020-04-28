@@ -12,7 +12,7 @@ gosql 是一个数据库的golang库
 
 ## Feature 功能
 
-* Goalng Style SQL Builder go语言风格sql生成
+* Golang-style SQL builder go语言风格sql生成
 * Unlimited nesting query 查询条件无限嵌套
 * Reading and Writing Separation 读写分离
 * Delay connection creation 延迟创建连接
@@ -20,6 +20,7 @@ gosql 是一个数据库的golang库
 * Transactions 事务支持
 * Versatile 功能多样的
 * Clean Code 简洁的代码
+* Bulk Insert 支持批量插入
 
 ## Structure 结构
 
@@ -138,7 +139,9 @@ func main() {
 
 ## Exec
 
-### INSERT: db.Insert(dst interface{}, opts ...Option) (Result, error)
+### INSERT:
+
+db.Insert(dst interface{}, opts ...Option) (Result, error)
 
 ```golang
 user := &UserModel{}
@@ -146,7 +149,20 @@ user.Name = "jack"
 ret,err := db.Insert(&user)
 ```
 
-### REPALCE: db.Replace(dst interface{}, opts ...Option) (Result, error)
+batch insert:
+
+```golang
+users := []UserModel{}
+u1 := UserModel{Name:"jack"}
+u2 := UserModel{Name:"Tom"}
+users = append(users,u1)
+users = append(users,u2)
+ret,err := db.Insert(users)
+```
+
+### REPALCE: 
+
+db.Replace(dst interface{}, opts ...Option) (Result, error)
 
 ```golang
 user := &UserModel{}
@@ -154,7 +170,9 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 ```
 
-### UPDATE: Update(dst interface{}, opts ...Option) (Result, error)
+### UPDATE: 
+
+Update(dst interface{}, opts ...Option) (Result, error)
 
 ```golang
 user := &UserModel{}
@@ -162,7 +180,9 @@ user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
 ```
 
-### DELETE: db.Delete(dst interface{}, opts ...Option) (Result, error)
+### DELETE: 
+
+db.Delete(dst interface{}, opts ...Option) (Result, error)
 
 ```golang
 user := &UserModel{}
