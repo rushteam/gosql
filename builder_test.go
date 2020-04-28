@@ -35,7 +35,7 @@ func TestBuildSelect(t *testing.T) {
 	result := s.BuildSelect()
 	want := "SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `type` = ? AND `sts` IN (? ,? ,? ,?) AND `sts2` IN (?) AND ( `a` = ? AND `b` = ?) AND aaa = 999 AND ccc = ? AND `a` LIKE ? AND EXISTS (select 1) AND EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `xx` = ?) GROUP BY `id` HAVING `ss` = ? ORDER BY `id desc`, `id asc` LIMIT 30 OFFSET 10 FOR UPDATE"
 	if result != want {
-		t.Errorf("SQLSegment.BuildSelect() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -48,7 +48,7 @@ func TestBuildInsert(t *testing.T) {
 	result := s.BuildInsert()
 	want := "INSERT INTO `test` (`name`) VALUES (?)"
 	if result != want {
-		t.Errorf("SQLSegment.BuildInsert() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -62,7 +62,7 @@ func TestBuildUpdate(t *testing.T) {
 	result := s.BuildUpdate()
 	want := "UPDATE `test` SET `name` = ? WHERE `id` IN (? ,? ,?)"
 	if result != want {
-		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -75,7 +75,7 @@ func TestBuildReplace(t *testing.T) {
 	result := s.BuildReplace()
 	want := "REPLACE INTO `test` (`name`) VALUES (?)"
 	if result != want {
-		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -89,7 +89,7 @@ func TestBuildDelete(t *testing.T) {
 	result := s.BuildDelete()
 	want := "DELETE FROM `test` WHERE `id` = ?"
 	if result != want {
-		t.Errorf("SQLSegment.BuildUpdate() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -100,7 +100,7 @@ func TestTbName(t *testing.T) {
 	result := s.BuildSelect()
 	want := "SELECT * FROM `table_1` AS `t1`"
 	if result != want {
-		t.Errorf("SQLSegment.TestTbName() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 func TestTbNames(t *testing.T) {
@@ -113,7 +113,7 @@ func TestTbNames(t *testing.T) {
 	result := s.BuildSelect()
 	want := "SELECT * FROM `table_1` AS `t1`, `table_2` AS `t2`"
 	if result != want {
-		t.Errorf("SQLSegment.TestTbNames() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -140,7 +140,7 @@ func TestSelectSQL(t *testing.T) {
 	)
 	want := "SELECT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10"
 	if result != want {
-		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -148,11 +148,12 @@ func TestInsertSQL(t *testing.T) {
 	result, _ := InsertSQL(
 		Table("table_1"),
 		Set("a", "1"),
-		Set("b", "2"),
+		Set("b", "1"),
 	)
 	want := "INSERT INTO `table_1` (`a`,`b`) VALUES (?,?)"
-	if result != want {
-		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+	want2 := "INSERT INTO `table_1` (`b`,`a`) VALUES (?,?)"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
 
@@ -169,7 +170,38 @@ func TestBatchInsertSQL(t *testing.T) {
 		Params(v2),
 	)
 	want := "INSERT INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
-	if result != want {
-		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+	want2 := "INSERT INTO `table_1` (`b`,`a`) VALUES (?,?)"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestReplaceSQL(t *testing.T) {
+	result, _ := ReplaceSQL(
+		Table("table_1"),
+		Set("a", "1"),
+		Set("b", "2"),
+	)
+	want := "REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?)"
+	want2 := "REPLACE INTO `table_1` (`b`,`a`) VALUES (?,?)"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestBatchReplaceSQL(t *testing.T) {
+	v1 := make(map[string]interface{}, 0)
+	v1["a"] = 1
+	v1["b"] = "jack"
+	v2 := make(map[string]interface{}, 0)
+	v2["a"] = 2
+	v2["b"] = "tom"
+	result, _ := ReplaceSQL(
+		Table("table_1"),
+		Params(v1),
+		Params(v2),
+	)
+	want := "REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
+	want2 := "REPLACE INTO `table_1` (`b`,`a`) VALUES (?,?),(?,?)"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
