@@ -119,15 +119,26 @@ func TestTbNames(t *testing.T) {
 
 func TestSelectSQL(t *testing.T) {
 	result, _ := SelectSQL(
+		Columns("id", "name"),
 		Table("table_1"),
 		Where("[!=]id", 1),
 		Where(func(s *Clause) {
 			s.OrWhere("[<]age", "20")
 			s.OrWhere("[>]age", "30")
 		}),
+		OrWhere(func(s *Clause) {
+			s.Where("[>=]score", "90")
+			s.Where("[<=]age", "100")
+		}),
+		Where("[=]status", 1),
+		Where("[!~]desc", "%test%"),
 		Where("[!is]age", nil),
+		GroupBy("type"),
+		OrderBy("id DESC"),
+		Offset(0),
+		Limit(10),
 	)
-	want := "SELECT * FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) AND `age` IS NOT NULL"
+	want := "SELECT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10, want SELECT * FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) AND `age` IS NOT NUL"
 	if result != want {
 		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
 	}
