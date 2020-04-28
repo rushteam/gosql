@@ -24,7 +24,7 @@ gosql 是一个数据库的golang库
 ## Structure 结构
 
 * db.go: defined base struct define 基本结构定义
-* pool.go: db manger 管理db
+* pool.go: db manager 管理db
 * session.go: session and maping to model 会话和模型
 * builder.go: for building SQL 构建sql
 * scanner/*: mapping struct and scan 映射模型
