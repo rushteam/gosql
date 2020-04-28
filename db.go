@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+//Debug env
+var Debug = false
+
 //ErrNoRows ..
 // var ErrNoRows = sql.ErrNoRows
 
@@ -62,7 +65,9 @@ type Cluster interface {
 }
 
 func debugPrint(format string, vals ...interface{}) {
-	fmt.Printf(format+"\r\n", vals...)
+	if Debug {
+		fmt.Printf(format+"\r\n", vals...)
+	}
 }
 
 //Error ..
