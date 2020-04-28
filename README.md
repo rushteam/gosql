@@ -6,9 +6,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rushteam/gosql)](https://goreportcard.com/report/github.com/rushteam/gosql)
 [![LICENSE](https://img.shields.io/github/license/rushteam/gosql)](https://github.com/rushteam/gosql/blob/master/LICENSE)
 
-A golang ORM
+A easy ORM for golang
 
-gosql 是一个数据库的golang库
+gosql 是一个用golang实现的数据库操作类库
 
 ## Feature 功能
 

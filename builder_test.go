@@ -143,3 +143,15 @@ func TestSelectSQL(t *testing.T) {
 		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
 	}
 }
+
+func TestInsertSQL(t *testing.T) {
+	result, _ := InsertSQL(
+		Table("table_1"),
+		Set("a", "1"),
+		Set("b", "2"),
+	)
+	want := "INSERT INTO `table_1` (`a`,`b`) VALUES (?,?)"
+	if result != want {
+		t.Errorf("SQLSegment.TestSelectSQL() = %v, want %v", result, want)
+	}
+}
