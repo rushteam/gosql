@@ -29,7 +29,6 @@ gosql 是一个数据库的golang库
 * builder.go: for building SQL 构建sql
 * scanner/*: mapping struct and scan 映射模型
 
-
 ## Why build this wheels
 
 几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
@@ -231,7 +230,7 @@ gosql.Where("[=]id",1)
 //sql: id = 1
 ```
 
-#### [!=] not equal 
+#### [!=] not equal
 
 ```golang
 gosql.Where("[!=]id",1)
