@@ -174,7 +174,39 @@ ret,err := db.Delete(&user,gosql.Where("id",1))
 
 ### Get a record: db.Fetch(dst interface{}, opts ...Option) error
 
+```golang
+user := &UserModel{}
+err := db.Fetch(user, 
+    gosql.Columns("id","name"),
+    gosql.Where("id", 1),
+    gosql.Where("[like]name", "j%")
+    gosql.OrWhere(func(s *Clause) {
+        s.Where("[>=]score", "90")
+        s.Where("[<=]age", "100")
+    }),
+    GroupBy("type"),
+    OrderBy("score DESC"),
+)
+```
+
 ### Get multiple records: db.FetchAll(dst interface{}, opts ...Option) error
+
+```golang
+var userList []UserModel
+err := db.FetchAll(&userList, 
+    gosql.Columns("id","name"),
+    gosql.Where("id", 1),
+    gosql.Where("[like]name", "j%")
+    gosql.OrWhere(func(s *Clause) {
+        s.Where("[>]score", "90")
+        s.Where("[<]score", "100")
+    }),
+    GroupBy("type"),
+    OrderBy("score DESC"),
+    Offset(0),
+    Limit(10),
+)
+```
 
 ## OPTION
 

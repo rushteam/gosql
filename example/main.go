@@ -26,4 +26,29 @@ func main() {
 		fmt.Println(err)
 	}
 	fmt.Println(user)
+	err := db.Fetch(user, 
+		gosql.Columns("id","name"),
+		gosql.Where("id", 1),
+		gosql.Where("[like]name", "j%")
+		gosql.OrWhere(func(s *Clause) {
+			s.Where("[>=]score", "90")
+			s.Where("[<=]score", "100")
+		}),
+		GroupBy("type"),
+		OrderBy("score DESC"),
+	)
+	var userList []UserModel
+	err := db.FetchAll(&userList, 
+		gosql.Columns("id","name"),
+		gosql.Where("id", 1),
+		gosql.Where("[like]name", "j%")
+		gosql.OrWhere(func(s *Clause) {
+			s.Where("[>]score", "90")
+			s.Where("[<]score", "100")
+		}),
+		GroupBy("type"),
+		OrderBy("score DESC"),
+		Offset(0),
+		Limit(10),
+	)
 }
