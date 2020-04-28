@@ -17,6 +17,7 @@ gosql 是一个数据库的golang库
 * Reading and Writing Separation 读写分离
 * Delay connection creation 延迟创建连接
 * ORM maping to sturct ORM映射结构体
+* Transactions 事务支持
 * Versatile 功能多样的
 * Clean Code 简洁的代码
 
