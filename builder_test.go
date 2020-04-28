@@ -170,7 +170,7 @@ func TestBatchInsertSQL(t *testing.T) {
 		Params(v2),
 	)
 	want := "INSERT INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
-	want2 := "INSERT INTO `table_1` (`b`,`a`) VALUES (?,?)"
+	want2 := "INSERT INTO `table_1` (`b`,`a`) VALUES (?,?),(?,?)"
 	if result != want && result != want2 {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
