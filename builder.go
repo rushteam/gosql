@@ -868,7 +868,7 @@ func Limit(n int) Option {
 }
 
 //ForUpdate ..
-func ForUpdate(n int) Option {
+func ForUpdate() Option {
 	return func(s SQLSegments) SQLSegments {
 		s.ForUpdate()
 		return s
@@ -876,7 +876,7 @@ func ForUpdate(n int) Option {
 }
 
 //Returning ..
-func Returning(n int) Option {
+func Returning() Option {
 	return func(s SQLSegments) SQLSegments {
 		s.Returning()
 		return s
