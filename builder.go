@@ -167,6 +167,12 @@ func (s *SQLSegments) ForUpdate() *SQLSegments {
 	return s
 }
 
+//Returning SQLSegments
+func (s *SQLSegments) Returning() *SQLSegments {
+	s.returning = true
+	return s
+}
+
 //Clause ...
 type Clause struct {
 	key    interface{}
@@ -869,6 +875,14 @@ func Limit(n int) Option {
 func ForUpdate(n int) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.ForUpdate()
+		return s
+	}
+}
+
+//Returning ..
+func Returning(n int) Option {
+	return func(s SQLSegments) SQLSegments {
+		s.Returning()
 		return s
 	}
 }

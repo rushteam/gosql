@@ -12,8 +12,10 @@ func TestBuildSelect(t *testing.T) {
 	s.Where("t1.status", "0")
 	s.Where("name", "jack")
 	s.Where("[!=]nick", "tom")
-	s.Where("[in]role", []string{"1", "2", "3", "4"})
-	s.Where("[!in]card", 1)
+	s.Where("[in]role1", []string{"1", "2", "3", "4"})
+	s.Where("[!in]role2", []string{"1", "2", "3", "4"})
+	s.Where("[in]card1", 1)
+	s.Where("[!in]card2", 1)
 	s.Where(func(s *Clause) {
 		s.Where("[>]age", "20")
 		s.Where("[<]", "50")
@@ -29,13 +31,13 @@ func TestBuildSelect(t *testing.T) {
 		s.Table("tbl2.t2")
 		s.Where("t2.id", 10000)
 	})
-	s.GroupBy("class")
+	s.GroupBy("class,group")
 	s.OrderBy("score desc", "name asc")
 	s.Limit(30)
 	s.Offset(10)
 	s.ForUpdate()
 	result := s.BuildSelect()
-	want := "SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `name` = ? AND `nick` != ? AND `role` IN (? ,? ,? ,?) AND `card` NOT IN (?) AND ( `age` > ? AND `` < ?) AND v1 = 1 AND v2 = ? AND `desc` LIKE ? AND `desc`` NOT LIKE ? AND EXISTS (select 1) AND NOT EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `t2`.`id` = ?) GROUP BY `class` HAVING `class` = ? ORDER BY `score desc`, `name asc` LIMIT 30 OFFSET 10 FOR UPDATE"
+	want := "SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `name` = ? AND `nick` != ? AND `role1` IN (? ,? ,? ,?) AND `role2` NOT IN (? ,? ,? ,?) AND `card1` IN (?) AND `card2` NOT IN (?) AND ( `age` > ? AND `` < ?) AND v1 = 1 AND v2 = ? AND `desc` LIKE ? AND `desc`` NOT LIKE ? AND EXISTS (select 1) AND NOT EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `t2`.`id` = ?) GROUP BY `class,group` HAVING `class` = ? ORDER BY `score desc`, `name asc` LIMIT 30 OFFSET 10 FOR UPDATE"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
