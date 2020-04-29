@@ -9,12 +9,10 @@ import (
 )
 
 type dbEngine struct {
-	Db              *sql.DB
-	Dsn             string
-	Driver          string
-	ConnMaxLifetime time.Duration
-	MaxIdleConns    int
-	MaxOpenConns    int
+	Db     *sql.DB
+	Dsn    string
+	Driver string
+	Opts   []DbOption
 }
 
 //Connect real open a db
@@ -23,6 +21,9 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 		db, err := sql.Open(d.Driver, d.Dsn)
 		if err != nil {
 			return nil, err
+		}
+		for _, opt := range d.Opts {
+			db = opt(db)
 		}
 		d.Db = db
 	}
@@ -146,63 +147,41 @@ func NewCluster(opts ...PoolClusterOpts) *PoolCluster {
 }
 
 //AddDb add a db
-func AddDb(driver, dsn string) PoolClusterOpts {
+func AddDb(driver, dsn string, opts ...DbOption) PoolClusterOpts {
+	db := &dbEngine{
+		Driver: driver,
+		Dsn:    dsn,
+		Opts:   opts,
+	}
 	return func(p *PoolCluster) *PoolCluster {
-		p.pools = append(p.pools, &dbEngine{
-			Driver: driver,
-			Dsn:    dsn,
-		})
+		p.pools = append(p.pools, db)
 		return p
 	}
 }
 
-//DbOpts ..
-// type DbOpts func(db *sql.DB) *sql.DB
-// //SetConnMaxLifetime ..
-// func SetConnMaxLifetime(d time.Duration) DbOpts {
-// 	return func(db *sql.DB) *sql.DB {
-// 		db.SetConnMaxLifetime(d)
-// 		return db
-// 	}
-// }
+//DbOption ..
+type DbOption func(db *sql.DB) *sql.DB
 
-// //SetMaxIdleConns ..
-// func SetMaxIdleConns(n int) DbOpts {
-// 	return func(db *sql.DB) *sql.DB {
-// 		db.SetMaxIdleConns(n)
-// 		return db
-// 	}
-// }
-
-// //SetMaxOpenConns ..
-// func SetMaxOpenConns(n int) DbOpts {
-// 	return func(db *sql.DB) *sql.DB {
-// 		db.SetMaxOpenConns(n)
-// 		return db
-// 	}
-// }
-/*
 //SetConnMaxLifetime ..
-func SetConnMaxLifetime(d time.Duration) PoolClusterOpts {
-	return func(p *PoolCluster) *PoolCluster {
-		p.ConnMaxLifetime = d
-		return p
+func SetConnMaxLifetime(d time.Duration) DbOption {
+	return func(db *sql.DB) *sql.DB {
+		db.SetConnMaxLifetime(d)
+		return db
 	}
 }
 
 //SetMaxIdleConns ..
-func SetMaxIdleConns(n int) DbOpts {
+func SetMaxIdleConns(n int) DbOption {
 	return func(db *sql.DB) *sql.DB {
-		p.MaxIdleConns = n
+		db.SetMaxIdleConns(n)
 		return db
 	}
 }
 
 //SetMaxOpenConns ..
-func SetMaxOpenConns(n int) DbOpts {
+func SetMaxOpenConns(n int) DbOption {
 	return func(db *sql.DB) *sql.DB {
-		p.MaxOpenConns = n
+		db.SetMaxOpenConns(n)
 		return db
 	}
 }
-*/
