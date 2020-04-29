@@ -231,11 +231,11 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 			return modelStruct, nil
 		}
 		if structRT.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("scanner called with non-pointer destination %v", structRT)
+			return nil, fmt.Errorf("Must be a pointer, scanner called with non-pointer destination %v", structRT)
 		}
 		structRT = structRT.Elem() //struct
 		if structRT.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("scanner called with pointer to non-struct %v", structRT)
+			return nil, fmt.Errorf("Must point to struct, scanner called with pointer to non-struct %v", structRT)
 		}
 
 		// modelStruct.table = structRT.Elem().Name()
