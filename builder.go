@@ -619,7 +619,8 @@ func (s *SQLSegments) UnsafeUpdate(vals map[string]interface{}) *SQLSegments {
 //buildReturning ...
 func (s *SQLSegments) buildReturning() string {
 	if s.returning == true {
-		return " RETURNING"
+		// return " RETURNING"
+		return "" //mysql not suport
 	}
 	return ""
 }
