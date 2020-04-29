@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+//DbOption ..
+type DbOption func(db *sql.DB) *sql.DB
+
 type dbEngine struct {
 	Db     *sql.DB
 	Dsn    string
@@ -158,9 +161,6 @@ func AddDb(driver, dsn string, opts ...DbOption) PoolClusterOpts {
 		return p
 	}
 }
-
-//DbOption ..
-type DbOption func(db *sql.DB) *sql.DB
 
 //SetConnMaxLifetime ..
 func SetConnMaxLifetime(d time.Duration) DbOption {
