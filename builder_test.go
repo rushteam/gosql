@@ -155,6 +155,7 @@ func TestTbNames(t *testing.T) {
 
 func TestSelectSQL(t *testing.T) {
 	result, _ := SelectSQL(
+		Flag("DISTINCT"),
 		Columns("id", "name"),
 		Table("table_1"),
 		Where("[!=]id", 1),
@@ -174,7 +175,7 @@ func TestSelectSQL(t *testing.T) {
 		Offset(0),
 		Limit(10),
 	)
-	want := "SELECT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10"
+	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
