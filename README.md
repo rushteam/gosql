@@ -180,7 +180,7 @@ users = append(users,u2)
 ret,err := db.Insert(users)
 ```
 
-### REPALCE: 
+### REPALCE:
 
 db.Replace(dst interface{}, opts ...Option) (Result, error)
 
@@ -190,7 +190,7 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 ```
 
-### UPDATE: 
+### UPDATE:
 
 Update(dst interface{}, opts ...Option) (Result, error)
 
@@ -200,7 +200,7 @@ user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
 ```
 
-### DELETE: 
+### DELETE:
 
 db.Delete(dst interface{}, opts ...Option) (Result, error)
 
@@ -216,7 +216,7 @@ ret,err := db.Delete(&user,gosql.Where("id",1))
 
 ```golang
 user := &UserModel{}
-err := db.Fetch(user, 
+err := db.Fetch(user,
     gosql.Columns("id","name"),
     gosql.Where("id", 1),
     gosql.Where("[like]name", "j%")
@@ -233,7 +233,7 @@ err := db.Fetch(user,
 
 ```golang
 var userList []UserModel
-err := db.FetchAll(&userList, 
+err := db.FetchAll(&userList,
     gosql.Columns("id","name"),
     gosql.Where("id", 1),
     gosql.Where("[like]name", "j%")
@@ -352,14 +352,14 @@ gosql.Where("[!in]id",[]int{1,2})
 //sql: id not in (1,2)
 ```
 
-#### [is] is
+#### [is] is null
 
 ```golang
 gosql.Where("[is]name",nil)
 //sql: name is null
 ```
 
-#### [!is] not is
+#### [!is] not is null
 
 ```golang
 gosql.Where("[!is]name","")
