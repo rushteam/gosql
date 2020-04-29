@@ -210,16 +210,27 @@ func TestUpdateSQL(t *testing.T) {
 	v1 := make(map[string]interface{}, 0)
 	v1["a"] = 1
 	v1["b"] = "jack"
-	v2 := make(map[string]interface{}, 0)
-	v2["a"] = 2
-	v2["b"] = "tom"
 	result, _ := UpdateSQL(
 		Table("table_1"),
 		Params(v1),
-		Params(v2),
 	)
-	want := "REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
-	want2 := "REPLACE INTO `table_1` (`b`,`a`) VALUES (?,?),(?,?)"
+	want := "UPDATE `table_1` SET `a` = ?, `b` = ?"
+	want2 := "UPDATE `table_1` SET `b` = ?, `a` = ?"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+
+func TestDeleteSQL(t *testing.T) {
+	v1 := make(map[string]interface{}, 0)
+	v1["a"] = 1
+	v1["b"] = "jack"
+	result, _ := DeleteSQL(
+		Table("table_1"),
+		Params(v1),
+	)
+	want := "DELETE FROM `table_1`"
+	want2 := "UPDATE `table_1` SET `b` = ?, `a` = ?"
 	if result != want && result != want2 {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
