@@ -650,10 +650,10 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 	}
 	r, _ := regexp.Compile(`\[(\+|\-)\]?([a-zA-Z0-9_.\-\=\s\?\(\)]*)`)
 	for i, vals := range s.params {
+		if len(vals) == 0 {
+			panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
+		}
 		if i == 0 {
-			if len(vals) == 0 {
-				panic(fmt.Sprintf("Must be have values after 'UPDATE %s SET'", s.buildTable()))
-			}
 			j := 0
 			for arg, val := range vals {
 				// fieldSlice = append(fieldSlice, arg)
@@ -679,12 +679,8 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 				j++
 			}
 		} else {
-			if len(vals) == 0 {
-				//just support one of vals
-				panic("just support one of vals")
-			}
-			//todo 为啥update 会走到这里？
-			panic(fmt.Sprintf("error vals: %v", vals))
+			//when update just support one of vals
+			panic(fmt.Sprintf("when update just support one of vals: %v", vals))
 		}
 	}
 	return buffer.String()
