@@ -137,40 +137,49 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 	}
 }
 
-//ResolveModelToMap 解析模型数据到 非零值不解析
-func ResolveModelToMap(dst interface{}) (map[string]interface{}, error) {
+func getStructVal(structRV reflect.Value, index int) interface{} {
+	if structRV.Field(index).Kind() == reflect.Ptr {
+		//忽略掉指针为nil 和 零值情况
+		if structRV.Field(index).IsNil() {
+			//指针为nil时候的处理
+			return nil
+			//return reflect.New(structRV.Field(field.index).Type()).Interface()
+		}
+		if structRV.Field(index).Elem().IsZero() || structRV.Field(index).Elem().IsValid() {
+			return nil
+		}
+		return structRV.Field(index).Elem().Interface()
+	}
+	if structRV.Field(index).IsZero() {
+		return nil
+	}
+	return structRV.Field(index).Interface()
+}
+
+//ResolveStructValue 解析模型数据到 非零值不解析
+func ResolveStructValue(dst interface{}) (map[string]interface{}, error) {
 	var list = make(map[string]interface{}, 0)
-	structRV := reflect.ValueOf(dst).Elem()
+	dstRV := reflect.ValueOf(dst)
+	//兼容指针逻辑
+	if dstRV.Kind() == reflect.Ptr {
+		dstRV = dstRV.Elem()
+	}
 	//如果是数组则忽略
-	if structRV.Kind() == reflect.Slice {
-		return list, nil
+	// if dstRV.Kind() == reflect.Slice {
+	// 	return nil, nil
+	// }
+	if dstRV.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("Must be a struct, scanner called with non-struct: %v", dstRV.Kind())
 	}
 	modelStruct, err := ResolveModelStruct(dst)
 	if err != nil {
 		return list, err
 	}
 	for _, field := range modelStruct.fields {
-		if structRV.Field(field.index).Kind() == reflect.Ptr {
-			//忽略掉指针为nil 和 零值情况
-			if structRV.Field(field.index).IsNil() {
-				//指针为nil时候的处理
-				continue
-				// list[field.column] = reflect.New(structRV.Field(field.index).Type()).Interface()
-				// list[field.column] = sql.NullString
-			}
-			if structRV.Field(field.index).Elem().IsZero() || structRV.Field(field.index).Elem().IsValid() {
-				continue
-			}
-			list[field.column] = structRV.Field(field.index).Elem().Interface()
-			continue
+		v := getStructVal(dstRV, field.index)
+		if v != nil {
+			list[field.column] = v
 		}
-		// if isZeroVal(structRV.Field(field.index)) {
-		// 	continue
-		// }
-		if structRV.Field(field.index).IsZero() {
-			continue
-		}
-		list[field.column] = structRV.Field(field.index).Addr().Interface()
 	}
 	return list, nil
 }
@@ -200,9 +209,8 @@ func FormatName(name string) string {
 
 //ResolveModelStruct 解析模型
 func ResolveModelStruct(dst interface{}) (*StructData, error) {
-	var structRV reflect.Value
 	var structRT reflect.Type
-	modelStruct := new(StructData)
+	var structRV reflect.Value
 	dstRV := reflect.ValueOf(dst)
 	//兼容指针逻辑
 	if dstRV.Kind() == reflect.Ptr {
@@ -221,29 +229,30 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 		structRV = reflect.New(structRT)
 	} else {
 		//dst (struct)
-		structRT = reflect.TypeOf(dst)
-		refStructCacheMutex.Lock()
-		defer refStructCacheMutex.Unlock()
-
-		if modelStruct, ok := refStructCache[structRT]; ok {
-			return modelStruct, nil
-		}
+		//fmt.Println(dstRV.Type(), structRT)
+		// structRT = reflect.TypeOf(dst)
+		structRT = dstRV.Type()
+		structRV = dstRV
 		if structRT.Kind() != reflect.Ptr {
-			return nil, fmt.Errorf("Must be a pointer, scanner called with non-pointer destination %v", structRT)
+			// return nil, fmt.Errorf("Must be a pointer, scanner called with non-pointer destination %v", structRT)
 		}
-		structRT = structRT.Elem() //struct
+		if structRT.Kind() == reflect.Ptr {
+			structRT = structRT.Elem() //struct
+		}
 		if structRT.Kind() != reflect.Struct {
 			return nil, fmt.Errorf("Must point to struct, scanner called with pointer to non-struct %v", structRT)
 		}
-
-		// modelStruct.table = structRT.Elem().Name()
 		//兼容
-		if reflect.ValueOf(dst).IsValid() {
-			structRV = reflect.New(structRT)
-		} else {
-			structRV = reflect.ValueOf(dst).Elem()
-		}
+		// if dstRV.IsValid() {
+		// 	structRV = reflect.New(structRT).Elem()
+		// } else {
+		// 	structRV = dstRV
+		// }
 	}
+	if modelStruct, ok := refStructCache[structRT]; ok {
+		return modelStruct, nil
+	}
+	modelStruct := new(StructData)
 	//这里从value上获取到自定义method上的table name
 	fnTableName := structRV.MethodByName(tableFuncName)
 	if fnTableName.IsValid() {
@@ -256,7 +265,6 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 		// }
 	}
 	modelStruct.fields = make(map[string]*StructField)
-
 	for i := 0; i < structRT.NumField(); i++ {
 		f := structRT.Field(i)
 		// skip non-exported fields
@@ -274,7 +282,6 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 		if column == "-" {
 			continue
 		}
-
 		if _, ok := modelStruct.fields[column]; ok {
 			return nil, fmt.Errorf("scanner found multiple fields for column %s", column)
 		}
@@ -321,44 +328,10 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 			// plugins:    plugins,
 		}
 	}
+	refStructCacheMutex.Lock()
+	defer refStructCacheMutex.Unlock()
 	refStructCache[structRT] = modelStruct
 	return modelStruct, nil
-}
-func scanRow(rows *sql.Rows, dst interface{}) error {
-	if rows == nil {
-		return fmt.Errorf("rows is a pointer, but not be a nil")
-	}
-	// get the sql columns
-	columns, err := rows.Columns()
-	if err != nil {
-		return err
-	}
-	// check if there is data waiting
-	if !rows.Next() {
-		if err := rows.Err(); err != nil {
-			return err
-		}
-		return sql.ErrNoRows
-	}
-	// maping struct address to  map address
-	targets, err := Targets(dst, columns)
-	if err != nil {
-		return err
-	}
-	// perform the scan
-	if err := rows.Scan(targets...); err != nil {
-		return err
-	}
-	if len(columns) != len(targets) {
-		return fmt.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
-			len(columns), len(targets))
-	}
-	// format some field which have tag plugin
-	if err := Plugins(dst, columns, targets); err != nil {
-		return err
-	}
-
-	return rows.Err()
 }
 
 //Targets ..
@@ -437,7 +410,39 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 
 //Scan ..
 func Scan(rows *sql.Rows, dst interface{}) error {
-	return scanRow(rows, dst)
+	if rows == nil {
+		return fmt.Errorf("rows is a pointer, but not be a nil")
+	}
+	// get the sql columns
+	columns, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	// check if there is data waiting
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return sql.ErrNoRows
+	}
+	// maping struct address to  map address
+	targets, err := Targets(dst, columns)
+	if err != nil {
+		return err
+	}
+	// perform the scan
+	if err := rows.Scan(targets...); err != nil {
+		return err
+	}
+	if len(columns) != len(targets) {
+		return fmt.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
+			len(columns), len(targets))
+	}
+	// format some field which have tag plugin
+	if err := Plugins(dst, columns, targets); err != nil {
+		return err
+	}
+	return rows.Err()
 }
 
 //ScanAll ..
@@ -467,7 +472,7 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		eltVal := reflect.New(eltType)
 		elt := eltVal.Interface()
 		// scan it
-		if err := scanRow(rows, elt); err != nil {
+		if err := Scan(rows, elt); err != nil {
 			if err == sql.ErrNoRows {
 				return nil
 			}

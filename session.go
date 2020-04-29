@@ -135,7 +135,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	fields, err := scanner.ResolveModelToMap(dst)
+	fields, err := scanner.ResolveStructValue(dst)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	fields, err := scanner.ResolveModelToMap(dst)
+	fields, err := scanner.ResolveStructValue(dst)
 	if err != nil {
 		return nil, err
 	}
@@ -227,7 +227,7 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		return nil, err
 	}
 	pk := dstStruct.GetPk()
-	fields, err := scanner.ResolveModelToMap(dst)
+	fields, err := scanner.ResolveStructValue(dst)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	fields, err := scanner.ResolveModelToMap(dst)
+	fields, err := scanner.ResolveStructValue(dst)
 	if err != nil {
 		return nil, err
 	}
