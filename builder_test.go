@@ -176,7 +176,7 @@ func TestSelectSQL(t *testing.T) {
 		Limit(10),
 		ForUpdate(),
 	)
-	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10"
+	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score`` >= ? AND `age` <= ?) AND `status` = ? AND `desc`` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10 FOR UPDATE"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
