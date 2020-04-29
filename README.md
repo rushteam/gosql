@@ -46,23 +46,40 @@ gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语�
 
 其中灵感来自:分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
 
-## Builder of DEMO 例子
+## DEMO 例子
 
 为了展示gosql的能力,先展示个例子:
 Let's look a demo:
 
 ```sql
-SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b`
+SELECT DISTINCT *
+FROM `tbl1`.`t1`
+    JOIN `tbl3` ON `a` = `b`
 WHERE (`t1`.`status` = ?
-  AND `type` = ?
-  AND `sts` IN (?, ?, ?, ?)
-  AND `sts2` IN (?)
-  AND (`a` = ? AND `b` = ?)
-  AND aaa = 999
-  AND ccc = ?
-  AND `a` LIKE ? AND EXISTS (SELECT 1)
-  AND EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `xx` = ?)
-) GROUP BY `id` HAVING `ss` = ? ORDER BY `id desc`, `id asc` LIMIT 10, 30
+    AND `name` = ?
+    AND `nick` != ?
+    AND `role1` IN (?, ?, ?, ?)
+    AND `role2` NOT IN (?, ?, ?, ?)
+    AND `card1` IN (?)
+    AND `card2` NOT IN (?)
+    AND (`age` > ?
+        AND `age` < ?)
+    AND v1 = 1
+    AND v2 = ?
+    AND `desc` LIKE ?
+    AND `desc` NOT LIKE ?
+    AND EXISTS (
+        SELECT 1
+    )
+    AND NOT EXISTS (
+        SELECT *
+        FROM `tbl2`.`t2`
+        WHERE `t2`.`id` = ?
+    ))
+GROUP BY `class,group`
+HAVING `class` = ?
+ORDER BY `score desc`, `name asc`
+LIMIT 10, 30
 FOR UPDATE
 ```
 
@@ -72,25 +89,29 @@ FOR UPDATE
     s.Field("*")
     s.Table("tbl1.t1")
     s.Where("t1.status", "0")
-    s.Where("type", "A")
-    s.Where("[in]sts", []string{"1", "2", "3", "4"})
-    s.Where("[in]sts2", 1)
-    s.Where(func(s *gosql.Clause) {
-        s.Where("a", "200")
-        s.Where("b", "100")
+    s.Where("name", "jack")
+    s.Where("[!=]nick", "tom")
+    s.Where("[in]role1", []string{"1", "2", "3", "4"})
+    s.Where("[!in]role2", []string{"1", "2", "3", "4"})
+    s.Where("[in]card1", 1)
+    s.Where("[!in]card2", 1)
+    s.Where(func(s *Clause) {
+        s.Where("[>]age", "20")
+        s.Where("[<]", "50")
     })
-    s.Where("aaa = 999")
-    s.Where("[#]ccc = ?", 888)
+    s.Where("v1 = 1")
+    s.Where("[#]v2 = ?", 2)
     s.Join("tbl3", "a", "=", "b")
-    s.Having("ss", "1")
-    s.Where("[~]a", "AA")
-    s.Where("[exists]", "select 1")
-    s.Where("[exists]", func(s *gosql.SQLSegments) {
+    s.Having("class", "one")
+    s.Where("[~]desc", "student")
+    s.Where("[!~]desc", "teacher")
+    s.Where("[exists]my_card", "select 1")
+    s.Where("[!exists]my_card2", func(s *SQLSegments) {
         s.Table("tbl2.t2")
-        s.Where("xx", 10000)
+        s.Where("t2.id", 10000)
     })
-    s.GroupBy("id")
-    s.OrderBy("id desc", "id asc")
+    s.GroupBy("class,group")
+    s.OrderBy("score desc", "name asc")
     s.Limit(30)
     s.Offset(10)
     s.ForUpdate()
