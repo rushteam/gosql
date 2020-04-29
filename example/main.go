@@ -18,6 +18,8 @@ func (u *UserModel) TableName() string {
 
 func main() {
 	var err error
+	var ret gosql.Result
+
 	db := gosql.NewCluster(
 		gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
 	)
@@ -52,4 +54,15 @@ func main() {
 		gosql.Offset(0),
 		gosql.Limit(10),
 	)
+
+	u3 := UserModel{}
+	ret, err = db.Insert(u3)
+
+	users := []UserModel{}
+	u1 := UserModel{Name: "jack"}
+	u2 := UserModel{Name: "Tom"}
+	users = append(users, u1)
+	users = append(users, u2)
+	ret, err = db.Insert(users)
+	fmt.Println(ret)
 }
