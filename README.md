@@ -30,7 +30,7 @@ gosql 是一个用golang实现的数据库操作类库
 * builder.go: for building SQL 构建sql
 * scanner/*: mapping struct and scan 映射模型
 
-## Why build this wheels
+## Why build this wheels 为什么造轮子
 
 几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
 
