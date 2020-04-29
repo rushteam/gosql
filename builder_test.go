@@ -42,6 +42,38 @@ func TestBuildSelect(t *testing.T) {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
+func TestBuildSelectLeftJoin(t *testing.T) {
+	s := NewSQLSegment().Table("t1").LeftJoin("t2", "t2.id", "=", "t1.id")
+	result := s.BuildSelect()
+	want := "SELECT * FROM `t1` LEFTJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestBuildSelectRightJoin(t *testing.T) {
+	s := NewSQLSegment().Table("t1").RightJoin("t2", "t2.id", "=", "t1.id")
+	result := s.BuildSelect()
+	want := "SELECT * FROM `t1` RIGHTJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestBuildSelectInnerJoin(t *testing.T) {
+	s := NewSQLSegment().Table("t1").InnerJoin("t2", "t2.id", "=", "t1.id")
+	result := s.BuildSelect()
+	want := "SELECT * FROM `t1` INNERJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestBuildSelectCorssJoin(t *testing.T) {
+	s := NewSQLSegment().Table("t1").CorssJoin("t2", "t2.id", "=", "t1.id")
+	result := s.BuildSelect()
+	want := "SELECT * FROM `t1` CROSSJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
 
 func TestBuildInsert(t *testing.T) {
 	data := make(map[string]interface{})
