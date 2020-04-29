@@ -230,13 +230,13 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 				context = buildIdent(match[2]) + " LIKE ?"
 				args = append(args, p.val)
 			case "!~", "!like":
-				context = buildIdent(match[2]) + "` NOT LIKE ?"
+				context = buildIdent(match[2]) + " NOT LIKE ?"
 				args = append(args, p.val)
 			case ">":
 				context = buildIdent(match[2]) + " > ?"
 				args = append(args, p.val)
 			case ">=":
-				context = buildIdent(match[2]) + "` >= ?"
+				context = buildIdent(match[2]) + " >= ?"
 				args = append(args, p.val)
 			case "<":
 				context = buildIdent(match[2]) + " < ?"
