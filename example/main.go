@@ -17,38 +17,39 @@ func (u *UserModel) TableName() string {
 }
 
 func main() {
+	var err error
 	db := gosql.NewCluster(
 		gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
 	)
 	user := &UserModel{}
-	err := db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
+	err = db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(user)
-	err := db.Fetch(user, 
-		gosql.Columns("id","name"),
+	err = db.Fetch(user,
+		gosql.Columns("id", "name"),
 		gosql.Where("id", 1),
-		gosql.Where("[like]name", "j%")
-		gosql.OrWhere(func(s *Clause) {
+		gosql.Where("[like]name", "j%"),
+		gosql.OrWhere(func(s *gosql.Clause) {
 			s.Where("[>=]score", "90")
 			s.Where("[<=]score", "100")
 		}),
-		GroupBy("type"),
-		OrderBy("score DESC"),
+		gosql.GroupBy("type"),
+		gosql.OrderBy("score DESC"),
 	)
 	var userList []UserModel
-	err := db.FetchAll(&userList, 
-		gosql.Columns("id","name"),
+	err = db.FetchAll(&userList,
+		gosql.Columns("id", "name"),
 		gosql.Where("id", 1),
-		gosql.Where("[like]name", "j%")
-		gosql.OrWhere(func(s *Clause) {
+		gosql.Where("[like]name", "j%"),
+		gosql.OrWhere(func(s *gosql.Clause) {
 			s.Where("[>]score", "90")
 			s.Where("[<]score", "100")
 		}),
-		GroupBy("type"),
-		OrderBy("score DESC"),
-		Offset(0),
-		Limit(10),
+		gosql.GroupBy("type"),
+		gosql.OrderBy("score DESC"),
+		gosql.Offset(0),
+		gosql.Limit(10),
 	)
 }
