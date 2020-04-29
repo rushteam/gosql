@@ -33,16 +33,14 @@ const tableFuncName = "TableName"
 //Debug 模式
 var Debug = false
 
-//StructFieldOpts 模型字段选项
-type StructFieldOpts map[string]string
-
 //StructField 模型字段
 type StructField struct {
 	column       string
 	index        int
 	isPrimaryKey bool
-	options      StructFieldOpts
-	plugins      []string
+	//模型字段选项
+	options map[string]string
+	plugins []string
 }
 
 //StructData 模型
@@ -95,14 +93,14 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 		}
 		tag := strings.Split(str, tagSplit)
 		for i, value := range tag {
-			v := strings.Split(value, tagOptSplit)
-			k := strings.TrimSpace(strings.ToUpper(v[0]))
-			if len(v) >= 2 {
-				opts[k] = strings.Join(v[1:], tagOptSplit)
+			kv := strings.Split(value, tagOptSplit)
+			k := strings.TrimSpace(strings.ToUpper(kv[0]))
+			if len(kv) >= 2 { //eg: `db:"column:id"`
+				opts[k] = strings.Join(kv[1:], tagOptSplit)
 			} else {
-				if i == 0 {
-					opts[tagColumn] = v[0]
-				} else {
+				if i == 0 { //`db:"id"`
+					opts[tagColumn] = value
+				} else { //`db:"id,xx"`
 					opts[k] = ""
 				}
 			}
@@ -311,7 +309,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 			}
 		}
 		//未指定情况下寻找id名称的字段
-		if column == "id" && modelStruct.pk == "" {
+		if modelStruct.pk == "" && column == "id" {
 			modelStruct.pk = column
 		}
 		modelStruct.columns = append(modelStruct.columns, column)
