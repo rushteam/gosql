@@ -154,7 +154,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 		if k == pk || k == "" {
 			continue
 		}
-		//过滤掉 v 是空的值 todo 指针怎么办?
+		//过滤掉 v 是空的值 todo 会出现指针吗?要是指针怎么处理?
 		if v == nil || v == "" {
 			continue
 		}
@@ -170,10 +170,10 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[updatedAtField] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
-	//todo 这里增加批量操作直接setMap(updateFields)
-	for k, v := range updateFields {
-		opts = append(opts, Set(k, v))
-	}
+	opts = append(opts, Params(updateFields))
+	// for k, v := range updateFields {
+	// 	opts = append(opts, Set(k, v))
+	// }
 	sql, args := UpdateSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
@@ -206,11 +206,10 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[createdAtField] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
-	//todo 这里增加批量操作直接setMap(updateFields)
-	for k, v := range updateFields {
-		opts = append(opts, Set(k, v))
-	}
-
+	opts = append(opts, Params(updateFields))
+	// for k, v := range updateFields {
+	// 	opts = append(opts, Set(k, v))
+	// }
 	sql, args := InsertSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
@@ -243,11 +242,10 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[createdAtField] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
-	//todo 这里增加批量操作直接setMap(updateFields)
-	for k, v := range updateFields {
-		opts = append(opts, Set(k, v))
-	}
-
+	opts = append(opts, Params(updateFields))
+	// for k, v := range updateFields {
+	// 	opts = append(opts, Set(k, v))
+	// }
 	sql, args := ReplaceSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
