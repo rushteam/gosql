@@ -205,3 +205,22 @@ func TestBatchReplaceSQL(t *testing.T) {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
+
+func TestUpdateSQL(t *testing.T) {
+	v1 := make(map[string]interface{}, 0)
+	v1["a"] = 1
+	v1["b"] = "jack"
+	v2 := make(map[string]interface{}, 0)
+	v2["a"] = 2
+	v2["b"] = "tom"
+	result, _ := UpdateSQL(
+		Table("table_1"),
+		Params(v1),
+		Params(v2),
+	)
+	want := "REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
+	want2 := "REPLACE INTO `table_1` (`b`,`a`) VALUES (?,?),(?,?)"
+	if result != want && result != want2 {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
