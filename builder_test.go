@@ -234,8 +234,7 @@ func TestDeleteSQL(t *testing.T) {
 		Params(v1),
 	)
 	want := "DELETE FROM `table_1`"
-	want2 := "UPDATE `table_1` SET `b` = ?, `a` = ?"
-	if result != want && result != want2 {
+	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
