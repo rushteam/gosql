@@ -474,7 +474,7 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		// scan it
 		if err := Scan(rows, elt); err != nil {
 			if err == sql.ErrNoRows {
-				return nil
+				return err
 			}
 			return err
 		}
