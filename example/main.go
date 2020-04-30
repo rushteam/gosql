@@ -42,6 +42,9 @@ func main() {
 		gosql.GroupBy("type"),
 		gosql.OrderBy("score DESC"),
 	)
+	if err != nil {
+		fmt.Println(err)
+	}
 	var userList []UserModel
 	err = db.FetchAll(&userList,
 		gosql.Columns("id", "name"),
@@ -56,6 +59,9 @@ func main() {
 		gosql.Offset(0),
 		gosql.Limit(10),
 	)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	u3 := UserModel{}
 	ret, err = db.Insert(u3)
@@ -66,5 +72,8 @@ func main() {
 	users = append(users, u1)
 	users = append(users, u2)
 	ret, err = db.Insert(users)
+	if err != nil {
+		fmt.Println(err)
+	}
 	fmt.Println(ret)
 }
