@@ -413,36 +413,39 @@ func Scan(rows *sql.Rows, dst interface{}) error {
 	if rows == nil {
 		return fmt.Errorf("rows is a pointer, but not be a nil")
 	}
-	// get the sql columns
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
 	}
-	// check if there is data waiting
 	if !rows.Next() {
 		if err := rows.Err(); err != nil {
 			return err
 		}
 		return sql.ErrNoRows
 	}
-	// maping struct address to  map address
+	// bind struct-address to map-address
 	targets, err := Targets(dst, columns)
 	if err != nil {
-		return err
-	}
-	// perform the scan
-	if err := rows.Scan(targets...); err != nil {
 		return err
 	}
 	if len(columns) != len(targets) {
 		return fmt.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
 			len(columns), len(targets))
 	}
+	if err := rows.Scan(targets...); err != nil {
+		return err
+	}
 	// format some field which have tag plugin
 	if err := Plugins(dst, columns, targets); err != nil {
 		return err
 	}
 	return rows.Err()
+}
+
+//ScanRow ScanRow and Close Rows
+func ScanRow(rows *sql.Rows, dst interface{}) error {
+	defer rows.Close()
+	return Scan(rows, dst)
 }
 
 //ScanAll ..
@@ -452,37 +455,35 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 	if dstVal.Kind() != reflect.Ptr || dstVal.IsNil() {
 		return fmt.Errorf("ScanAll called with non-pointer destination: %T", dst)
 	}
-	sliceVal := dstVal.Elem()
-	if sliceVal.Kind() != reflect.Slice {
+	sliceRV := dstVal.Elem()
+	if sliceRV.Kind() != reflect.Slice {
 		return fmt.Errorf("ScanAll called with pointer to non-slice: %T", dst)
 	}
-	ptrType := sliceVal.Type().Elem()
-	var eltType reflect.Type
-	if ptrType.Kind() != reflect.Ptr {
-		eltType = ptrType
-	} else {
-		eltType = ptrType.Elem()
+	sliceRT := sliceRV.Type()
+	eltRT := sliceRT.Elem()
+	if eltRT.Kind() == reflect.Ptr {
+		eltRT = eltRT.Elem()
 	}
-	if eltType.Kind() != reflect.Struct {
+	if eltRT.Kind() != reflect.Struct {
 		return fmt.Errorf("ScanAll expects element to be pointers to structs, found %T", dst)
 	}
 	// gather the results
 	for {
 		// create a new element
-		eltVal := reflect.New(eltType)
-		elt := eltVal.Interface()
+		eltRV := reflect.New(eltRT)
+		elt := eltRV.Interface()
 		// scan it
 		if err := Scan(rows, elt); err != nil {
 			if err == sql.ErrNoRows {
-				return err
+				return nil
 			}
 			return err
 		}
-		// add to the result slice
-		if ptrType.Kind() != reflect.Ptr {
-			sliceVal.Set(reflect.Append(sliceVal, eltVal.Elem()))
+		// add struct to slice
+		if sliceRT.Elem().Kind() == reflect.Ptr {
+			sliceRV.Set(reflect.Append(sliceRV, eltRV))
 		} else {
-			sliceVal.Set(reflect.Append(sliceVal, eltVal))
+			sliceRV.Set(reflect.Append(sliceRV, eltRV.Elem()))
 		}
 	}
 }
