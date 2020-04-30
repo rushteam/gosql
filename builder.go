@@ -93,31 +93,31 @@ func (s *SQLSegments) Flag(flags ...string) *SQLSegments {
 
 //Join SQLSegments
 func (s *SQLSegments) Join(table string, conditionA, logic, conditionB string) *SQLSegments {
-	s.addJoin("", table, conditionA, logic, conditionB)
+	s.addJoin("JOIN", table, conditionA, logic, conditionB)
 	return s
 }
 
 //LeftJoin SQLSegments
 func (s *SQLSegments) LeftJoin(table string, conditionA, logic, conditionB string) *SQLSegments {
-	s.addJoin("LEFT", table, conditionA, logic, conditionB)
+	s.addJoin("LEFT JOIN", table, conditionA, logic, conditionB)
 	return s
 }
 
 //RightJoin SQLSegments
 func (s *SQLSegments) RightJoin(table string, conditionA, logic, conditionB string) *SQLSegments {
-	s.addJoin("RIGHT", table, conditionA, logic, conditionB)
+	s.addJoin("RIGHT JOIN", table, conditionA, logic, conditionB)
 	return s
 }
 
 //InnerJoin SQLSegments
 func (s *SQLSegments) InnerJoin(table string, conditionA, logic, conditionB string) *SQLSegments {
-	s.addJoin("INNER", table, conditionA, logic, conditionB)
+	s.addJoin("INNER JOIN", table, conditionA, logic, conditionB)
 	return s
 }
 
 //CorssJoin SQLSegments
 func (s *SQLSegments) CorssJoin(table string, conditionA, logic, conditionB string) *SQLSegments {
-	s.addJoin("CROSS", table, conditionA, logic, conditionB)
+	s.addJoin("CROSS JOIN", table, conditionA, logic, conditionB)
 	return s
 }
 
@@ -436,7 +436,7 @@ func (s *SQLSegments) buildTable() string {
 func (s *SQLSegments) buildJoin() string {
 	var sql string
 	for _, t := range s.join {
-		sql += " " + t["type"] + "JOIN " + buildIdent(t["table"]) + " ON " + buildIdent(t["conditionA"]) + " " + t["logic"] + " " + buildIdent(t["conditionB"])
+		sql += " " + t["type"] + " " + buildIdent(t["table"]) + " ON " + buildIdent(t["conditionA"]) + " " + t["logic"] + " " + buildIdent(t["conditionB"])
 	}
 	return sql
 }
