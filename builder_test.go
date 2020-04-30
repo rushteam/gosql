@@ -100,6 +100,21 @@ func TestBuildUpdate(t *testing.T) {
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
+	if !s.IsEmptyWhereClause() {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestBuildUpdateForUnsafeUpdate(t *testing.T) {
+	data := make(map[string]interface{})
+	data["name"] = "jack"
+	s := NewSQLSegment()
+	s.Table("test")
+	s.UnsafeUpdate(data)
+	result := s.BuildUpdate()
+	want := "UPDATE `test` SET `name` = ?"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
 }
 
 func TestBuildReplace(t *testing.T) {
