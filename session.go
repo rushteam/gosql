@@ -10,9 +10,6 @@ import (
 	"github.com/rushteam/gosql/scanner"
 )
 
-//Result ..
-type Result sql.Result
-
 //自动更新时间
 var autoFillCreatedAtAndUpdatedAtField = true
 var createdAtField = "created_at"

@@ -11,8 +11,11 @@ import (
 //Debug env
 var Debug = false
 
-//ErrNoRows ..
-// var ErrNoRows = sql.ErrNoRows
+//ErrNoRows sql ErrNoRows
+var ErrNoRows = sql.ErrNoRows
+
+//Result sql Result
+type Result sql.Result
 
 //Executor is a Executor
 type Executor interface {
