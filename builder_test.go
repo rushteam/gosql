@@ -45,7 +45,7 @@ func TestBuildSelect(t *testing.T) {
 func TestBuildSelectLeftJoin(t *testing.T) {
 	s := NewSQLSegment().Table("t1").LeftJoin("t2", "t2.id", "=", "t1.id")
 	result := s.BuildSelect()
-	want := "SELECT * FROM `t1` LEFTJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	want := "SELECT * FROM `t1` LEFT JOIN `t2` ON `t2`.`id` = `t1`.`id`"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
@@ -53,7 +53,7 @@ func TestBuildSelectLeftJoin(t *testing.T) {
 func TestBuildSelectRightJoin(t *testing.T) {
 	s := NewSQLSegment().Table("t1").RightJoin("t2", "t2.id", "=", "t1.id")
 	result := s.BuildSelect()
-	want := "SELECT * FROM `t1` RIGHTJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	want := "SELECT * FROM `t1` RIGHT JOIN `t2` ON `t2`.`id` = `t1`.`id`"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
@@ -61,7 +61,7 @@ func TestBuildSelectRightJoin(t *testing.T) {
 func TestBuildSelectInnerJoin(t *testing.T) {
 	s := NewSQLSegment().Table("t1").InnerJoin("t2", "t2.id", "=", "t1.id")
 	result := s.BuildSelect()
-	want := "SELECT * FROM `t1` INNERJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	want := "SELECT * FROM `t1` INNER JOIN `t2` ON `t2`.`id` = `t1`.`id`"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
@@ -69,7 +69,7 @@ func TestBuildSelectInnerJoin(t *testing.T) {
 func TestBuildSelectCorssJoin(t *testing.T) {
 	s := NewSQLSegment().Table("t1").CorssJoin("t2", "t2.id", "=", "t1.id")
 	result := s.BuildSelect()
-	want := "SELECT * FROM `t1` CROSSJOIN `t2` ON `t2`.`id` = `t1`.`id`"
+	want := "SELECT * FROM `t1` CROSS JOIN `t2` ON `t2`.`id` = `t1`.`id`"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
@@ -204,6 +204,20 @@ func TestSelectSQL2(t *testing.T) {
 		}),
 	)
 	want := "SELECT * FROM `table_1` UNION (SELECT * FROM `table_2`)"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestSelectSQL3(t *testing.T) {
+	result, _ := SelectSQL(
+		Table("table_1.t1"),
+		Join("tbl2.t2", "t2.id", "=", "t1.id"),
+		LeftJoin("tbl3.t3", "t3.id", "=", "t1.id"),
+		RightJoin("tbl4.t4", "t4.id", "=", "t1.id"),
+		InnerJoin("tbl5.t5", "t5.id", "=", "t1.id"),
+		CorssJoin("tbl6.t6", "t6.id", "=", "t1.id"),
+	)
+	want := "SELECT * FROM `table_1`.`t1` JOIN `tbl2`.`t2` ON `t2`.`id` = `t1`.`id` LEFT JOIN `tbl3`.`t3` ON `t3`.`id` = `t1`.`id` RIGHT JOIN `tbl4`.`t4` ON `t4`.`id` = `t1`.`id` INNER JOIN `tbl5`.`t5` ON `t5`.`id` = `t1`.`id` CROSS JOIN `tbl6`.`t6` ON `t6`.`id` = `t1`.`id`"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
