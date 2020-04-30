@@ -25,12 +25,8 @@ func main() {
 	db := gosql.NewCluster(
 		gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
 	)
+	//demo 1
 	user := &UserModel{}
-	err = db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(user)
 	err = db.Fetch(user,
 		gosql.Columns("id", "name"),
 		gosql.Where("id", 1),
@@ -45,6 +41,9 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(user)
+
+	//demo 2
 	var userList []UserModel
 	err = db.FetchAll(&userList,
 		gosql.Columns("id", "name"),
@@ -62,10 +61,17 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println(userList)
 
+	//demo 3
 	u3 := UserModel{}
 	ret, err = db.Insert(u3)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(ret)
 
+	//demo 5
 	users := []UserModel{}
 	u1 := UserModel{Name: "jack"}
 	u2 := UserModel{Name: "Tom"}
