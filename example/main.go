@@ -7,11 +7,13 @@ import (
 	"github.com/rushteam/gosql"
 )
 
+//UserModel user model
 type UserModel struct {
 	ID   int    `db:"id"`
 	Name string `db:"name"`
 }
 
+//TableName for set table name
 func (u *UserModel) TableName() string {
 	return "my_user"
 }
