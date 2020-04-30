@@ -548,7 +548,7 @@ func (s *SQLSegments) BuildInsert() string {
 	return sql
 }
 
-//BuildReplace ...
+//BuildReplace build a replace sql
 func (s *SQLSegments) BuildReplace() string {
 	var sql = fmt.Sprintf("REPLACE%s INTO%s%s%s",
 		s.buildFlags(),
@@ -560,7 +560,7 @@ func (s *SQLSegments) BuildReplace() string {
 	return sql
 }
 
-//BuildInsert ...
+//BuildInsert build a insert sql
 func (s *SQLSegments) buildValuesForInsert() string {
 	var fields string
 	var values string
@@ -590,7 +590,7 @@ func (s *SQLSegments) buildValuesForInsert() string {
 	return sql
 }
 
-//UpdateField 更新字段
+//UpdateField for set a field when update sql
 func (s *SQLSegments) UpdateField(key string, val interface{}) *SQLSegments {
 	if len(s.params) == 0 {
 		s.params = append(s.params, make(map[string]interface{}, 0))
@@ -625,7 +625,7 @@ func (s *SQLSegments) buildReturning() string {
 	return ""
 }
 
-//BuildUpdate ...
+//BuildUpdate build a update sql
 func (s *SQLSegments) BuildUpdate() string {
 	var sql = fmt.Sprintf("UPDATE%s%s%s%s%s%s%s",
 		s.buildFlags(),
@@ -687,12 +687,12 @@ func (s *SQLSegments) buildValuesForUpdate() string {
 	return buffer.String()
 }
 
-//Delete ...
+//Delete for a part of delete sql
 func (s *SQLSegments) Delete() *SQLSegments {
 	return s
 }
 
-//BuildDelete ...
+//BuildDelete build a delete sql
 func (s *SQLSegments) BuildDelete() string {
 	var sql = fmt.Sprintf("DELETE%s FROM%s%s%s%s%s",
 		s.buildFlags(),
@@ -741,12 +741,12 @@ func buildPlaceholder(l int, holder, sep string) string {
 	return buffer.String()
 }
 
-//Args ..
+//Args for set some args
 func (s *SQLSegments) Args() []interface{} {
 	return s.render.args
 }
 
-//Build ..
+//Build for build a sql with SQLSegments
 func (s *SQLSegments) Build() (string, []interface{}) {
 	if s.cmd == _select {
 		return s.BuildSelect(), s.Args()
@@ -768,10 +768,10 @@ func (s *SQLSegments) Build() (string, []interface{}) {
 
 //-------- another style --------
 
-//Option ..
+//Option is SQL segment part
 type Option func(q SQLSegments) SQLSegments
 
-//Table ..
+//Table for set table
 func Table(name interface{}) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.Table(name)
@@ -779,7 +779,7 @@ func Table(name interface{}) Option {
 	}
 }
 
-//Columns ..
+//Columns for set columns
 func Columns(fields ...string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.Field(fields...)
@@ -787,7 +787,7 @@ func Columns(fields ...string) Option {
 	}
 }
 
-//Flag ..
+//Flag for set flag
 func Flag(flags ...string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.Flag(flags...)
@@ -795,7 +795,7 @@ func Flag(flags ...string) Option {
 	}
 }
 
-//Join ..
+//Join for join
 func Join(table string, conditionA, logic, conditionB string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.Join(table, conditionA, logic, conditionB)
@@ -812,7 +812,7 @@ func LeftJoin(table string, conditionA, logic, conditionB string) Option {
 	}
 }
 
-//RightJoin ..
+//RightJoin for right join
 func RightJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.RightJoin(table, conditionA, logic, conditionB)
@@ -820,7 +820,7 @@ func RightJoin(table string, conditionA, logic, conditionB string) Option {
 	}
 }
 
-//InnerJoin ..
+//InnerJoin for inner join
 func InnerJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.InnerJoin(table, conditionA, logic, conditionB)
@@ -828,10 +828,18 @@ func InnerJoin(table string, conditionA, logic, conditionB string) Option {
 	}
 }
 
-//CorssJoin ..
+//CorssJoin for corss join
 func CorssJoin(table string, conditionA, logic, conditionB string) Option {
 	return func(s SQLSegments) SQLSegments {
 		s.CorssJoin(table, conditionA, logic, conditionB)
+		return s
+	}
+}
+
+//Union for union sql
+func Union(f func(*SQLSegments)) Option {
+	return func(s SQLSegments) SQLSegments {
+		s.Union(f)
 		return s
 	}
 }

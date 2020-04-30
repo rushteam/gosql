@@ -95,12 +95,12 @@ func TestBuildUpdate(t *testing.T) {
 	s.Table("test")
 	s.Where("[in]id", []int{1, 2, 3})
 	s.Update(data)
+	if s.IsEmptyWhereClause() {
+		t.Errorf("result: %v, want: %v", s.IsEmptyWhereClause(), false)
+	}
 	result := s.BuildUpdate()
 	want := "UPDATE `test` SET `name` = ? WHERE `id` IN (? ,? ,?)"
 	if result != want {
-		t.Errorf("result: %v, want: %v", result, want)
-	}
-	if !s.IsEmptyWhereClause() {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
@@ -192,6 +192,18 @@ func TestSelectSQL(t *testing.T) {
 		ForUpdate(),
 	)
 	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score` >= ? AND `age` <= ?) AND `status` = ? AND `desc` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10 FOR UPDATE"
+	if result != want {
+		t.Errorf("result: %v, want: %v", result, want)
+	}
+}
+func TestSelectSQL2(t *testing.T) {
+	result, _ := SelectSQL(
+		Table("table_1"),
+		Union(func(s *SQLSegments) {
+			s.Table("table_2")
+		}),
+	)
+	want := "SELECT * FROM `table_1` UNION (SELECT * FROM `table_2`)"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
