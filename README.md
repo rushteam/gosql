@@ -1,6 +1,6 @@
 # gosql
 
-[![Test](https://github.com/rushteam/gosql/workflows/Go/badge.svg)](https://github.com/rushteam/gosql/actions)
+[![GoTest](https://github.com/rushteam/gosql/workflows/Go/badge.svg)](https://github.com/rushteam/gosql/actions)
 [![GoDoc](https://godoc.org/github.com/rushteam/gosql?status.svg)](https://pkg.go.dev/github.com/rushteam/gosql)
 [![codecov](https://codecov.io/gh/rushteam/gosql/branch/master/graph/badge.svg)](https://codecov.io/gh/rushteam/gosql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/rushteam/gosql)](https://goreportcard.com/report/github.com/rushteam/gosql)
@@ -159,7 +159,7 @@ func main() {
 
 ## Exec
 
-### INSERT:
+### INSERT
 
 db.Insert(dst interface{}, opts ...Option) (Result, error)
 
@@ -169,7 +169,7 @@ user.Name = "jack"
 ret,err := db.Insert(&user)
 ```
 
-batch insert:
+batch insert
 
 ```golang
 users := []UserModel{}
@@ -180,7 +180,7 @@ users = append(users,u2)
 ret,err := db.Insert(users)
 ```
 
-### REPALCE:
+### REPALCE
 
 db.Replace(dst interface{}, opts ...Option) (Result, error)
 
@@ -190,7 +190,7 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 ```
 
-### UPDATE:
+### UPDATE
 
 Update(dst interface{}, opts ...Option) (Result, error)
 
@@ -200,7 +200,7 @@ user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
 ```
 
-### DELETE:
+### DELETE
 
 db.Delete(dst interface{}, opts ...Option) (Result, error)
 
