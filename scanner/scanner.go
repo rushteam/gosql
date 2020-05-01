@@ -326,6 +326,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	case reflect.Slice, reflect.Struct:
 		return resolveModel(dstRV)
 	}
+	return nil, fmt.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
 }
 
 //Targets ..
