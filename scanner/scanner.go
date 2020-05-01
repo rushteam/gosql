@@ -207,48 +207,10 @@ func FormatName(name string) string {
 	return SnakeString(name)
 }
 
-//ResolveModelStruct 解析模型
-func ResolveModelStruct(dst interface{}) (*StructData, error) {
+//resolveStruct struct resolve to StructData
+func resolveStruct(structRV reflect.Value) (*StructData, error) {
 	var structRT reflect.Type
-	var structRV reflect.Value
-	dstRV := reflect.ValueOf(dst)
-	//兼容指针逻辑
-	if dstRV.Kind() == reflect.Ptr {
-		dstRV = dstRV.Elem()
-	}
-	//dst (slice)
-	if dstRV.Kind() == reflect.Slice {
-		ptrRT := dstRV.Type().Elem()
-		if ptrRT.Kind() == reflect.Ptr {
-			ptrRT = ptrRT.Elem()
-		}
-		if ptrRT.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("scanner expects element to be pointers to structs, found %T", dst)
-		}
-		structRT = ptrRT
-		structRV = reflect.New(structRT)
-	} else {
-		//dst (struct)
-		//fmt.Println(dstRV.Type(), structRT)
-		// structRT = reflect.TypeOf(dst)
-		structRT = dstRV.Type()
-		structRV = dstRV
-		if structRT.Kind() != reflect.Ptr {
-			// return nil, fmt.Errorf("Must be a pointer, scanner called with non-pointer destination %v", structRT)
-		}
-		if structRT.Kind() == reflect.Ptr {
-			structRT = structRT.Elem() //struct
-		}
-		if structRT.Kind() != reflect.Struct {
-			return nil, fmt.Errorf("Must point to struct, scanner called with pointer to non-struct %v", structRT)
-		}
-		//兼容
-		// if dstRV.IsValid() {
-		// 	structRV = reflect.New(structRT).Elem()
-		// } else {
-		// 	structRV = dstRV
-		// }
-	}
+	structRT = structRV.Type()
 	if modelStruct, ok := refStructCache[structRT]; ok {
 		return modelStruct, nil
 	}
@@ -332,6 +294,38 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	defer refStructCacheMutex.Unlock()
 	refStructCache[structRT] = modelStruct
 	return modelStruct, nil
+}
+
+//resolveModel model resolve to StructData
+func resolveModel(dstRV reflect.Value) (*StructData, error) {
+	switch dstRV.Kind() {
+	case reflect.Struct:
+		return resolveStruct(dstRV)
+	case reflect.Ptr:
+		if dstRV.IsZero() {
+			dstRV = reflect.New(dstRV.Type().Elem())
+		}
+		dstRV = dstRV.Elem()
+		return resolveModel(dstRV)
+	case reflect.Slice:
+		eltRT := dstRV.Type().Elem()
+		eltRV := reflect.New(eltRT)
+		return resolveModel(eltRV)
+	default:
+		return nil, fmt.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
+	}
+}
+
+//ResolveModelStruct 解析模型
+func ResolveModelStruct(dst interface{}) (*StructData, error) {
+	dstRV := reflect.ValueOf(dst)
+	switch dstRV.Kind() {
+	case reflect.Ptr:
+		dstRV = dstRV.Elem()
+		return resolveModel(dstRV)
+	case reflect.Slice, reflect.Struct:
+		return resolveModel(dstRV)
+	}
 }
 
 //Targets ..

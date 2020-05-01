@@ -36,3 +36,36 @@ func TestResolveStructValue(t *testing.T) {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
+
+func TestResolveModel1(t *testing.T) {
+	type TestModel struct {
+		ID int `db:"id,pk"`
+	}
+	m := TestModel{}
+	ret, err := ResolveModelStruct(m)
+	fmt.Println(ret, err)
+}
+func TestResolveModel2(t *testing.T) {
+	type TestModel struct {
+		ID int `db:"id,pk"`
+	}
+	m := &TestModel{}
+	ret, err := ResolveModelStruct(m)
+	fmt.Println(ret, err)
+}
+func TestResolveModel3(t *testing.T) {
+	type TestModel struct {
+		ID int `db:"id,pk"`
+	}
+	m := []*TestModel{}
+	ret, err := ResolveModelStruct(m)
+	fmt.Println(ret, err)
+}
+func TestResolveModel4(t *testing.T) {
+	type TestModel struct {
+		ID int `db:"id,pk"`
+	}
+	m := []TestModel{}
+	ret, err := ResolveModelStruct(m)
+	fmt.Println(ret, err)
+}
