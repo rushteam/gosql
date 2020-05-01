@@ -55,20 +55,17 @@ func TestResolveModel5(t *testing.T) {
 	if ret.GetStructField("id").isPrimaryKey != true {
 		t.Errorf("error: %v", `ret.GetStructField("id").isPrimaryKey`)
 	}
-	if ret.GetStructField("id").column != "id" {
-		t.Errorf("error: %v", `ret.GetStructField("id").column`)
+	wantCols := []string{"id", "name", "age"}
+	if !reflect.DeepEqual(ret.Columns(), wantCols) {
+		t.Errorf("error: ret.Columns() result: %v want: %v", ret.Columns(), wantCols)
 	}
-	if ret.GetStructField("name").column != "name" {
-		t.Errorf("error: %v", `ret.GetStructField("id").column`)
+	wantTbName := "TestModel"
+	if ret.TableName() != wantTbName {
+		t.Errorf("error: ret.TableName() result: %v want: %v", ret.TableName(), wantTbName)
 	}
-	if !reflect.DeepEqual(ret.Columns(), []string{"id", "name"}) {
-		t.Errorf("error: %v", `ret.Columns()`)
-	}
-	if ret.TableName() != "TestModel" {
-		t.Errorf("error: %v", `ret.TableName()`)
-	}
-	if ret.GetPk() != "id" {
-		t.Errorf("error: %v", `ret.GetPk()`)
+	wantPk := "id"
+	if ret.GetPk() != wantPk {
+		t.Errorf("error: ret.GetPk() result: %v want: %v", ret.GetPk(), wantPk)
 	}
 
 }
