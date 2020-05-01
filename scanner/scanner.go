@@ -55,7 +55,7 @@ type StructData struct {
 //TableName ..
 func (s StructData) TableName() string {
 	if s.table == "" {
-		panic("scanner not foundd table name")
+		panic("table name can not be emtpy")
 	}
 	return s.table
 }
