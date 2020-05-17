@@ -572,28 +572,25 @@ func (s *SQLSegments) buildValuesForInsert() string {
 		}
 	}
 	sql = " ("
-	sql += ""
 	for i, s := range fields {
 		if i > 0 {
 			sql += ","
 		}
 		sql += buildIdent(s)
 	}
-	sql += ") VALUES"
+	sql += ") VALUES ("
 	for i, vals := range s.params {
 		//for keep field order in golang-map
 		for _, arg := range fields {
 			s.render.args = append(s.render.args, vals[arg])
 		}
 		//build sql
-		if i == 0 {
-			sql += " ("
-		} else {
-			sql += ",("
+		if i > 0 {
+			sql += "),("
 		}
 		sql += buildPlaceholder(len(fields), "?", ",")
-		sql += ")"
 	}
+	sql += ")"
 	return sql
 }
 
