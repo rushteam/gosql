@@ -285,8 +285,8 @@ err := db.Fetch(user,
         s.Where("[>=]score", "90")
         s.Where("[<=]age", "100")
     }),
-    GroupBy("type"),
-    OrderBy("score DESC"),
+    gosql.GroupBy("type"),
+    gosql.OrderBy("score DESC"),
 )
 ```
 
@@ -302,10 +302,10 @@ err := db.FetchAll(&userList,
         s.Where("[>]score", "90")
         s.Where("[<]score", "100")
     }),
-    GroupBy("type"),
-    OrderBy("score DESC"),
-    Offset(0),
-    Limit(10),
+    gosql.GroupBy("type"),
+    gosql.OrderBy("score DESC"),
+    gosql.Offset(0),
+    gosql.Limit(10),
 )
 ```
 
