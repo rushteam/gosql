@@ -54,10 +54,8 @@ type Tx interface {
 
 //Cluster ..
 type Cluster interface {
-	Master() (Executor, error)
-	Slave(v uint64) (Executor, error)
-	Session() (*Session, error)
-	SessionContext(ctx context.Context) (*Session, error)
+	Executor(s *Session, master bool) (Executor, error)
+	NewSession() *Session
 	Begin() (*Session, error)
 	Fetch(dst interface{}, opts ...Option) error
 	FetchAll(dst interface{}, opts ...Option) error

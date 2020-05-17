@@ -6,6 +6,7 @@ import (
 	"errors"
 	"sync"
 	"time"
+	"unsafe"
 
 	"github.com/rushteam/gosql/scanner"
 )
@@ -15,8 +16,6 @@ var autoFillCreatedAtAndUpdatedAtField = true
 var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
-
-type executorFunc func(master bool) (Executor, error)
 
 //SessionOpts ..
 type SessionOpts func(s *Session) *Session
@@ -42,11 +41,7 @@ func (s *Session) Master() *Session {
 func (s *Session) Executor(master bool) (Executor, error) {
 	var err error
 	if s.executor == nil {
-		if master == true || s.forceMaster {
-			s.executor, err = s.cluster.Master()
-		} else {
-			s.executor, err = s.cluster.Slave(s.v)
-		}
+		s.executor, err = s.cluster.Executor(s, master)
 	}
 	return s.executor, err
 }
@@ -71,7 +66,10 @@ func (s *Session) QueryRowContext(ctx context.Context, query string, args ...int
 	debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	db, err := s.Executor(false)
 	if err != nil {
-		return nil
+		row := &sql.Row{}
+		rowErr := (*error)(unsafe.Pointer(row))
+		*rowErr = err
+		return row
 	}
 	return db.QueryRowContext(ctx, query, args...)
 }
@@ -277,6 +275,21 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 	sql, args := DeleteSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
+}
+
+//begin
+func (s *Session) begin() error {
+	debugPrint("db: [session #%v] Begin", s.v)
+	executor, err := s.cluster.Executor(s, true)
+	if err != nil {
+		return err
+	}
+	executor, err = executor.(DB).Begin()
+	if err != nil {
+		return err
+	}
+	s.executor = executor
+	return nil
 }
 
 //Commit ..
