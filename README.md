@@ -155,6 +155,67 @@ func main() {
 
 ## Doc 文档
 
+## Struct Model
+
+To define a model structure, just use the struct syntax.
+
+### Simple define a model
+
+```golang
+type User struct {
+    ID int64
+    Age int
+    Name string
+    CreatedAt time.Time
+}
+```
+
+Usually define a Struct can be used as a model, gosql will parse out the table name, field mapping relationship,etc.
+
+定义一个普通的结构体就可以被作为一个model , gosql 将会从中解析出表名、字段映射关系等
+
+table: user
+columns: ID,Age,Name,CreatedAt
+
+### Using tag syntax
+
+Use structure tags to customize field mapping
+
+使用结构体tags 可以自定义字段映射
+
+```golang
+type User struct {
+    ID int64 `db:"uid,pk"`
+    Age int `db:"age"`
+    Name string `db:"nickname"`
+    CreatedAt time.Time `db:"created_at"`
+}
+```
+
+table: user
+columns: uid,age,nickname,created_at
+pk: uid
+
+### Using custom table name
+
+Implement "TabbleName" method to specify the table name
+
+通过实现 TabbleName 方法来指定一个表名
+
+```golang
+type User struct {
+    ID int64 `db:"uid,pk"`
+    Age int `db:"age"`
+    Name string `db:"nickname"`
+    CreatedAt time.Time `db:"created_at"`
+}
+func (u *User) TableName() string {
+    return "my_user"
+}
+```
+
+table: my_user
+
 ## Auto
 
 ## Exec
