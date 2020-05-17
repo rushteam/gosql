@@ -571,8 +571,15 @@ func (s *SQLSegments) buildValuesForInsert() string {
 			}
 		}
 	}
-	sql = buildString(fields, ",", " (", ")", true)
-	sql += " VALUES"
+	sql = " ("
+	sql += ""
+	for i, s := range fields {
+		if i > 0 {
+			sql += ","
+		}
+		sql += buildIdent(s)
+	}
+	sql += ") VALUES"
 	for i, vals := range s.params {
 		//for keep field order in golang-map
 		for _, arg := range fields {
@@ -710,23 +717,6 @@ func (s *SQLSegments) BuildDelete() string {
 //buildIdent
 func buildIdent(name string) string {
 	return identKey + strings.Replace(name, ".", identKey+"."+identKey, -1) + identKey
-}
-
-func buildString(vals []string, sep string, header, footer string, ident bool) string {
-	var buffer bytes.Buffer
-	buffer.WriteString(header)
-	for i, s := range vals {
-		if i > 0 {
-			buffer.WriteString(sep)
-		}
-		if ident {
-			buffer.WriteString(buildIdent(s))
-		} else {
-			buffer.WriteString(s)
-		}
-	}
-	buffer.WriteString(footer)
-	return buffer.String()
 }
 
 //buildPlaceholder
