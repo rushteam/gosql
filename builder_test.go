@@ -1,6 +1,8 @@
 package gosql
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -278,9 +280,9 @@ func TestBatchReplaceSQL(t *testing.T) {
 		Params(v1),
 		Params(v2),
 	)
-	want := "REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)"
-	want2 := "REPLACE INTO `table_1` (`b`,`a`) VALUES (?,?),(?,?)"
-	if result != want && result != want2 {
+	//REPLACE INTO `table_1` (`a`,`b`) VALUES (?,?),(?,?)
+	want := "REPLACE INTO `table_1` (" + getStringByMapSort(v1, "`%s`", ",") + ") VALUES (?,?),(?,?)"
+	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
@@ -293,20 +295,22 @@ func TestUpdateSQL(t *testing.T) {
 		Table("table_1"),
 		Params(v1),
 	)
-	want := "UPDATE `table_1` SET `a` = ?, `b` = ?"
-	want2 := "UPDATE `table_1` SET `b` = ?, `a` = ?"
-	if result != want && result != want2 {
+	want := "UPDATE `table_1` SET " + getStringByMapSort(v1, "`%s` = ?", ", ")
+	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
+func getStringByMapSort(data map[string]interface{}, tmp, sep string) string {
+	var sub []string
+	for k := range data {
+		sub = append(sub, fmt.Sprintf(tmp, k))
+	}
+	return strings.Join(sub, sep)
+}
 
 func TestDeleteSQL(t *testing.T) {
-	v1 := make(map[string]interface{}, 0)
-	v1["a"] = 1
-	v1["b"] = "jack"
 	result, _ := DeleteSQL(
 		Table("table_1"),
-		Params(v1),
 	)
 	want := "DELETE FROM `table_1`"
 	if result != want {

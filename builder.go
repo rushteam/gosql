@@ -580,6 +580,7 @@ func (s *SQLSegments) buildValuesForInsert() string {
 		} else {
 			values += ",("
 		}
+		//for keep field order in golang-map
 		for _, arg := range fieldSlice {
 			s.render.args = append(s.render.args, vals[arg])
 		}
