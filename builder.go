@@ -562,8 +562,7 @@ func (s *SQLSegments) BuildReplace() string {
 
 //BuildInsert build a insert sql
 func (s *SQLSegments) buildValuesForInsert() string {
-	var fields string
-	var values string
+	var sql string
 	var fieldSlice []string
 	for i, vals := range s.params {
 		if i == 0 {
@@ -572,22 +571,23 @@ func (s *SQLSegments) buildValuesForInsert() string {
 			}
 		}
 	}
+	sql = buildString(fieldSlice, ",", " (", ")", true)
+	sql += " VALUES"
 	fieldLen := len(fieldSlice)
-	fields += buildString(fieldSlice, ",", " (", ")", true)
 	for i, vals := range s.params {
-		if i == 0 {
-			values += " ("
-		} else {
-			values += ",("
-		}
 		//for keep field order in golang-map
 		for _, arg := range fieldSlice {
 			s.render.args = append(s.render.args, vals[arg])
 		}
-		values += buildPlaceholder(fieldLen, "?", ",")
-		values += ")"
+		//build sql
+		if i == 0 {
+			sql += " ("
+		} else {
+			sql += ",("
+		}
+		sql += buildPlaceholder(fieldLen, "?", ",")
+		sql += ")"
 	}
-	var sql = fields + " VALUES" + values
 	return sql
 }
 
