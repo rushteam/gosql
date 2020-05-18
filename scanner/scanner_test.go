@@ -61,11 +61,11 @@ func TestResolveModel5(t *testing.T) {
 	}
 	wantTbName := "TestModel"
 	if ret.TableName() != wantTbName {
-		t.Errorf("table name: result: %v want: %v", ret.TableName(), wantTbName)
+		t.Errorf("ret.TableName() result: %v want: %v", ret.TableName(), wantTbName)
 	}
 	wantPk := "id"
 	if ret.GetPk() != wantPk {
-		t.Errorf("pk: result: %v want: %v", ret.GetPk(), wantPk)
+		t.Errorf("ret.GetPk() result: %v want: %v", ret.GetPk(), wantPk)
 	}
 
 }
@@ -76,7 +76,7 @@ func (t *t1Model) TableName() string {
 	return "tbl_t1"
 }
 func TestResolveModel6(t *testing.T) {
-	m := t1Model{}
+	m := &t1Model{}
 	ret, _ := ResolveModelStruct(m)
 	wantTbName := "tbl_t1"
 	if ret.TableName() != wantTbName {
