@@ -167,6 +167,28 @@ func TestSessionReplace(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestSessionUpdate(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("UPDATE `test` SET").WithArgs("jerry", 1).WillReturnResult(sqlmock.NewResult(2, 1))
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+
+	t1 := &tblModel{}
+	t1.Name = "jerry"
+	_, err = s.Update(t1, Where("id", 1))
+	if err != nil {
+		t.Log(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
 func TestSessionDelete(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
