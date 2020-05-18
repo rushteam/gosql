@@ -19,6 +19,7 @@ func (u *UserModel) TableName() string {
 }
 
 func main() {
+	gosql.Debug = true
 	var err error
 	var ret gosql.Result
 

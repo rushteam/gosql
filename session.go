@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -60,6 +61,7 @@ func (s *Session) QueryRowContext(ctx context.Context, query string, args ...int
 	// 	*rowErr = err
 	// 	return row
 	// }
+	fmt.Printf("%+v", db)
 	return db.QueryRowContext(ctx, query, args...)
 }
 

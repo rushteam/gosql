@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"sync/atomic"
 	"time"
 )
@@ -58,7 +59,7 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 	var dbx *dbEngine
 	if master || c.forceMaster == true {
 		//select master db
-		dbx := c.pools[0]
+		dbx = c.pools[0]
 		debugPrint("db: [master] dsn %s", dbx.Dsn)
 	} else {
 		//select slave db
@@ -66,11 +67,13 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 		if n > 1 {
 			i = 1 + int(s.v)%(n-1)
 		}
-		dbx := c.pools[i]
+		dbx = c.pools[i]
 		debugPrint("db: [slave#%d] %s", i, dbx.Dsn)
 	}
+
 	executor, err := dbx.Connect()
 	if err != nil {
+		fmt.Println("==", err)
 		return s, err
 	}
 	s.executor = executor
@@ -100,7 +103,6 @@ func (c *PoolCluster) Begin() (*Session, error) {
 
 //QueryContext ..
 func (c *PoolCluster) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	s, _ := c.Executor(nil, false)
 	return s.QueryContext(ctx, query, args...)
 }
@@ -113,32 +115,18 @@ func (c *PoolCluster) Query(query string, args ...interface{}) (*sql.Rows, error
 
 //QueryRowContext ..
 func (c *PoolCluster) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	s, _ := c.Executor(nil, false)
-	// if err != nil {
-	// 	row := &sql.Row{}
-	// 	rowErr := (*error)(unsafe.Pointer(row))
-	// 	*rowErr = err
-	// 	return row
-	// }
 	return s.QueryRowContext(ctx, query, args...)
 }
 
 //QueryRow ..
 func (c *PoolCluster) QueryRow(query string, args ...interface{}) *sql.Row {
 	s, _ := c.Executor(nil, false)
-	// if err != nil {
-	// 	row := &sql.Row{}
-	// 	rowErr := (*error)(unsafe.Pointer(row))
-	// 	*rowErr = err
-	// 	return row
-	// }
 	return s.QueryRow(query, args...)
 }
 
 //ExecContext ..
 func (c *PoolCluster) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
 	s, _ := c.Executor(nil, true)
 	return s.ExecContext(ctx, query, args...)
 }
