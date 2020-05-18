@@ -16,45 +16,28 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-type executorFunc func(master bool) (Executor, error)
-
-//SessionOpts ..
-type SessionOpts func(s *Session) *Session
-
 //Session ..
 type Session struct {
-	cluster     Cluster
-	ctx         context.Context
-	done        int32
-	v           uint64
-	executor    Executor
-	mutex       sync.RWMutex
-	forceMaster bool
-}
-
-//Master 强制master
-func (s *Session) Master() *Session {
-	s.forceMaster = true
-	return s
+	v        uint64
+	executor Executor
+	mutex    sync.RWMutex
+	done     int32
+	ctx      context.Context
 }
 
 //Executor ..
-func (s *Session) Executor(master bool) (Executor, error) {
+func (s *Session) Executor() (Executor, error) {
 	var err error
 	if s.executor == nil {
-		if master == true || s.forceMaster {
-			s.executor, err = s.cluster.Master()
-		} else {
-			s.executor, err = s.cluster.Slave(s.v)
-		}
+		return nil, errors.New("not found db")
 	}
 	return s.executor, err
 }
 
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(false)
+	debugPrint("db: [session #%v] Query %s %v", s.v, query, args)
+	db, err := s.Executor()
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +51,15 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(false)
-	if err != nil {
-		return nil
-	}
+	debugPrint("db: [session #%v] Query %s %v", s.v, query, args)
+	db, _ := s.Executor()
+	// db, err := s.Executor()
+	// if err != nil {
+	// 	row := &sql.Row{}
+	// 	rowErr := (*error)(unsafe.Pointer(row))
+	// 	*rowErr = err
+	// 	return row
+	// }
 	return db.QueryRowContext(ctx, query, args...)
 }
 
@@ -83,8 +70,8 @@ func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
 
 //ExecContext ..
 func (s *Session) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(true)
+	debugPrint("db: [session #%v] Exec %s %v", s.v, query, args)
+	db, err := s.Executor()
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +85,7 @@ func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
 
 //Fetch ..
 func (s *Session) Fetch(dst interface{}, opts ...Option) error {
+	debugPrint("db: [session #%v] Fetch()", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
@@ -113,6 +101,7 @@ func (s *Session) Fetch(dst interface{}, opts ...Option) error {
 
 //FetchAll ..
 func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
+	debugPrint("db: [session #%v] FetchAll()", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
@@ -128,6 +117,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
 
 //Update ..
 func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Update", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -180,6 +170,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 
 //Insert ..
 func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Insert", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -219,6 +210,7 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 
 //Replace ..
 func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Replace", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -255,6 +247,7 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 
 //Delete ..
 func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Delete", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
