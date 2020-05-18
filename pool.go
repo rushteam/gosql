@@ -6,7 +6,6 @@ import (
 	"errors"
 	"sync/atomic"
 	"time"
-	"unsafe"
 )
 
 //DbOption ..
@@ -37,165 +36,158 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 
 //PoolCluster impl Cluster
 type PoolCluster struct {
-	vs      uint64
-	pools   []*dbEngine
-	session *Session
+	vs          uint64
+	pools       []*dbEngine
+	db          Executor
+	session     *Session
+	forceMaster bool
 }
 
 // PoolClusterOpts ..
 type PoolClusterOpts func(p *PoolCluster) *PoolCluster
 
-// NewSession ..
-func (c *PoolCluster) NewSession() *Session {
-	v := atomic.AddUint64(&(c.vs), 1)
-	return &Session{cluster: c, v: v}
-}
-
 // Executor ..
-func (c *PoolCluster) Executor(s *Session, master bool) (Executor, error) {
-	if s == nil {
-		s = c.NewSession()
-	}
-	var err error
-	var executor Executor
-	if master || s.forceMaster == true {
-		executor, err = c.Master()
-		s.setExecutor(executor)
-	} else {
-		executor, err = c.Slave(s.v)
-		s.setExecutor(executor)
-	}
-	return executor, err
-}
-
-//Master select master db
-func (c *PoolCluster) Master() (Executor, error) {
-	if len(c.pools) == 0 {
-		return nil, errors.New("not found db")
-	}
-	dbx := c.pools[0]
-	debugPrint("db: [master] dsn %s", dbx.Dsn)
-	return dbx.Connect()
-}
-
-//Slave select slave db
-func (c *PoolCluster) Slave(v uint64) (Executor, error) {
+func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 	n := len(c.pools)
 	if n == 0 {
 		return nil, errors.New("not found db")
 	}
-	var i int
-	if n > 1 {
-		i = 1 + int(v)%(n-1)
+	if s == nil {
+		s = &Session{v: atomic.AddUint64(&(c.vs), 1)}
 	}
-	dbx := c.pools[i]
-	debugPrint("db: [slave#%d] %s", i, dbx.Dsn)
-	return dbx.Connect()
+	var dbx *dbEngine
+	if master || c.forceMaster == true {
+		//select master db
+		dbx := c.pools[0]
+		debugPrint("db: [master] dsn %s", dbx.Dsn)
+	} else {
+		//select slave db
+		var i int
+		if n > 1 {
+			i = 1 + int(s.v)%(n-1)
+		}
+		dbx := c.pools[i]
+		debugPrint("db: [slave#%d] %s", i, dbx.Dsn)
+	}
+	executor, err := dbx.Connect()
+	if err != nil {
+		return s, err
+	}
+	s.executor = executor
+	return s, nil
+}
+
+//Master select master db
+func (c *PoolCluster) Master() (*Session, error) {
+	return c.Executor(nil, true)
+}
+
+//Slave select slave db
+func (c *PoolCluster) Slave(v uint64) (*Session, error) {
+	return c.Executor(nil, false)
 }
 
 //Begin a transaction
 func (c *PoolCluster) Begin() (*Session, error) {
-	s := c.NewSession()
-	err := s.begin()
+	s, err := c.Executor(nil, true)
+	executor, err := s.executor.(DB).Begin()
+	if err != nil {
+		return s, err
+	}
+	s.executor = executor
 	return s, err
 }
 
 //QueryContext ..
 func (c *PoolCluster) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := c.Executor(nil, false)
-	if err != nil {
-		return nil, err
-	}
-	return db.QueryContext(ctx, query, args...)
+	s, _ := c.Executor(nil, false)
+	return s.QueryContext(ctx, query, args...)
 }
 
 //Query ..
 func (c *PoolCluster) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	db, err := c.Executor(nil, false)
-	if err != nil {
-		return nil, err
-	}
-	return db.Query(query, args...)
+	s, _ := c.Executor(nil, false)
+	return s.Query(query, args...)
 }
 
 //QueryRowContext ..
 func (c *PoolCluster) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := c.Executor(nil, false)
-	if err != nil {
-		row := &sql.Row{}
-		rowErr := (*error)(unsafe.Pointer(row))
-		*rowErr = err
-		return row
-	}
-	return db.QueryRowContext(ctx, query, args...)
+	s, _ := c.Executor(nil, false)
+	// if err != nil {
+	// 	row := &sql.Row{}
+	// 	rowErr := (*error)(unsafe.Pointer(row))
+	// 	*rowErr = err
+	// 	return row
+	// }
+	return s.QueryRowContext(ctx, query, args...)
 }
 
 //QueryRow ..
 func (c *PoolCluster) QueryRow(query string, args ...interface{}) *sql.Row {
-	db, err := c.Executor(nil, false)
-	if err != nil {
-		row := &sql.Row{}
-		rowErr := (*error)(unsafe.Pointer(row))
-		*rowErr = err
-		return row
-	}
-	return db.QueryRow(query, args...)
+	s, _ := c.Executor(nil, false)
+	// if err != nil {
+	// 	row := &sql.Row{}
+	// 	rowErr := (*error)(unsafe.Pointer(row))
+	// 	*rowErr = err
+	// 	return row
+	// }
+	return s.QueryRow(query, args...)
 }
 
 //ExecContext ..
 func (c *PoolCluster) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
 	// debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := c.Executor(nil, true)
-	if err != nil {
-		return nil, err
-	}
-	return db.ExecContext(ctx, query, args...)
+	s, _ := c.Executor(nil, true)
+	return s.ExecContext(ctx, query, args...)
 }
 
 //Exec ..
 func (c *PoolCluster) Exec(query string, args ...interface{}) (sql.Result, error) {
-	db, err := c.Executor(nil, true)
-	if err != nil {
-		return nil, err
-	}
-	return db.Exec(query, args...)
+	s, _ := c.Executor(nil, true)
+	return s.Exec(query, args...)
 }
 
 //Fetch fetch record to model
 func (c *PoolCluster) Fetch(dst interface{}, opts ...Option) error {
-	s := c.NewSession()
+	s, err := c.Executor(nil, false)
+	if err != nil {
+		return err
+	}
 	return s.Fetch(dst, opts...)
 }
 
 //FetchAll fetch records to models
 func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
-	s := c.NewSession()
+	s, err := c.Executor(nil, false)
+	if err != nil {
+		return err
+	}
 	return s.FetchAll(dst, opts...)
 }
 
 //Update update from model
 func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
-	s := c.NewSession()
+	s, _ := c.Executor(nil, true)
 	return s.Update(dst, opts...)
 }
 
 //Insert insert from model
 func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
-	s := c.NewSession()
+	s, _ := c.Executor(nil, true)
 	return s.Insert(dst, opts...)
 }
 
 //Replace replace from model
 func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
-	s := c.NewSession()
+	s, _ := c.Executor(nil, true)
 	return s.Replace(dst, opts...)
 }
 
 //Delete delete record
 func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
-	s := c.NewSession()
+	s, _ := c.Executor(nil, true)
 	return s.Delete(dst, opts...)
 }
 

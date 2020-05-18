@@ -17,6 +17,26 @@ var ErrNoRows = sql.ErrNoRows
 //Result sql Result
 type Result sql.Result
 
+//ExecutorORM ..
+type ExecutorORM interface {
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
+	Prepare(query string) (*sql.Stmt, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
+	Exec(query string, args ...interface{}) (sql.Result, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
+	QueryRow(query string, args ...interface{}) *sql.Row
+
+	Begin() (*Session, error)
+	Fetch(dst interface{}, opts ...Option) error
+	FetchAll(dst interface{}, opts ...Option) error
+	Update(dst interface{}, opts ...Option) (Result, error)
+	Insert(dst interface{}, opts ...Option) (Result, error)
+	Replace(dst interface{}, opts ...Option) (Result, error)
+	Delete(dst interface{}, opts ...Option) (Result, error)
+}
+
 //Executor is a Executor
 type Executor interface {
 	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
@@ -55,7 +75,6 @@ type Tx interface {
 //Cluster ..
 type Cluster interface {
 	Executor(s *Session, master bool) (Executor, error)
-	NewSession() *Session
 	Begin() (*Session, error)
 	Fetch(dst interface{}, opts ...Option) error
 	FetchAll(dst interface{}, opts ...Option) error

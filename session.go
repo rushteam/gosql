@@ -6,7 +6,6 @@ import (
 	"errors"
 	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/rushteam/gosql/scanner"
 )
@@ -17,31 +16,20 @@ var createdAtField = "created_at"
 var updatedAtField = "updated_at"
 var deletedAtField = "deleted_at"
 
-//SessionOpts ..
-type SessionOpts func(s *Session) *Session
-
 //Session ..
 type Session struct {
-	cluster     Cluster
-	ctx         context.Context
-	done        int32
-	v           uint64
-	executor    Executor
-	mutex       sync.RWMutex
-	forceMaster bool
-}
-
-//Master 强制master
-func (s *Session) Master() *Session {
-	s.forceMaster = true
-	return s
+	v        uint64
+	executor Executor
+	mutex    sync.RWMutex
+	done     int32
+	ctx      context.Context
 }
 
 //Executor ..
-func (s *Session) Executor(master bool) (Executor, error) {
+func (s *Session) Executor() (Executor, error) {
 	var err error
 	if s.executor == nil {
-		s.executor, err = s.cluster.Executor(s, master)
+		return nil, errors.New("not found db")
 	}
 	return s.executor, err
 }
@@ -49,7 +37,7 @@ func (s *Session) Executor(master bool) (Executor, error) {
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
 	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(false)
+	db, err := s.Executor()
 	if err != nil {
 		return nil, err
 	}
@@ -63,14 +51,15 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(false)
-	if err != nil {
-		row := &sql.Row{}
-		rowErr := (*error)(unsafe.Pointer(row))
-		*rowErr = err
-		return row
-	}
+	debugPrint("db: [session #%v] Query %s %v", s.v, query, args)
+	db, _ := s.Executor()
+	// db, err := s.Executor()
+	// if err != nil {
+	// 	row := &sql.Row{}
+	// 	rowErr := (*error)(unsafe.Pointer(row))
+	// 	*rowErr = err
+	// 	return row
+	// }
 	return db.QueryRowContext(ctx, query, args...)
 }
 
@@ -81,8 +70,8 @@ func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
 
 //ExecContext ..
 func (s *Session) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
-	db, err := s.Executor(true)
+	debugPrint("db: [session #%v] Exec %s %v", s.v, query, args)
+	db, err := s.Executor()
 	if err != nil {
 		return nil, err
 	}
@@ -281,21 +270,6 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 	sql, args := DeleteSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	return rst, err
-}
-
-//begin
-func (s *Session) begin() error {
-	debugPrint("db: [session #%v] Begin", s.v)
-	executor, err := s.cluster.Executor(s, true)
-	if err != nil {
-		return err
-	}
-	executor, err = executor.(DB).Begin()
-	if err != nil {
-		return err
-	}
-	s.executor = executor
-	return nil
 }
 
 //Commit ..
