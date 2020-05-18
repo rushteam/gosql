@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
@@ -37,7 +36,7 @@ func (s *Session) Executor() (Executor, error) {
 
 //QueryContext ..
 func (s *Session) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	debugPrint("db: [session #%v] %s %v", s.v, query, args)
+	debugPrint("db: [session #%v] Query %s %v", s.v, query, args)
 	db, err := s.Executor()
 	if err != nil {
 		return nil, err
@@ -61,7 +60,6 @@ func (s *Session) QueryRowContext(ctx context.Context, query string, args ...int
 	// 	*rowErr = err
 	// 	return row
 	// }
-	fmt.Printf("%+v", db)
 	return db.QueryRowContext(ctx, query, args...)
 }
 

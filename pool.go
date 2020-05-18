@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"sync/atomic"
 	"time"
 )
@@ -73,7 +72,6 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 
 	executor, err := dbx.Connect()
 	if err != nil {
-		fmt.Println("==", err)
 		return s, err
 	}
 	s.executor = executor
