@@ -22,7 +22,7 @@ type dbEngine struct {
 //Connect real open a db
 func (d *dbEngine) Connect() (*sql.DB, error) {
 	if d.Db == nil {
-		debugPrint("db: Connect(%s,%s)", d.Driver, d.Dsn)
+		// debugPrint("db: Connect(%s,%s)", d.Driver, d.Dsn)
 		db, err := sql.Open(d.Driver, d.Dsn)
 		if err != nil {
 			return db, err
@@ -54,7 +54,7 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 		return nil, errors.New("not found db")
 	}
 	if s == nil {
-		s = &Session{v: atomic.AddUint64(&(c.vs), 1)}
+		s = &Session{v: atomic.AddUint64(&(c.vs), 1), ctx: context.Background()}
 	}
 	var dbx *dbEngine
 	if master || c.forceMaster == true {
