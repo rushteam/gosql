@@ -96,6 +96,7 @@ func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
 
 //Fetch ..
 func (s *Session) Fetch(dst interface{}, opts ...Option) error {
+	debugPrint("db: [session #%v] Fetch()", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
@@ -111,6 +112,7 @@ func (s *Session) Fetch(dst interface{}, opts ...Option) error {
 
 //FetchAll ..
 func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
+	debugPrint("db: [session #%v] FetchAll()", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return err
@@ -126,6 +128,7 @@ func (s *Session) FetchAll(dst interface{}, opts ...Option) error {
 
 //Update ..
 func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Update", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -178,6 +181,7 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 
 //Insert ..
 func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Insert", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -217,6 +221,7 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 
 //Replace ..
 func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Replace", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err
@@ -253,6 +258,7 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 
 //Delete ..
 func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
+	debugPrint("db: [session #%v] Delete", s.v)
 	dstStruct, err := scanner.ResolveModelStruct(dst)
 	if err != nil {
 		return nil, err

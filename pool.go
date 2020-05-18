@@ -166,42 +166,36 @@ func (c *PoolCluster) Exec(query string, args ...interface{}) (sql.Result, error
 //Fetch fetch record to model
 func (c *PoolCluster) Fetch(dst interface{}, opts ...Option) error {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] Fetch()", s.v)
 	return s.Fetch(dst, opts...)
 }
 
 //FetchAll fetch records to models
 func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] FetchAll()", s.v)
 	return s.FetchAll(dst, opts...)
 }
 
 //Update update from model
 func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] Update", s.v)
 	return s.Update(dst, opts...)
 }
 
 //Insert insert from model
 func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] Insert", s.v)
 	return s.Insert(dst, opts...)
 }
 
 //Replace replace from model
 func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] Replace", s.v)
 	return s.Replace(dst, opts...)
 }
 
 //Delete delete record
 func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
 	s := c.NewSession()
-	debugPrint("db: [session #%v] Delete", s.v)
 	return s.Delete(dst, opts...)
 }
 
