@@ -7,6 +7,23 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
+type t1Model struct {
+	Name string `db:"name"`
+}
+
+func (t *t1Model) TableName() string {
+	return "test"
+}
+
+type t2Model struct {
+	ID   int64  `db:"id,pk"`
+	Name string `db:"name"`
+}
+
+func (t *t2Model) TableName() string {
+	return "test"
+}
+
 func TestSession1(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
@@ -28,13 +45,6 @@ func TestSession1(t *testing.T) {
 	// s.Rollback()
 }
 
-type tblModel struct {
-	Name string `db:"name"`
-}
-
-func (t1 *tblModel) TableName() string {
-	return "test"
-}
 func TestSessionExec(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
@@ -100,7 +110,7 @@ func TestSessionFetch(t *testing.T) {
 	mock.ExpectQuery("SELECT (.+) FROM `test`").WillReturnRows(mrows)
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	row := s.Fetch(t1)
 	t.Log(row)
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -118,7 +128,7 @@ func TestSessionFetchAll(t *testing.T) {
 	mock.ExpectQuery("SELECT (.+) FROM `test`").WillReturnRows(mrows)
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	row := s.FetchAll(t1)
 	t.Log(row)
 	if err := mock.ExpectationsWereMet(); err != nil {
@@ -137,7 +147,7 @@ func TestSessionInsert(t *testing.T) {
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	t1.Name = "川建国"
 	_, err = s.Insert(t1)
 	if err != nil {
@@ -157,7 +167,7 @@ func TestSessionReplace(t *testing.T) {
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	t1.Name = "川建国"
 	_, err = s.Replace(t1)
 	if err != nil {
@@ -179,9 +189,32 @@ func TestSessionUpdate(t *testing.T) {
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	t1.Name = "jerry"
 	_, err = s.Update(t1, Where("id", 1))
+	if err != nil {
+		t.Log(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestSessionUpdate2(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("UPDATE `test` SET").WithArgs("jerry", 1).WillReturnResult(sqlmock.NewResult(2, 1))
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+
+	t1 := &t2Model{}
+	t1.ID = 1
+	t1.Name = "jerry"
+	_, err = s.Update(t1)
 	if err != nil {
 		t.Log(err)
 	}
@@ -200,7 +233,7 @@ func TestSessionDelete(t *testing.T) {
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
-	t1 := &tblModel{}
+	t1 := &t1Model{}
 	_, err = s.Delete(t1)
 	if err != nil {
 		t.Log(err)

@@ -139,22 +139,17 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 			if id != "" && id != nil {
 				opts = append(opts, Where(pk, id))
 			}
-			// delete(fields, pk)
 		}
 	}
 	updateFields := make(map[string]interface{}, 0)
 	for k, v := range fields {
-		if k == pk || k == "" {
+		if k == "" || k == pk {
 			continue
 		}
 		//过滤掉 v 是空的值 todo 会出现指针吗?要是指针怎么处理?
 		if v == nil || v == "" {
 			continue
 		}
-		//过滤掉 model 中的主键 防止修改
-		// if pk != "" && k == pk {
-		// 	continue
-		// }
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
@@ -188,7 +183,8 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 	pk := dstStruct.GetPk()
 	updateFields := make(map[string]interface{}, 0)
 	for k, v := range fields {
-		if k == pk || k == "" {
+		//skip pk
+		if k == "" || k == pk {
 			continue
 		}
 		updateFields[k] = v
@@ -208,7 +204,9 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 	rst, err := s.ExecContext(s.ctx, sql, args...)
 	//将数据更新到结构体上
 	if err == nil {
-		updateFields[pk], _ = rst.LastInsertId()
+		if pk != "" {
+			updateFields[pk], _ = rst.LastInsertId()
+		}
 	}
 	scanner.UpdateModel(dst, updateFields)
 	return rst, err
@@ -243,9 +241,11 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 	// }
 	sql, args := ReplaceSQL(opts...)
 	rst, err := s.ExecContext(s.ctx, sql, args...)
-	//将数据更新到结构体上
+	//update model pk
 	if err == nil {
-		updateFields[pk], _ = rst.LastInsertId()
+		if pk != "" {
+			updateFields[pk], _ = rst.LastInsertId()
+		}
 	}
 	scanner.UpdateModel(dst, updateFields)
 	return rst, err
@@ -265,8 +265,8 @@ func (s *Session) Delete(dst interface{}, opts ...Option) (Result, error) {
 	opts = append(opts, Table(dstStruct.TableName()))
 	pk := dstStruct.GetPk()
 	for k, v := range fields {
-		if k == pk && k != "" {
-			//仅仅取model中的pk，其他一律忽略
+		if k != "" && k == pk {
+			//just use pk,igone other case
 			opts = append(opts, Where(k, v))
 			break
 		} else {
