@@ -33,7 +33,7 @@ type tblModel struct {
 }
 
 func (t1 *tblModel) TableName() string {
-	return "tbl"
+	return "test"
 }
 func TestSessionExec(t *testing.T) {
 	Debug = true
@@ -89,6 +89,43 @@ func TestSessionQuery2(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+func TestSessionFetch(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("SELECT (.+) FROM `test`").WillReturnRows(mrows)
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+	t1 := &tblModel{}
+	row := s.Fetch(t1)
+	t.Log(row)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestSessionFetchAll(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("SELECT (.+) FROM `test`").WillReturnRows(mrows)
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+	t1 := &tblModel{}
+	row := s.FetchAll(t1)
+	t.Log(row)
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestSessionInsert(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
@@ -96,7 +133,7 @@ func TestSessionInsert(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	mock.ExpectExec("INSERT INTO `tbl`").WithArgs("川建国").WillReturnResult(sqlmock.NewResult(2, 1))
+	mock.ExpectExec("INSERT INTO `test`").WithArgs("川建国").WillReturnResult(sqlmock.NewResult(2, 1))
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
@@ -116,7 +153,7 @@ func TestSessionReplace(t *testing.T) {
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
-	mock.ExpectExec("REPLACE INTO `tbl`").WithArgs("川建国").WillReturnResult(sqlmock.NewResult(2, 1))
+	mock.ExpectExec("REPLACE INTO `test`").WithArgs("川建国").WillReturnResult(sqlmock.NewResult(2, 1))
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
@@ -137,7 +174,7 @@ func TestSessionDelete(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	mock.ExpectExec("DELETE FROM `tbl`").WillReturnResult(sqlmock.NewResult(2, 1))
+	mock.ExpectExec("DELETE FROM `test`").WillReturnResult(sqlmock.NewResult(2, 1))
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
