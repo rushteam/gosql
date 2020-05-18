@@ -10,11 +10,17 @@ import (
 	"github.com/rushteam/gosql/scanner"
 )
 
-//自动更新时间
-var autoFillCreatedAtAndUpdatedAtField = true
-var createdAtField = "created_at"
-var updatedAtField = "updated_at"
-var deletedAtField = "deleted_at"
+//AutoFillCreatedAtAndUpdatedAtField 自动更新时间
+var AutoFillCreatedAtAndUpdatedAtField = false
+
+//AutoFieldCreatedAt when insert auto set time
+var AutoFieldCreatedAt = "created_at"
+
+//AutoFieldUpdatedAt when update auto set time
+var AutoFieldUpdatedAt = "updated_at"
+
+//todo soft delete
+// var AutoFieldDeletedAt = "deleted_at"
 
 //Session ..
 type Session struct {
@@ -152,9 +158,9 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if autoFillCreatedAtAndUpdatedAtField == true {
+	if AutoFillCreatedAtAndUpdatedAtField == true {
 		//强制填充更新时间
-		updateFields[updatedAtField] = time.Now()
+		updateFields[AutoFieldUpdatedAt] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
@@ -188,10 +194,10 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if autoFillCreatedAtAndUpdatedAtField == true {
+	if AutoFillCreatedAtAndUpdatedAtField == true {
 		//强制填充更新时间/创建时间
-		updateFields[updatedAtField] = time.Now()
-		updateFields[createdAtField] = time.Now()
+		updateFields[AutoFieldUpdatedAt] = time.Now()
+		updateFields[AutoFieldCreatedAt] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
@@ -225,10 +231,10 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if autoFillCreatedAtAndUpdatedAtField == true {
+	if AutoFillCreatedAtAndUpdatedAtField == true {
 		//强制填充更新时间/创建时间
-		updateFields[updatedAtField] = time.Now()
-		updateFields[createdAtField] = time.Now()
+		updateFields[AutoFieldUpdatedAt] = time.Now()
+		updateFields[AutoFieldCreatedAt] = time.Now()
 	}
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
