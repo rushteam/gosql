@@ -53,21 +53,35 @@ func TestResolveModel5(t *testing.T) {
 		t.Errorf("result: pk=%v, want: pk=%v", ret.pk, "id")
 	}
 	if ret.GetStructField("id").isPrimaryKey != true {
-		t.Errorf("error: %v", `ret.GetStructField("id").isPrimaryKey`)
+		t.Errorf("%v", `ret.GetStructField("id").isPrimaryKey`)
 	}
 	wantCols := []string{"id", "name", "age"}
 	if !reflect.DeepEqual(ret.Columns(), wantCols) {
-		t.Errorf("error: ret.Columns() result: %v want: %v", ret.Columns(), wantCols)
+		t.Errorf("ret.Columns() result: %v want: %v", ret.Columns(), wantCols)
 	}
 	wantTbName := "TestModel"
 	if ret.TableName() != wantTbName {
-		t.Errorf("error: ret.TableName() result: %v want: %v", ret.TableName(), wantTbName)
+		t.Errorf("table name: result: %v want: %v", ret.TableName(), wantTbName)
 	}
 	wantPk := "id"
 	if ret.GetPk() != wantPk {
-		t.Errorf("error: ret.GetPk() result: %v want: %v", ret.GetPk(), wantPk)
+		t.Errorf("pk: result: %v want: %v", ret.GetPk(), wantPk)
 	}
 
+}
+
+type t1Model struct{}
+
+func (t *t1Model) TableName() string {
+	return "tbl_t1"
+}
+func TestResolveModel6(t *testing.T) {
+	m := t1Model{}
+	ret, _ := ResolveModelStruct(m)
+	wantTbName := "tbl_t1"
+	if ret.TableName() != wantTbName {
+		t.Errorf("error: ret.TableName() result: %v want: %v", ret.TableName(), wantTbName)
+	}
 }
 
 func TestResolveStructValue(t *testing.T) {

@@ -225,11 +225,11 @@ func resolveStruct(structRV reflect.Value) (*StructData, error) {
 	if fnTableName.IsValid() {
 		modelStruct.table = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
 	} else {
-		modelStruct.table = structRV.Type().Name()
 		//todo 大小写转换下划线的、自定义方法的
 		// if TableNameFormat == TableNameSnake {
 		// 	name = utils.SnakeString(name)
 		// }
+		modelStruct.table = structRT.Name()
 	}
 	modelStruct.fields = make(map[string]*StructField)
 	for i := 0; i < structRT.NumField(); i++ {
