@@ -216,7 +216,12 @@ func resolveStruct(structRV reflect.Value) (*StructData, error) {
 	}
 	modelStruct := new(StructData)
 	//这里从value上获取到自定义method上的table name
-	fnTableName := structRV.Addr().MethodByName(tableFuncName)
+	var fnTableName reflect.Value
+	if structRV.CanAddr() {
+		fnTableName = structRV.Addr().MethodByName(tableFuncName)
+	} else {
+		fnTableName = structRV.MethodByName(tableFuncName)
+	}
 	if fnTableName.IsValid() {
 		modelStruct.table = fnTableName.Call([]reflect.Value{})[0].Interface().(string)
 	} else {
