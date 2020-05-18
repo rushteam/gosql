@@ -135,9 +135,9 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 	pk := dstStruct.GetPk()
 	if pk != "" {
 		//若主键值不为空则增加主键条件
-		if id, ok := fields[pk]; ok {
-			if id != "" && id != nil {
-				opts = append(opts, Where(pk, id))
+		if pkval, ok := fields[pk]; ok {
+			if pkval != "" && pkval != nil {
+				opts = append(opts, Where(pk, pkval))
 			}
 		}
 	}
