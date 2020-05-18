@@ -1,6 +1,7 @@
 package gosql
 
 import (
+	"context"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -15,10 +16,10 @@ func TestNewSession(t *testing.T) {
 	// defer db.Close()
 	Debug = true
 	columns := []string{"id"}
-	mrows := mock.NewRows(columns).AddRow("1")
+	mrows := mock.NewRows(columns).AddRow("100")
 	mock.ExpectQuery("select * from test").WillReturnRows(mrows)
 
-	s := &Session{v: 0, executor: db}
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 	// s.Commit()
 	// s.Rollback()
 
