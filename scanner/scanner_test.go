@@ -1,6 +1,7 @@
 package scanner
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"testing"
@@ -46,6 +47,7 @@ func TestResolveModel5(t *testing.T) {
 		Age      string `db:"column:age,uni"`
 		NoNeed   string `db:"-"`
 		NickName string
+		PhoneNum string `db:",IDX"`
 	}
 	m := TestModel{}
 	m.ID = 999999
@@ -57,7 +59,7 @@ func TestResolveModel5(t *testing.T) {
 	if ret.GetStructField("id").isPrimaryKey != true {
 		t.Errorf("%v", `ret.GetStructField("id").isPrimaryKey`)
 	}
-	wantCols := []string{"id", "name", "age", "nick_name"}
+	wantCols := []string{"id", "name", "age", "nick_name", "phone_num"}
 	if !reflect.DeepEqual(ret.Columns(), wantCols) {
 		t.Errorf("ret.Columns() result: %v want: %v", ret.Columns(), wantCols)
 	}
@@ -97,4 +99,13 @@ func TestResolveStructValue(t *testing.T) {
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
+}
+func TestScan1(t *testing.T) {
+	type TestModel struct {
+		ID int `db:"id"`
+	}
+	dst := &TestModel{}
+	rows := &sql.Rows{}
+	err := Scan(rows, dst)
+	t.Log(err)
 }
