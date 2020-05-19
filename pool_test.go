@@ -257,11 +257,11 @@ func TestNewCluster12(t *testing.T) {
 	}
 	defer db.Close()
 	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
-	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+	mock.ExpectQuery("SELECT (.+) FROM `test`").WillReturnRows(mrows)
 
 	var t2Rows []t2Model
 	c := mockCluster(db)
-	err = c.Fetch(t2Rows, Limit(2), Offset(10))
+	err = c.FetchAll(&t2Rows, Limit(2), Offset(10))
 	t.Log(err)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
