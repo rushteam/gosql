@@ -20,7 +20,7 @@ gosql is a easy ORM library for Golang.
 * Clean Code
 * Bulk Insert
 
-## Structure 结构
+## Structure
 
 * db.go: Basic struct definition
 * pool.go: Manage DB pool
@@ -353,207 +353,218 @@ gosql.Where("[!~]name","ja%")
 
 #### symbol [?]
 
-##### [=] equal
+* [=] equal
 
 ```golang
 gosql.Where("[=]id",1)
 //sql: id = 1
 ```
 
-##### [!=] not equal
+* [!=] not equal
 
 ```golang
 gosql.Where("[!=]id",1)
 //sql: id != 1
 ```
 
-#### [>] greater than
+* [>] greater than
 
 ```golang
 gosql.Where("[>]id",1)
 //sql: id > 1
 ```
 
-#### [>=] greater or equal
+* [>=] greater or equal
 
 ```golang
 gosql.Where("[>=]id",1)
 //sql: id >= 1
 ```
 
-#### [<] less
+* [<] less
 
 ```golang
 gosql.Where("[<]id",1)
 //sql: id < 1
 ```
 
-#### [<=] less or equal
+* [<=] less or equal
 
 ```golang
 gosql.Where("[<=]id",1)
 //sql: id <= 1
 ```
 
-#### [in] in
+* [in] in
 
 ```golang
 gosql.Where("[in]id",[]int{1,2})
 //sql: id in (1,2)
 ```
 
-#### [!in] not in
+* [!in] not in
 
 ```golang
 gosql.Where("[!in]id",[]int{1,2})
 //sql: id not in (1,2)
 ```
 
-#### [is] is null
+* [is] is null
 
 ```golang
 gosql.Where("[is]name",nil)
 //sql: name is null
 ```
 
-#### [!is] not is null
+* [!is] not is null
 
 ```golang
-gosql.Where("[!is]name","")
-//sql: id is not ""
+gosql.Where("[!is]name",nil)
+//sql: id is not null
 ```
 
-#### [exists] exists
+* [exists] exists
 
 ```golang
 gosql.Where("[exists]name","select 1")
 //sql: name exists(select 1)
 ```
 
-#### [!exists] not exists
+* [!exists] not exists
 
 ```golang
 gosql.Where("[!exists]name","select 1")
 //sql: name not exists(select 1)
 ```
 
-#### [#] sql
+* [#] sql
 
 ```golang
 gosql.Where("[#]age=age-1")
 //sql: age = age-1
 ```
 
-## Raw SQL: db.Query()
+### Raw SQL: db.Query()
 
 ```golang
 rows,err := db.Query("select * from my_user where id = ?",1)
 //sql: select * from my_user where id = 1
 ```
 
-## select master or slave
+### select master or slave
 
-### change to master: db.Master()
+* db.Master() change to master
 
 ```golang
 db := db.Master()
 db.Fetch(...)
 ```
 
-### change to slave: db.Slave()
+* db.Slave() change to slave
 
 ```golang
 db := db.Slave()
 db.Fetch(...)
 ```
 
-## builder of API
+### builder of API
 
-### 创建语句
+* builder.New() start a builder
 
-**用法** builder.New()
+```golang
+s := builder.New()
+```
 
-例子 s := builder.New()
+* builder.Flag(f string) set a flag
 
-### 设置Flag builder.Flag(f string)
+```golang
+s.Flag("test")
+```
 
-设置一个falg,非必须
+* builder.Field(fields string) Specified columns
 
-**用法** s.Flag(string)
+default value *
 
-例子 s := builder.New().Flag("")
+```golang
+s.Field("*")
+```
 
-### 指定字段 builder.Field(fields string)
+* builder.Table(tbl string) Specified table name
 
-指定查询字段 不指定 默认为 *
+```golang
+s.Table("tbl.t1")
+```
 
-**用法** s.Field("*")
+#### Where
 
-### 指定表名 builder.Table(tbl string)
+builder.Where(key string, val inferface{})
 
-**用法** s.Table("tbl1.t1")
+* Eq
 
-### 查询条件
+```golang
+s.Where("t1.status", "0")
+//sql: t1.status = 0
+```
 
-* 普通查询 s.Where(key string, val inferface{})
+* Not Eq
 
-* 等于查询
+```golang
+s.Where("[!=]t1.status", "0")
+//sql: t1.status != 0
+```
 
- **用法** s.Where("t1.status", "0")
+* In
 
- **等效SQL** t1.status = 0
+```golang
+s.Where("[in]field", []string{"a", "b", "c"})
+//sql: t1.field in (a,b,c)
+```
 
-* 不等于查询
+* No In
 
-**用法** s.Where("[!=]t1.status", "0")
+```golang
+s.Where("[!in]field", []string{"a", "b", "c"})
+//sql: t1.status in (a,b,c)
+```
 
-**等效SQL** t1.status != 0
+### Nested Where
 
-* IN查询
-
-**用法** s.Where("[in]sts", []string{"a", "b", "c"})
-
-**等效SQL** t1.type in (a,b,c)
-
-* NOT IN查询
-
-**用法** s.Where("[!in]sts", []string{"a", "b", "c"})
-
-**等效SQL** t1.type not in (a,b,c)
-
-* 复杂条件查询
-
-**用法** .Where(func(s *builder.Clause){}
+* s.Where(func(s *builder.Clause){}
 
 ```golang
 s.Where("[!]t1.a",1).Where(func(s *builder.Clause){
     s.Where("t1.b",1)
     s.OrWhere("t1.c",1)
 })
+//sql: t1.a != 1  and (t1.b = 1 or t1.c = 1)
 ```
 
-**等效SQL**  t1.a != 1  and (t1.b = 1 or t1.c = 1)
+### Other statements
 
-* GROUP BY 分类
+* Group By
 
-**用法**  s.GroupBy("id")
+```golang
+s.GroupBy("class")
+//sql: group by `class`
+```
 
-**等效SQL** group by `id`
+* Order By
 
-* ORDER BY 排序
+```golang
+s.OrderBy("id desc", "age asc")
+//sql: order by `id` desc, `age` asc
+```
 
-**用法**  s.OrderBy("id desc", "age asc")
+* Limit
 
-**等效SQL** order by `id` desc
+```golang
+s.Limit(10)
+//sql: limit 10
+```
 
-* 限制条数
+* Offset
 
-**用法**  s.Limit(30)
-
-**等效SQL** limit 30
-
-* 偏移条数
-
-**用法**  s.Offset(10)
-
-**等效SQL** offset 30
+```golang
+s.Offset(10)
+//sql: offset 10
+```
