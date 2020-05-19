@@ -50,7 +50,7 @@ type PoolClusterOpts func(p *PoolCluster) *PoolCluster
 func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 	n := len(c.pools)
 	if n == 0 {
-		return nil, errors.New("not found db")
+		return nil, errors.New("not found db config")
 	}
 	if s == nil {
 		s = &Session{v: atomic.AddUint64(&(c.vs), 1), ctx: context.Background()}
