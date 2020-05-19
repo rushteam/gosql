@@ -6,37 +6,35 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/rushteam/gosql)](https://goreportcard.com/report/github.com/rushteam/gosql)
 [![LICENSE](https://img.shields.io/github/license/rushteam/gosql)](https://github.com/rushteam/gosql/blob/master/LICENSE)
 
-gosql is a easy ORM library for Golang. 
+A easy ORM for golang
 
-## Feature
+gosql 是一个用golang实现的数据库操作类库
 
-* Golang-style SQL builde
-* Unlimited nesting query
-* Reading and Writing Separation
-* Delay connection creation
-* ORM maping to sturct
-* Support transaction
-* Versatile
-* Clean Code
-* Bulk Insert
+## Feature 功能
+
+* Golang-style SQL builder go语言风格sql生成
+* Unlimited nesting query 查询条件无限嵌套
+* Reading and Writing Separation 读写分离
+* Delay connection creation 延迟创建连接
+* ORM maping to sturct ORM映射结构体
+* Transactions 事务支持
+* Versatile 功能多样的
+* Clean Code 简洁的代码
+* Bulk Insert 支持批量插入
 
 ## Structure 结构
 
-* db.go: Basic struct definition
-* pool.go: Manage DB pool
-* session.go: Session and Model
-* builder.go: Building SQL
-* scanner/*: scan struct
+* db.go: defined base struct define 基本结构定义
+* pool.go: db manager 管理db
+* session.go: session and maping to model 会话和模型
+* builder.go: for building SQL 构建sql
+* scanner/*: mapping struct and scan 映射模型
 
-## Why build this wheels
+## Why build this wheels 为什么造轮子
 
-I have read almost all open source operation database library implemented in golang on github. But never get the optimal solution.
+几乎是翻遍github上所有开源的使用golang实现的操作数据库类)使用起来总有不顺手的地方,例如:
 
-Such as these:
-
-1. Does not support read and write separation (gorm)
-
-2. Grammar has ependency convention (gendry) E.g:  group by and limit Put in a map
+gorm不支持读写分离,关联表使用频率少
 
 gendry 是didi开源的一款,比较简洁但部分语法怪异 如group by 和 limit 依赖字段的约定
 
