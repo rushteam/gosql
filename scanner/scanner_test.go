@@ -41,9 +41,11 @@ func TestResolveModel4(t *testing.T) {
 
 func TestResolveModel5(t *testing.T) {
 	type TestModel struct {
-		ID   int    `db:"id,pk"`
-		Name string `db:"column:name"`
-		Age  string `db:"column:age,uni"`
+		ID       int    `db:"id,pk"`
+		Name     string `db:"column:name"`
+		Age      string `db:"column:age,uni"`
+		NoNeed   string `db:"-"`
+		NickName string
 	}
 	m := TestModel{}
 	m.ID = 999999
@@ -55,7 +57,7 @@ func TestResolveModel5(t *testing.T) {
 	if ret.GetStructField("id").isPrimaryKey != true {
 		t.Errorf("%v", `ret.GetStructField("id").isPrimaryKey`)
 	}
-	wantCols := []string{"id", "name", "age"}
+	wantCols := []string{"id", "name", "age", "nick_name"}
 	if !reflect.DeepEqual(ret.Columns(), wantCols) {
 		t.Errorf("ret.Columns() result: %v want: %v", ret.Columns(), wantCols)
 	}
@@ -67,7 +69,6 @@ func TestResolveModel5(t *testing.T) {
 	if ret.GetPk() != wantPk {
 		t.Errorf("ret.GetPk() result: %v want: %v", ret.GetPk(), wantPk)
 	}
-
 }
 
 type t1Model struct{}
