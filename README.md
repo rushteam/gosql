@@ -42,10 +42,9 @@ Such as these:
 
 This project refers to a large number of existing libs, refers to various documents, and uses golang style to achieve from scratch.
 
+## NOTE
 
-## Attention
-
-** Only supports mysql driver.
+NOTE: Only supports mysql driver.
 
 ## Demo
 
