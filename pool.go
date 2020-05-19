@@ -38,8 +38,6 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 type PoolCluster struct {
 	vs          uint64
 	pools       []*dbEngine
-	db          Executor
-	session     *Session
 	forceMaster bool
 }
 

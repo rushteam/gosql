@@ -1,6 +1,8 @@
 package gosql
 
 import (
+	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -53,6 +55,97 @@ func TestNewCluster2(t *testing.T) {
 	c.Exec("select 2")
 	s, _ := c.Master()
 	s.Query("select 3")
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func mockCluster(db *sql.DB) *PoolCluster {
+	var pools []*dbEngine
+	dbc := &dbEngine{
+		Db:     db,
+		Dsn:    "mockdb",
+		Driver: "mysql",
+	}
+	pools = append(pools, dbc)
+	c := &PoolCluster{}
+	c.vs = 0
+	c.pools = pools
+	return c
+}
+func TestNewCluster3(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+
+	c := mockCluster(db)
+	rows, err := c.Query("select * from test")
+	t.Log(rows, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestNewCluster4(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+
+	c := mockCluster(db)
+	rows, err := c.QueryContext(context.Background(), "select * from test")
+	t.Log(rows, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestNewCluster5(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+
+	c := mockCluster(db)
+	row := c.QueryRow("select * from test")
+	t.Log(row)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestNewCluster6(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+
+	c := mockCluster(db)
+	row := c.QueryRowContext(context.Background(), "select * from test")
+	t.Log(row)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
