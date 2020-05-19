@@ -155,6 +155,13 @@ func main() {
 
 ## Doc 文档
 
+## Debug
+
+```golang
+//this code will be start at debug mode and the sql will be print
+gosql.Debug = true
+```
+
 ## Struct Model
 
 To define a model structure, just use the struct syntax.
