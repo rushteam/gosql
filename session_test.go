@@ -7,7 +7,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-
 func TestSession1(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
@@ -206,7 +205,7 @@ func TestSessionUpdate2(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
-func TestSessionDelete(t *testing.T) {
+func TestSessionDelete1(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -222,6 +221,61 @@ func TestSessionDelete(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestSessionDelete2(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("DELETE FROM `test`").WillReturnResult(sqlmock.NewResult(2, 1))
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+
+	t2 := &t2Model{}
+	_, err = s.Delete(t2)
+	if err != nil {
+		t.Log(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestSessionTrans1(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectBegin()
+	mock.ExpectCommit()
+	tx, _ := db.Begin()
+	s := &Session{v: 0, executor: tx, ctx: context.TODO()}
+
+	s.Commit()
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestSessionTrans2(t *testing.T) {
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectBegin()
+	mock.ExpectRollback()
+	tx, _ := db.Begin()
+	s := &Session{v: 0, executor: tx, ctx: context.TODO()}
+
+	s.Rollback()
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
