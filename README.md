@@ -34,24 +34,22 @@ I have read almost all open source operation database library implemented in gol
 
 Such as these:
 
-1. Does not support read and write separation (gorm)
+1. gorm: Does not support read and write separation.
 
-2. Grammar has ependency convention (gendry) E.g:  group by and limit Put in a map
+2. gendry: Occupy special keywords and partially ugly syntax.
 
-gendry 是didi开源的一款,比较简洁但部分语法怪异 如group by 和 limit 依赖字段的约定
+3. sqlx: Mostly good, But the syntax is not simple enough, and does not support the separation of reading and writing.
 
-sqlx 相比起来不错,但语法不够简洁,不支持读写分离,
+This project refers to a large number of existing libs, refers to various documents, and uses golang style to achieve from scratch.
 
-gosql 目前仅支持mysql （关键是`符号的处理，以及一些特殊语法，后期可能会考虑兼容pgsql等
 
-本数据库参阅了大量现有数据库架构,参阅各种文献,自定义语法习惯,从零实现
+## Attention
 
-其中灵感来自:分模块的灵感来自gendry,标签读取部分参考gorm,拼装sql的语法来自于我之前写的php的操作db库
+** Only supports mysql driver.
 
-## DEMO 例子
+## Demo
 
-为了展示gosql的能力,先展示个例子:
-Let's look a demo:
+Let's look a demo frist.
 
 ```sql
 SELECT DISTINCT *
@@ -120,7 +118,7 @@ FOR UPDATE
     fmt.Println(s.BuildSelect())
 ```
 
-## Getting Started 开始使用
+## Getting Started
 
 ```golang
 package main
@@ -155,20 +153,20 @@ func main() {
 
 ```
 
-## Doc 文档
+## Doc
 
-## Debug
+### Debug Mode
 
 ```golang
 //this code will be start at debug mode and the sql will be print
 gosql.Debug = true
 ```
 
-## Struct Model
+### Struct Model
 
-To define a model structure, just use the struct syntax.
+To define a Model struct, use the struct and tag syntax.
 
-### Simple define a model
+#### Simple define a model
 
 ```golang
 type User struct {
@@ -181,12 +179,10 @@ type User struct {
 
 Usually define a Struct can be used as a model, gosql will parse out the table name, field mapping relationship,etc.
 
-定义一个普通的结构体就可以被作为一个model , gosql 将会从中解析出表名、字段映射关系等
-
 table: user
-columns: ID,Age,Name,CreatedAt
+columns: id,age,name,created_at
 
-### Using tag syntax
+#### Using tag syntax
 
 Use structure tags to customize field mapping
 
@@ -196,28 +192,21 @@ Use structure tags to customize field mapping
 type User struct {
     ID int64 `db:"uid,pk"`
     Age int `db:"age"`
-    Name string `db:"nickname"`
+    Name string `db:"fisrt_name"`
     CreatedAt time.Time `db:"created_at"`
 }
 ```
 
 table: user
-columns: uid,age,nickname,created_at
+columns: uid,age,fisrt_name,created_at
 pk: uid
 
-### Using custom table name
+#### Define table name
 
-Implement "TabbleName" method to specify the table name
-
-通过实现 TabbleName 方法来指定一个表名
+Implement "TableName" method to specify the table name
 
 ```golang
-type User struct {
-    ID int64 `db:"uid,pk"`
-    Age int `db:"age"`
-    Name string `db:"nickname"`
-    CreatedAt time.Time `db:"created_at"`
-}
+type User struct {}
 func (u *User) TableName() string {
     return "my_user"
 }
@@ -225,11 +214,9 @@ func (u *User) TableName() string {
 
 table: my_user
 
-## Auto
+### Exec
 
-## Exec
-
-### INSERT
+#### INSERT
 
 db.Insert(dst interface{}, opts ...Option) (Result, error)
 
@@ -250,7 +237,7 @@ users = append(users,u2)
 ret,err := db.Insert(users)
 ```
 
-### REPALCE
+#### REPALCE
 
 db.Replace(dst interface{}, opts ...Option) (Result, error)
 
@@ -260,7 +247,7 @@ user.Name = "jack"
 ret,err := db.Replace(&user,gosql.Where("id",1))
 ```
 
-### UPDATE
+#### UPDATE
 
 Update(dst interface{}, opts ...Option) (Result, error)
 
@@ -270,7 +257,7 @@ user.Name = "jack Ma"
 ret,err := db.Update(&user,gosql.Where("id",1))
 ```
 
-### DELETE
+#### DELETE
 
 db.Delete(dst interface{}, opts ...Option) (Result, error)
 
@@ -280,9 +267,9 @@ ret,err := db.Delete(&user,gosql.Where("id",1))
 //sql: delete from my_user where id = 1
 ```
 
-## QUERY
+### QUERY
 
-### Get a record: db.Fetch(dst interface{}, opts ...Option) error
+#### Get a record: db.Fetch(dst interface{}, opts ...Option) error
 
 ```golang
 user := &UserModel{}
@@ -299,7 +286,7 @@ err := db.Fetch(user,
 )
 ```
 
-### Get multiple records: db.FetchAll(dst interface{}, opts ...Option) error
+#### Get multiple records: db.FetchAll(dst interface{}, opts ...Option) error
 
 ```golang
 var userList []UserModel
@@ -318,62 +305,62 @@ err := db.FetchAll(&userList,
 )
 ```
 
-## OPTION
+### OPTION
 
-### WHERE
+#### WHERE
 
-#### gosql.Where("id",1)
+* gosql.Where("id",1)
 
 ```golang
 gosql.Where("id",1)
 //sql: id = 1
 ```
 
-#### gosql.Where("[>]age",18)
+* gosql.Where("[>]age",18)
 
 ```golang
 gosql.Where("[>]age",18)
 //sql: age > 18
 ```
 
-#### gosql.Where("[in]id",[]int{1,2})
+* gosql.Where("[in]id",[]int{1,2})
 
 ```golang
 gosql.Where("[in]id",[]int{1,2})
 //sql: id in (1,2)
 ```
 
-#### gosql.Where("[!in]id",[]int{1,2})
+* gosql.Where("[!in]id",[]int{1,2})
 
 ```golang
 gosql.Where("[!in]id",[]int{1,2})
 //sql: id not in (1,2)
 ```
 
-#### gosql.Where("[~]name","ja%")
+* gosql.Where("[~]name","ja%")
 
 ```golang
 gosql.Where("[~]name","ja%")
 //sql: name like 'ja%'
 ```
 
-#### gosql.Where("[!~]name","ja%")
+* gosql.Where("[!~]name","ja%")
 
 ```golang
 gosql.Where("[!~]name","ja%")
 //sql: name not like 'ja%'
 ```
 
-### 条件表达式 [?]
+#### symbol [?]
 
-#### [=] equal
+##### [=] equal
 
 ```golang
 gosql.Where("[=]id",1)
 //sql: id = 1
 ```
 
-#### [!=] not equal
+##### [!=] not equal
 
 ```golang
 gosql.Where("[!=]id",1)
