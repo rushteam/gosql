@@ -568,3 +568,13 @@ s.Limit(10)
 s.Offset(10)
 //sql: offset 10
 ```
+
+## Contributing
+
+When everybody adds fuel, the flames rise high.
+
+Let's build our self library.
+
+You will be a member of rushteam which is An open source organization
+
+Thanks for you, Good Lucy.
