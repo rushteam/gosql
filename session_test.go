@@ -7,22 +7,6 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 )
 
-type t1Model struct {
-	Name string `db:"name"`
-}
-
-func (t *t1Model) TableName() string {
-	return "test"
-}
-
-type t2Model struct {
-	ID   int64  `db:"id,pk"`
-	Name string `db:"name"`
-}
-
-func (t *t2Model) TableName() string {
-	return "test"
-}
 
 func TestSession1(t *testing.T) {
 	Debug = true
