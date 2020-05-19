@@ -187,3 +187,44 @@ func TestNewCluster8(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestNewCluster9(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("INSERT INTO `test`").WillReturnResult(sqlmock.NewResult(2, 1))
+
+	t1 := &t1Model{}
+	t1.Name = "marry"
+	c := mockCluster(db)
+	rst, err := c.Insert(t1)
+	t.Log(rst, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestNewCluster10(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("REPLACE INTO `test`").WillReturnResult(sqlmock.NewResult(2, 1))
+
+	t2 := &t2Model{}
+	t2.Name = "marry"
+	c := mockCluster(db)
+	rst, err := c.Replace(t2)
+	t.Log(rst, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
