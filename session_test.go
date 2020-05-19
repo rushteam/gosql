@@ -237,6 +237,7 @@ func TestSessionDelete2(t *testing.T) {
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
 	t2 := &t2Model{}
+	t2.ID = 1
 	_, err = s.Delete(t2)
 	if err != nil {
 		t.Log(err)
