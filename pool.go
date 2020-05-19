@@ -69,7 +69,6 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 		dbx = c.pools[i]
 		debugPrint("db: [slave#%d] %s", i, dbx.Dsn)
 	}
-
 	executor, err := dbx.Connect()
 	if err != nil {
 		return s, err
@@ -101,13 +100,19 @@ func (c *PoolCluster) Begin() (*Session, error) {
 
 //QueryContext ..
 func (c *PoolCluster) QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error) {
-	s, _ := c.Executor(nil, false)
+	s, err := c.Executor(nil, false)
+	if err != nil {
+		return nil, err
+	}
 	return s.QueryContext(ctx, query, args...)
 }
 
 //Query ..
 func (c *PoolCluster) Query(query string, args ...interface{}) (*sql.Rows, error) {
-	s, _ := c.Executor(nil, false)
+	s, err := c.Executor(nil, false)
+	if err != nil {
+		return nil, err
+	}
 	return s.Query(query, args...)
 }
 
@@ -125,13 +130,19 @@ func (c *PoolCluster) QueryRow(query string, args ...interface{}) *sql.Row {
 
 //ExecContext ..
 func (c *PoolCluster) ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.ExecContext(ctx, query, args...)
 }
 
 //Exec ..
 func (c *PoolCluster) Exec(query string, args ...interface{}) (sql.Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.Exec(query, args...)
 }
 
@@ -155,25 +166,37 @@ func (c *PoolCluster) FetchAll(dst interface{}, opts ...Option) error {
 
 //Update update from model
 func (c *PoolCluster) Update(dst interface{}, opts ...Option) (Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.Update(dst, opts...)
 }
 
 //Insert insert from model
 func (c *PoolCluster) Insert(dst interface{}, opts ...Option) (Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.Insert(dst, opts...)
 }
 
 //Replace replace from model
 func (c *PoolCluster) Replace(dst interface{}, opts ...Option) (Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.Replace(dst, opts...)
 }
 
 //Delete delete record
 func (c *PoolCluster) Delete(dst interface{}, opts ...Option) (Result, error) {
-	s, _ := c.Executor(nil, true)
+	s, err := c.Executor(nil, true)
+	if err != nil {
+		return nil, err
+	}
 	return s.Delete(dst, opts...)
 }
 
