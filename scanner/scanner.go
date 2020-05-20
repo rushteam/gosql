@@ -49,6 +49,8 @@ type StructData struct {
 	columns []string
 	fields  map[string]*StructField
 	pk      string
+	Uniques []string
+	Indexs  []string
 	// ref     *reflect.Value
 }
 
@@ -269,12 +271,12 @@ func resolveStruct(structRV reflect.Value) (*StructData, error) {
 				if opt == "" {
 					opt = column
 				}
-				// modelStruct.uniques = append(modelStruct.uniques, opt)
+				modelStruct.Uniques = append(modelStruct.Uniques, opt)
 			case "IDX", "INDEX":
 				if opt == "" {
 					opt = column
 				}
-			// modelStruct.indexs = append(modelStruct.indexs, opt)
+				modelStruct.Indexs = append(modelStruct.Indexs, opt)
 			default:
 				// if m, ok := marshalers[k]; ok {
 				// field.marshaler =
