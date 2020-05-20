@@ -8,24 +8,16 @@ import (
 )
 
 func TestSession1(t *testing.T) {
+	//just err test
 	Debug = true
-	db, mock, err := sqlmock.New()
-	if err != nil {
-		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
-	}
-	defer db.Close()
-	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
-	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
-
-	s := &Session{v: 0, executor: db, ctx: context.TODO()}
-
-	row := s.QueryRow("select * from test")
-	t.Log(row)
-	if err := mock.ExpectationsWereMet(); err != nil {
-		t.Errorf("there were unfulfilled expectations: %s", err)
-	}
-	// s.Commit()
-	// s.Rollback()
+	s := &Session{v: 0, executor: nil, ctx: context.TODO()}
+	var err error
+	_, err = s.Executor()
+	t.Log(err)
+	err = s.Rollback()
+	t.Log(err)
+	err = s.Commit()
+	t.Log(err)
 }
 
 func TestSessionExec(t *testing.T) {
