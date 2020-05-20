@@ -189,15 +189,18 @@ func TestScanAll2(t *testing.T) {
 func TestUpdateModel(t *testing.T) {
 	wantID := 1000
 	wantName := "tom and jack"
+	wantNickName := "baby"
 
 	type TestModel struct {
-		ID   int `db:"id"`
-		Name string
+		ID       int `db:"id"`
+		Name     string
+		NickName *string
 	}
 	dst := &TestModel{}
 	list := map[string]interface{}{
-		"id":   wantID,
-		"name": wantName,
+		"id":        wantID,
+		"name":      wantName,
+		"nick_name": wantNickName,
 	}
 	UpdateModel(dst, list)
 	if dst.ID != wantID {
@@ -205,6 +208,9 @@ func TestUpdateModel(t *testing.T) {
 	}
 	if dst.Name != wantName {
 		t.Errorf("fail result: %v want: %v", dst.Name, wantName)
+	}
+	if *dst.NickName != wantNickName {
+		t.Errorf("fail result: %v want: %v", *dst.NickName, wantNickName)
 	}
 	t.Log(dst)
 }
