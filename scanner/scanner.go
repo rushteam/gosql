@@ -57,7 +57,7 @@ type StructData struct {
 //TableName ..
 func (s StructData) TableName() string {
 	if s.table == "" {
-		panic("table name can not be emtpy")
+		panic("table name can not be empty")
 	}
 	return s.table
 }
