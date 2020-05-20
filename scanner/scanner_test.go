@@ -1,10 +1,11 @@
 package scanner
 
 import (
-	"database/sql"
 	"fmt"
 	"reflect"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestResolveModel1(t *testing.T) {
@@ -100,12 +101,60 @@ func TestResolveStructValue(t *testing.T) {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
-func TestScan1(t *testing.T) {
+func TestScanRow(t *testing.T) {
 	type TestModel struct {
-		ID int `db:"id"`
+		ID   int `db:"id"`
+		Name string
 	}
 	dst := &TestModel{}
-	rows := &sql.Rows{}
-	err := Scan(rows, dst)
-	t.Log(err)
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+	rows, err := db.Query("select * from test")
+	if err != nil {
+		t.Error(err)
+	}
+	err = ScanRow(rows, dst)
+	if err != nil {
+		t.Error(err)
+	}
+	if dst.ID != 100 {
+		t.Error(dst)
+	}
+	if dst.Name != "tom" {
+		t.Error(dst)
+	}
+}
+
+func TestScanAll(t *testing.T) {
+	type TestModel struct {
+		ID   int `db:"id"`
+		Name string
+	}
+	var dst []TestModel
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+	rows, err := db.Query("select * from test")
+	if err != nil {
+		t.Error(err)
+	}
+	err = ScanAll(rows, &dst)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(dst) != 1 {
+		t.Error("fail ScanAll")
+	}
+	t.Log(dst)
 }
