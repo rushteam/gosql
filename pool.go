@@ -88,6 +88,9 @@ func (c *PoolCluster) Slave(v uint64) (*Session, error) {
 //Begin a transaction
 func (c *PoolCluster) Begin() (*Session, error) {
 	s, err := c.Executor(nil, true)
+	if err != nil {
+		return s, err
+	}
 	executor, err := s.executor.(DB).Begin()
 	if err != nil {
 		return s, err
