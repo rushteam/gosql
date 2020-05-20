@@ -57,7 +57,7 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 
 //QueryRowContext ..
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
-	debugPrint("db: [session #%v] Query %s %v", s.v, query, args)
+	debugPrint("db: [session #%v] QueryRow %s %v", s.v, query, args)
 	db, _ := s.Executor()
 	// db, err := s.Executor()
 	// if err != nil {
@@ -71,7 +71,10 @@ func (s *Session) QueryRowContext(ctx context.Context, query string, args ...int
 
 //QueryRow ..
 func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
-	return s.QueryRowContext(s.ctx, query, args...)
+	debugPrint("db: [session #%v] QueryRow %s %v", s.v, query, args)
+	db, _ := s.Executor()
+	return db.QueryRow(query, args...)
+	//return s.QueryRowContext(s.ctx, query, args...)
 }
 
 //ExecContext ..
@@ -86,7 +89,13 @@ func (s *Session) ExecContext(ctx context.Context, query string, args ...interfa
 
 //Exec ..
 func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
-	return s.ExecContext(s.ctx, query, args...)
+	debugPrint("db: [session #%v] Exec %s %v", s.v, query, args)
+	db, err := s.Executor()
+	if err != nil {
+		return nil, err
+	}
+	return db.Exec(query, args...)
+	// return s.ExecContext(s.ctx, query, args...)
 }
 
 //Fetch ..
