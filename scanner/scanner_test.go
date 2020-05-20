@@ -186,3 +186,25 @@ func TestScanAll2(t *testing.T) {
 	}
 	t.Log(dst)
 }
+func TestUpdateModel(t *testing.T) {
+	wantID := 1000
+	wantName := "tom and jack"
+
+	type TestModel struct {
+		ID   int `db:"id"`
+		Name string
+	}
+	dst := &TestModel{}
+	list := map[string]interface{}{
+		"id":   wantID,
+		"name": wantName,
+	}
+	UpdateModel(dst, list)
+	if dst.ID != wantID {
+		t.Errorf("fail result: %v want: %v", dst.ID, wantID)
+	}
+	if dst.Name != wantName {
+		t.Errorf("fail result: %v want: %v", dst.Name, wantName)
+	}
+	t.Log(dst)
+}
