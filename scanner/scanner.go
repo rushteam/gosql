@@ -110,12 +110,10 @@ func parseTagOpts(tags reflect.StructTag) map[string]string {
 }
 
 //UpdateModel ..
-func UpdateModel(dst interface{}, list map[string]interface{}) {
+func UpdateModel(dst interface{}, list map[string]interface{}) error {
 	modelStruct, err := ResolveModelStruct(dst)
 	if err != nil {
-		if Debug {
-			log.Printf(err.Error())
-		}
+		return err
 	}
 	structRV := reflect.ValueOf(dst).Elem()
 	// fmt.Printf("%v", structVal.CanSet())
@@ -135,6 +133,7 @@ func UpdateModel(dst interface{}, list map[string]interface{}) {
 			}
 		}
 	}
+	return nil
 }
 
 func getStructVal(structRV reflect.Value, index int) interface{} {
