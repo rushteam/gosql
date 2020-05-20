@@ -131,12 +131,40 @@ func TestScanRow(t *testing.T) {
 	}
 }
 
-func TestScanAll(t *testing.T) {
+func TestScanAll1(t *testing.T) {
 	type TestModel struct {
 		ID   int `db:"id"`
 		Name string
 	}
 	var dst []TestModel
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
+	rows, err := db.Query("select * from test")
+	if err != nil {
+		t.Error(err)
+	}
+	err = ScanAll(rows, &dst)
+	if err != nil {
+		t.Error(err)
+	}
+	if len(dst) != 1 {
+		t.Error("fail ScanAll")
+	}
+	t.Log(dst)
+}
+
+func TestScanAll2(t *testing.T) {
+	type TestModel struct {
+		ID   int `db:"id"`
+		Name string
+	}
+	var dst []*TestModel
 
 	db, mock, err := sqlmock.New()
 	if err != nil {
