@@ -53,8 +53,11 @@ func TestNewCluster2(t *testing.T) {
 	)
 	c.Query("select 1")
 	c.Exec("select 2")
-	s, _ := c.Master()
-	s.Query("select 3")
+	m, _ := c.Master()
+	m.Query("select 3")
+
+	s, _ := c.Slave(0)
+	s.Query("select 4")
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
@@ -302,6 +305,24 @@ func TestNewCluster14(t *testing.T) {
 	c := mockCluster(db)
 	rst, err := c.Delete(t1, Where("id", 1))
 	t.Log(rst, err)
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestNewCluster15(t *testing.T) {
+	Debug = true
+
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectBegin()
+
+	c := mockCluster(db)
+	s, err := c.Begin()
+	t.Log(s, err)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
