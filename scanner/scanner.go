@@ -352,6 +352,7 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 		if field, ok := dstStruct.fields[name]; ok {
 			if dstRV.Field(field.index).CanAddr() {
 				fieldValue := dstRV.Field(field.index).Addr().Interface()
+				fmt.Printf("1========== %+v %t\n", dstRV.Field(field.index).Kind(), fieldValue)
 				switch fieldValue.(type) {
 				// case sql.Scanner:
 				//如果字段有scan方法 则调用
@@ -390,7 +391,6 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 	if dstRV.Kind() == reflect.Ptr {
 		dstRV = dstRV.Elem()
 	}
-	// for i, name := range data.columns {
 	for i, name := range columns {
 		if field, ok := dstStruct.fields[name]; ok {
 			if dstRV.Field(field.index).CanAddr() {

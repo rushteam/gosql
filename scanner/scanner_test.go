@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -131,19 +132,29 @@ func TestScanRow(t *testing.T) {
 	}
 }
 
+type TimeValue struct {
+	t time.Time
+}
+
+func (u *TimeValue) Scan(value interface{}) error {
+	fmt.Printf("----------> %+v", value)
+	return nil
+}
 func TestScanAll1(t *testing.T) {
 	type TestModel struct {
-		ID   int `db:"id"`
-		Name string
+		ID    int `db:"id"`
+		Name  string
+		Ctime TimeValue
 	}
+
 	var dst []TestModel
 
-	db, mock, err := sqlmock.New()
+	db, mock, err := sqlmock.NewWithDSN("sqlmock?parseTime=true")
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	mrows := sqlmock.NewRows([]string{"id", "name"}).AddRow("100", "tom")
+	mrows := sqlmock.NewRows([]string{"id", "name", "ctime"}).AddRow("100", "tom", []byte("2020-05-21 07:23:44"))
 	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
 	rows, err := db.Query("select * from test")
 	if err != nil {
@@ -157,6 +168,7 @@ func TestScanAll1(t *testing.T) {
 		t.Error("fail ScanAll")
 	}
 	t.Log(dst)
+	t.Error()
 }
 
 func TestScanAll2(t *testing.T) {
