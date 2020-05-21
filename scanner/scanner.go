@@ -352,17 +352,21 @@ func Targets(dst interface{}, columns []string) ([]interface{}, error) {
 		if field, ok := dstStruct.fields[name]; ok {
 			if dstRV.Field(field.index).CanAddr() {
 				fieldValue := dstRV.Field(field.index).Addr().Interface()
-				fmt.Printf("1========== %+v %t\n", dstRV.Field(field.index).Kind(), fieldValue)
-				switch fieldValue.(type) {
-				// case sql.Scanner:
-				//如果字段有scan方法 则调用
-				// case *time.Time:
-				// 	var scanAddr interface{}
-				// 	scanAddr = new([]uint8)
-				// 	targets = append(targets, scanAddr)
-				default:
+				if name == "utime" {
+					tmr := &TimeMarshaler{}
+					targets[i], _ = tmr.Read(fieldValue)
+				} else {
 					targets[i] = fieldValue
 				}
+				// targets[i] = fieldValue
+				// switch fieldValue.(type) {
+				// // case sql.Scanner:
+				// //如果字段有scan方法 则调用
+				// case *time.Time:
+				// 	targets[i] = new([]uint8)
+				// default:
+				// 	targets[i] = fieldValue
+				// }
 			} else {
 				targets[i] = new(interface{})
 				// targets[i] = new(sql.RawBytes)
@@ -394,8 +398,13 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 	for i, name := range columns {
 		if field, ok := dstStruct.fields[name]; ok {
 			if dstRV.Field(field.index).CanAddr() {
-				fieldAddr := dstRV.Field(field.index).Addr().Interface()
-				_, _, _ = i, name, fieldAddr
+				fieldValue := dstRV.Field(field.index).Addr().Interface()
+				if name == "utime" {
+					tmr := &TimeMarshaler{}
+					tmr.Marshaler(fieldValue, targets[i])
+				}
+				// targets[i], _ =
+				_ = i
 			}
 			if err != nil {
 				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)

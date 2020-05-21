@@ -142,9 +142,10 @@ func (u *TimeValue) Scan(value interface{}) error {
 }
 func TestScanAll1(t *testing.T) {
 	type TestModel struct {
-		ID    int `db:"id"`
-		Name  string
-		Ctime TimeValue
+		ID   int `db:"id"`
+		Name string
+		// Ctime TimeValue
+		Utime *time.Time
 	}
 
 	var dst []TestModel
@@ -154,7 +155,7 @@ func TestScanAll1(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	mrows := sqlmock.NewRows([]string{"id", "name", "ctime"}).AddRow("100", "tom", []byte("2020-05-21 07:23:44"))
+	mrows := sqlmock.NewRows([]string{"id", "name", "ctime", "utime"}).AddRow("100", "tom", []byte("2020-05-21 07:23:44"), []byte("2020-05-21 07:23:44"))
 	mock.ExpectQuery("select (.+) from test").WillReturnRows(mrows)
 	rows, err := db.Query("select * from test")
 	if err != nil {
