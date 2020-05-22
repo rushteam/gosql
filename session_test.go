@@ -173,6 +173,7 @@ func TestSessionInsert2(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+	AutoFillCreatedAtAndUpdatedAtField = false
 }
 
 func TestSessionReplace(t *testing.T) {
@@ -215,6 +216,7 @@ func TestSessionReplace2(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+	AutoFillCreatedAtAndUpdatedAtField = false
 }
 
 func TestSessionUpdate(t *testing.T) {
