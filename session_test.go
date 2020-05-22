@@ -18,9 +18,15 @@ func TestSession1(t *testing.T) {
 	t.Log(err)
 	err = s.Commit()
 	t.Log(err)
+
 	_, err = s.Query("select 1")
 	t.Log(err)
-	_, err = s.Exec("select 1")
+	_, err = s.QueryContext(context.Background(), "select 1")
+	t.Log(err)
+
+	_, err = s.Exec("set names utf8")
+	t.Log(err)
+	_, err = s.ExecContext(context.Background(), "set names utf8")
 	t.Log(err)
 
 	_, err = s.Insert(nil)
