@@ -304,6 +304,7 @@ func TestSessionDelete1(t *testing.T) {
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
 	t1 := &t1Model{}
+	t1.Name = ""
 	_, err = s.Delete(t1, Where("id", 1))
 	if err != nil {
 		t.Log(err)
