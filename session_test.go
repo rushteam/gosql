@@ -276,7 +276,7 @@ func TestSessionUpdate3(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	defer db.Close()
-	mock.ExpectExec("UPDATE `test` SET").WithArgs("jerry", 1).WillReturnResult(sqlmock.NewResult(2, 1))
+	mock.ExpectExec("UPDATE `test` SET").WillReturnResult(sqlmock.NewResult(2, 1))
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
