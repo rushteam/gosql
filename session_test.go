@@ -22,21 +22,20 @@ func TestSession1(t *testing.T) {
 	t.Log(err)
 	_, err = s.Exec("select 1")
 	t.Log(err)
-	//fetch err
-	t1 := &t1Model{}
-	t1.Name = "jerry"
 
-	_, err = s.Update(t1)
+	_, err = s.Insert(nil)
 	t.Log(err)
 
-	_, err = s.Delete(t1)
+	_, err = s.Update(nil)
 	t.Log(err)
 
-	err = s.Fetch(t1)
+	_, err = s.Delete(nil)
+	t.Log(err)
+
+	err = s.Fetch(nil)
 	t.Log(err)
 	//fetchAll err
-	var t2 []t1Model
-	err = s.FetchAll(t2)
+	err = s.FetchAll(nil)
 	t.Log(err)
 }
 
