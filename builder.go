@@ -16,28 +16,54 @@ const (
 	_delete
 )
 
-var tagKey = "db"
 var identKey = "`"
 
-//SQLSegments ...
+//builder Determine grammatical details
+type builder struct {
+	Name  string
+	Quote string
+}
+
+//buildIdent
+func (b *builder) BuildIdent(name string) string {
+	return b.Quote + strings.Replace(name, ".", b.Quote+"."+b.Quote, -1) + b.Quote
+}
+
+//mysqlBuilder is mysql detail
+var mysqlBuilder = &builder{"mysql", "`"}
+
+//SQLSegments  Every sql has a SQLSegments sturct
 type SQLSegments struct {
-	table   []TbName
-	fields  []string
-	flags   []string
-	join    []map[string]string
-	where   Clause
+	//sql table name
+	table []TbName
+	//sql select fields
+	fields []string
+	//sql flags
+	flags []string
+	//sql join substatement
+	join []map[string]string
+	//sql where condistions
+	where Clause
+	//sql group by
 	groupBy []string
-	having  Clause
+	//sql having
+	having Clause
+	//sql order by
 	orderBy []string
-	limit   struct {
+	//sql limit and offset
+	limit struct {
 		limit  int
 		offset int
 	}
-	union     []func(*SQLSegments)
+	//sql union substatement
+	union []func(*SQLSegments)
+	//sql for update lock
 	forUpdate bool
+	//sql just in pg
 	returning bool
-	// params    []interface{}
+	//sql params
 	params []map[string]interface{}
+	//sql render value when stmt
 	render struct {
 		args []interface{}
 	}
@@ -45,7 +71,7 @@ type SQLSegments struct {
 	cmd uint8
 }
 
-//TbName ..
+//TbName struct describe table name and alias
 type TbName struct {
 	Name  string
 	Alias string
@@ -186,15 +212,13 @@ func (p *Clause) addClause(logic string, key interface{}, vals ...interface{}) *
 	c.logic = logic
 	switch k := key.(type) {
 	case func(*Clause):
-		k(c)
-		// p.clause = append(p.clause, c)
+		k(c) // p.clause = append(p.clause, c)
 	default:
 		c.key = key
 		if len(vals) > 0 {
 			c.val = vals[0]
 		}
 	}
-	// fmt.Println(p.clause)
 	p.clause = append(p.clause, c)
 	return p
 }
@@ -224,7 +248,6 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 		match := r.FindStringSubmatch(k)
 		var context string
 		if len(match) > 0 {
-			// fmt.Println(len(match), match[1])
 			switch match[1] {
 			case "~", "like":
 				context = buildIdent(match[2]) + " LIKE ?"
