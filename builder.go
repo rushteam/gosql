@@ -247,11 +247,11 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 					holder = "?"
 					args = append(args, p.val)
 				}
-				if match[1] == "in" {
-					context = buildIdent(match[2]) + " IN (" + holder + ")"
-				} else {
-					context = buildIdent(match[2]) + " NOT IN (" + holder + ")"
+				context += buildIdent(match[2])
+				if match[1] == "!in" {
+					context += " NOT"
 				}
+				context += " IN (" + holder + ")"
 			case "exists", "!exists":
 				var sub string
 				switch p.val.(type) {
@@ -263,11 +263,10 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 					sub = s.BuildSelect()
 					args = append(args, s.render.args...)
 				}
-				if match[1] == "exists" {
-					context = "EXISTS (" + sub + ")"
-				} else {
-					context = "NOT EXISTS (" + sub + ")"
+				if match[1] == "!exists" {
+					context += "NOT "
 				}
+				context += "EXISTS (" + sub + ")"
 			case "is":
 				if p.val == nil {
 					context = buildIdent(match[2]) + " IS NULL"
