@@ -18,6 +18,19 @@ func TestSession1(t *testing.T) {
 	t.Log(err)
 	err = s.Commit()
 	t.Log(err)
+	_, err = s.Query("select 1")
+	t.Log(err)
+	_, err = s.Exec("select 1")
+	t.Log(err)
+	//fetch err
+	t1 := &t1Model{}
+	t1.Name = "jerry"
+	err = s.Fetch(t1)
+	t.Log(err)
+	//fetchAll err
+	var t2 []t1Model
+	err = s.FetchAll(t2)
+	t.Log(err)
 }
 
 func TestSessionExec(t *testing.T) {
