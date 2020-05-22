@@ -152,6 +152,29 @@ func TestSessionInsert(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+func TestSessionInsert2(t *testing.T) {
+	AutoFillCreatedAtAndUpdatedAtField = true
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	mock.ExpectExec("INSERT INTO `test`").WillReturnResult(sqlmock.NewResult(2, 1))
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+
+	t1 := &t1Model{}
+	t1.Name = "川建国"
+	_, err = s.Insert(t1)
+	if err != nil {
+		t.Log(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestSessionReplace(t *testing.T) {
 	Debug = true
 	db, mock, err := sqlmock.New()
@@ -159,6 +182,27 @@ func TestSessionReplace(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 	mock.ExpectExec("REPLACE INTO `test`").WithArgs("川建国").WillReturnResult(sqlmock.NewResult(2, 1))
+
+	s := &Session{v: 0, executor: db, ctx: context.TODO()}
+
+	t1 := &t1Model{}
+	t1.Name = "川建国"
+	_, err = s.Replace(t1)
+	if err != nil {
+		t.Log(err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+func TestSessionReplace2(t *testing.T) {
+	AutoFillCreatedAtAndUpdatedAtField = true
+	Debug = true
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	mock.ExpectExec("REPLACE INTO `test`").WillReturnResult(sqlmock.NewResult(2, 1))
 
 	s := &Session{v: 0, executor: db, ctx: context.TODO()}
 
