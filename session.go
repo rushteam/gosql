@@ -3,9 +3,10 @@ package gosql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/rushteam/gosql/scanner"
 )

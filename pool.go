@@ -3,9 +3,10 @@ package gosql
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"sync/atomic"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 //DbOption ..

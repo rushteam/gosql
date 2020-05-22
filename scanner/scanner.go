@@ -2,11 +2,12 @@ package scanner
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 /**
@@ -170,7 +171,7 @@ func ResolveStructValue(dst interface{}) (map[string]interface{}, error) {
 	// 	return nil, nil
 	// }
 	if dstRV.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("Must be a struct, scanner called with non-struct: %v", dstRV.Kind())
+		return nil, errors.Errorf("Must be a struct, scanner called with non-struct: %v", dstRV.Kind())
 	}
 	modelStruct, err := ResolveModelStruct(dst)
 	if err != nil {
@@ -251,7 +252,7 @@ func resolveStruct(structRV reflect.Value) (*StructData, error) {
 			continue
 		}
 		if _, ok := modelStruct.fields[column]; ok {
-			return nil, fmt.Errorf("scanner found multiple fields for column %s", column)
+			return nil, errors.Errorf("scanner found multiple fields for column %s", column)
 		}
 		for k, opt := range opts {
 			switch k {
@@ -260,11 +261,11 @@ func resolveStruct(structRV reflect.Value) (*StructData, error) {
 			case "PK", "PRIMARY", "PRIMARY KEY", "PRIMARY_KEY":
 				//pk can not is a pointer
 				if f.Type.Kind() == reflect.Ptr {
-					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key but is a pointer", f.Name)
+					return nil, errors.Errorf("scanner found field %s which is marked as the primary key but is a pointer", f.Name)
 				}
 				//primary key can only be one
 				if modelStruct.pk != "" {
-					return nil, fmt.Errorf("scanner found field %s which is marked as the primary key, but a primary key field was already found", f.Name)
+					return nil, errors.Errorf("scanner found field %s which is marked as the primary key, but a primary key field was already found", f.Name)
 				}
 				modelStruct.pk = column
 			case "UNI", "UNIQUE", "UNIQUE_INDEX":
@@ -318,7 +319,7 @@ func resolveModel(dstRV reflect.Value) (*StructData, error) {
 		eltRV := reflect.New(eltRT)
 		return resolveModel(eltRV)
 	default:
-		return nil, fmt.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
+		return nil, errors.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
 	}
 }
 
@@ -332,7 +333,7 @@ func ResolveModelStruct(dst interface{}) (*StructData, error) {
 	case reflect.Slice, reflect.Struct:
 		return resolveModel(dstRV)
 	}
-	return nil, fmt.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
+	return nil, errors.Errorf("scanner expects pointer must pointers to struct or slice, found %v", dstRV.Kind())
 }
 
 //Targets ..
@@ -407,7 +408,7 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 				_ = i
 			}
 			if err != nil {
-				return fmt.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
+				return errors.Errorf("scanner.Plugins: PostRead error on column [%s]: %v", name, err)
 			}
 		} else {
 			if Debug {
@@ -421,7 +422,7 @@ func Plugins(dst interface{}, columns []string, targets []interface{}) error {
 //Scan ..
 func Scan(rows *sql.Rows, dst interface{}) error {
 	if rows == nil {
-		return fmt.Errorf("rows is a pointer, but not be a nil")
+		return errors.Errorf("rows is a pointer, but not be a nil")
 	}
 	columns, err := rows.Columns()
 	if err != nil {
@@ -439,7 +440,7 @@ func Scan(rows *sql.Rows, dst interface{}) error {
 		return err
 	}
 	if len(columns) != len(targets) {
-		return fmt.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
+		return errors.Errorf("scanner mismatch in number of columns (%d) and targets (%d)",
 			len(columns), len(targets))
 	}
 	if err := rows.Scan(targets...); err != nil {
@@ -463,11 +464,11 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 	defer rows.Close()
 	dstVal := reflect.ValueOf(dst)
 	if dstVal.Kind() != reflect.Ptr || dstVal.IsNil() {
-		return fmt.Errorf("ScanAll called with non-pointer destination: %T", dst)
+		return errors.Errorf("ScanAll called with non-pointer destination: %T", dst)
 	}
 	sliceRV := dstVal.Elem()
 	if sliceRV.Kind() != reflect.Slice {
-		return fmt.Errorf("ScanAll called with pointer to non-slice: %T", dst)
+		return errors.Errorf("ScanAll called with pointer to non-slice: %T", dst)
 	}
 	sliceRT := sliceRV.Type()
 	eltRT := sliceRT.Elem()
@@ -475,7 +476,7 @@ func ScanAll(rows *sql.Rows, dst interface{}) error {
 		eltRT = eltRT.Elem()
 	}
 	if eltRT.Kind() != reflect.Struct {
-		return fmt.Errorf("ScanAll expects element to be pointers to structs, found %T", dst)
+		return errors.Errorf("ScanAll expects element to be pointers to structs, found %T", dst)
 	}
 	// gather the results
 	for {
