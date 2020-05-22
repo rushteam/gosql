@@ -142,20 +142,20 @@ func UpdateModel(dst interface{}, list map[string]interface{}) error {
 
 func getStructVal(structRV reflect.Value, index int) interface{} {
 	if structRV.Field(index).Kind() == reflect.Ptr {
-		//忽略掉指针为nil 和 零值情况
-		if structRV.Field(index).IsNil() {
+		//忽略掉指针为nil 或 未定义情况
+		if structRV.Field(index).IsNil() || structRV.Field(index).Elem().IsValid() {
 			//指针为nil时候的处理
 			return nil
 			//return reflect.New(structRV.Field(field.index).Type()).Interface()
 		}
-		if structRV.Field(index).Elem().IsZero() || structRV.Field(index).Elem().IsValid() {
-			return nil
-		}
+		//零值不忽略 structRV.Field(index).Elem().IsZero()
 		return structRV.Field(index).Elem().Interface()
 	}
-	if structRV.Field(index).IsZero() {
-		return nil
-	}
+	// golang现在无法区分字符串 初始化 和 空值
+	// if structRV.Field(index).IsValid() {
+	// 	return nil
+	// }
+	//不要判断零值 structRV.Field(index).IsZero()
 	return structRV.Field(index).Interface()
 }
 
