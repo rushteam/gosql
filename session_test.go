@@ -25,6 +25,13 @@ func TestSession1(t *testing.T) {
 	//fetch err
 	t1 := &t1Model{}
 	t1.Name = "jerry"
+
+	_, err = s.Update(t1)
+	t.Log(err)
+
+	_, err = s.Delete(t1)
+	t.Log(err)
+
 	err = s.Fetch(t1)
 	t.Log(err)
 	//fetchAll err
