@@ -59,7 +59,7 @@ func TestNewCluster1(t *testing.T) {
 	_, err = c.Update(nil)
 	t.Log(err)
 
-	err = c.Begin()
+	_, err = c.Begin()
 	t.Log(err)
 
 	_, err = c.Delete(nil)
