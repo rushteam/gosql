@@ -24,7 +24,9 @@ type 字段类型
 其他
 	not null;unique
 **/
-const tagKey = "db"
+
+//TagKey parse struct tag
+const TagKey = "db"
 const tagSplit = ","
 const tagOptSplit = ":"
 const tagColumn = "COLUMN"
@@ -89,7 +91,7 @@ var (
 //解析field tags to options
 func parseTagOpts(tags reflect.StructTag) map[string]string {
 	opts := map[string]string{}
-	for _, str := range []string{tags.Get("sql"), tags.Get(tagKey)} {
+	for _, str := range []string{tags.Get("sql"), tags.Get(TagKey)} {
 		if str == "" {
 			continue
 		}
