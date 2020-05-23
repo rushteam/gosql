@@ -466,6 +466,31 @@ db := db.Slave()
 db.Fetch(...)
 ```
 
+### Paging
+
+Define a page function and return gosql.Option sturct
+
+```golang 
+//Page  pn: per page num ,ps: page size
+func Page(pn, ps int) gosql.Option {
+	if pn < 1 {
+		pn = 1
+	}
+	return func(s gosql.SQLSegments) gosql.SQLSegments {
+		s.Limit(ps)
+		s.Offset((pn - 1) * ps)
+		return s
+	}
+}
+func main() {
+    user := &UserModel{}
+    err := db.Fetch(user,
+        Page(1,15),
+    )
+}
+
+```
+
 ### builder of API
 
 * builder.New() start a builder
