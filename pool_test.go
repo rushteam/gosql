@@ -33,7 +33,37 @@ func TestNewCluster1(t *testing.T) {
 	defer db.Close()
 
 	c := NewCluster()
-	c.Exec("select 1")
+
+	_, err = c.Query("select 1")
+	t.Log(err)
+	_, err = c.QueryContext(context.Background(), "select 1")
+	t.Log(err)
+
+	_, err = c.Exec("set names utf8")
+	t.Log(err)
+	_, err = c.ExecContext(context.Background(), "set names utf8")
+	t.Log(err)
+
+	err = c.Fetch(nil)
+	t.Log(err)
+
+	err = c.FetchAll(nil)
+	t.Log(err)
+
+	_, err = c.Insert(nil)
+	t.Log(err)
+
+	_, err = c.Replace(nil)
+	t.Log(err)
+
+	_, err = c.Update(nil)
+	t.Log(err)
+
+	_, err = c.Begin()
+	t.Log(err)
+
+	_, err = c.Delete(nil)
+	t.Log(err)
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
