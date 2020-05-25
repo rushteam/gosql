@@ -255,26 +255,10 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 			case "!~", "!like":
 				context = buildIdent(match[2]) + " NOT LIKE ?"
 				args = append(args, p.val)
-			case ">":
-				context = buildIdent(match[2]) + " > ?"
+			case ">", ">=", "<", "<=", "<>", "!=", "=":
+				context = buildIdent(match[2]) + " " + match[1] + " ?"
 				args = append(args, p.val)
-			case ">=":
-				context = buildIdent(match[2]) + " >= ?"
-				args = append(args, p.val)
-			case "<":
-				context = buildIdent(match[2]) + " < ?"
-				args = append(args, p.val)
-			case "<=":
-				context = buildIdent(match[2]) + " <= ?"
-				args = append(args, p.val)
-			case "<>", "!=":
-				context = buildIdent(match[2]) + " != ?"
-				args = append(args, p.val)
-			case "=":
-				context = buildIdent(match[2]) + " = ?"
-				args = append(args, p.val)
-			case "in":
-				context = buildIdent(match[2]) + " IN ("
+			case "in", "!in":
 				var holder string
 				if reflect.TypeOf(p.val).Kind() == reflect.Slice {
 					v := reflect.ValueOf(p.val)
@@ -286,41 +270,26 @@ func (p *Clause) Build(i int) (string, []interface{}) {
 					holder = "?"
 					args = append(args, p.val)
 				}
-				context += holder + ")"
-			case "!in":
-				context = buildIdent(match[2]) + " NOT IN ("
-				var holder string
-				if reflect.TypeOf(p.val).Kind() == reflect.Slice {
-					v := reflect.ValueOf(p.val)
-					holder = buildPlaceholder(v.Len(), "?", " ,")
-					for n := 0; n < v.Len(); n++ {
-						args = append(args, v.Index(n).Interface())
-					}
-				} else {
-					holder = "?"
-					args = append(args, p.val)
+				context += buildIdent(match[2])
+				if match[1] == "!in" {
+					context += " NOT"
 				}
-				context += holder + ")"
-			case "exists":
+				context += " IN (" + holder + ")"
+			case "exists", "!exists":
+				var sub string
 				switch p.val.(type) {
 				case string:
-					context = "EXISTS (" + p.val.(string) + ")"
+					sub = p.val.(string)
 				case func(s *SQLSegments):
 					s := NewSQLSegment()
 					p.val.(func(s *SQLSegments))(s)
-					context = "EXISTS (" + s.BuildSelect() + ")"
+					sub = s.BuildSelect()
 					args = append(args, s.render.args...)
 				}
-			case "!exists":
-				switch p.val.(type) {
-				case string:
-					context = "NOT EXISTS (" + p.val.(string) + ")"
-				case func(s *SQLSegments):
-					s := NewSQLSegment()
-					p.val.(func(s *SQLSegments))(s)
-					context = "NOT EXISTS (" + s.BuildSelect() + ")"
-					args = append(args, s.render.args...)
+				if match[1] == "!exists" {
+					context += "NOT "
 				}
+				context += "EXISTS (" + sub + ")"
 			case "is":
 				if p.val == nil {
 					context = buildIdent(match[2]) + " IS NULL"
