@@ -18,22 +18,25 @@ const (
 
 var identKey = "`"
 
-//builder Determine grammatical details
-type builder struct {
-	Name  string
-	Quote string
+//dialect Determine grammatical details
+type dialect struct {
+	Name        string
+	Quote       string
+	Placeholder string
 }
 
 //buildIdent
-func (b *builder) BuildIdent(name string) string {
+func (b *dialect) BuildIdent(name string) string {
 	return b.Quote + strings.Replace(name, ".", b.Quote+"."+b.Quote, -1) + b.Quote
 }
 
-//mysqlBuilder is mysql detail
-var mysqlBuilder = &builder{"mysql", "`"}
+func newMysqlDialect() *dialect {
+	return &dialect{Name: "mysql", Quote: "`", Placeholder: "?"}
+}
 
 //SQLSegments  Every sql has a SQLSegments sturct
 type SQLSegments struct {
+	dialect *dialect
 	//sql table name
 	table []TbName
 	//sql select fields
@@ -77,11 +80,13 @@ type TbName struct {
 	Alias string
 }
 
+/*
 //Add ..
 type Add int
 
 //Sub ..
 type Sub int
+*/
 
 //NewSQLSegment ..
 func NewSQLSegment() *SQLSegments {
