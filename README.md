@@ -10,7 +10,7 @@ gosql is a easy ORM library for Golang.
 
 ## Feature
 
-* Golang-style SQL builde
+* Golang-style SQL builder
 * Unlimited nesting query
 * Reading and Writing Separation
 * Delay connection creation
