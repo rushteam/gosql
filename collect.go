@@ -1,6 +1,8 @@
 package gosql
 
-import "sync"
+import (
+	"sync"
+)
 
 var _collect = make(map[string]Cluster, 0)
 var _collectMutex sync.RWMutex
@@ -13,8 +15,10 @@ func NewCollect(clst Cluster, name ...string) {
 	defer _collectMutex.Unlock()
 	if len(name) == 0 {
 		_collect[defaultCollect] = clst
+		return
 	}
 	_collect[name[0]] = clst
+	return
 }
 
 //Collect get a cluster by name
