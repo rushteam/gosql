@@ -54,7 +54,7 @@ type Tx interface {
 
 //Cluster ..
 type Cluster interface {
-	Executor(s *Session, master bool) (Executor, error)
+	Executor(s *Session, master bool) (*Session, error)
 	Begin() (*Session, error)
 	Fetch(dst interface{}, opts ...Option) error
 	FetchAll(dst interface{}, opts ...Option) error
