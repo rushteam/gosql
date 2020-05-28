@@ -185,8 +185,6 @@ columns: id,age,name,created_at
 
 Use structure tags to customize field mapping
 
-使用结构体tags 可以自定义字段映射
-
 ```golang
 type User struct {
     ID int64 `db:"uid,pk"`
