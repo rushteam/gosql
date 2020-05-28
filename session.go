@@ -5,19 +5,18 @@ import (
 	"database/sql"
 	"errors"
 	"sync"
-	"time"
 
 	"github.com/rushteam/gosql/scanner"
 )
 
 //AutoFillCreatedAtAndUpdatedAtField 自动更新时间
-var AutoFillCreatedAtAndUpdatedAtField = false
+// var AutoFillCreatedAtAndUpdatedAtField = false
 
-//AutoFieldCreatedAt when insert auto set time
-var AutoFieldCreatedAt = "created_at"
+// //AutoFieldCreatedAt when insert auto set time
+// var AutoFieldCreatedAt = "created_at"
 
-//AutoFieldUpdatedAt when update auto set time
-var AutoFieldUpdatedAt = "updated_at"
+// //AutoFieldUpdatedAt when update auto set time
+// var AutoFieldUpdatedAt = "updated_at"
 
 //todo soft delete
 // var AutoFieldDeletedAt = "deleted_at"
@@ -162,10 +161,10 @@ func (s *Session) Update(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if AutoFillCreatedAtAndUpdatedAtField == true {
-		//强制填充更新时间
-		updateFields[AutoFieldUpdatedAt] = time.Now()
-	}
+	// if AutoFillCreatedAtAndUpdatedAtField == true {
+	// 	//强制填充更新时间
+	// 	updateFields[AutoFieldUpdatedAt] = time.Now()
+	// }
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
 	// for k, v := range updateFields {
@@ -199,11 +198,11 @@ func (s *Session) Insert(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if AutoFillCreatedAtAndUpdatedAtField == true {
-		//强制填充更新时间/创建时间
-		updateFields[AutoFieldUpdatedAt] = time.Now()
-		updateFields[AutoFieldCreatedAt] = time.Now()
-	}
+	// if AutoFillCreatedAtAndUpdatedAtField == true {
+	// 	//强制填充更新时间/创建时间
+	// 	updateFields[AutoFieldUpdatedAt] = time.Now()
+	// 	updateFields[AutoFieldCreatedAt] = time.Now()
+	// }
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
 	// for k, v := range updateFields {
@@ -238,11 +237,11 @@ func (s *Session) Replace(dst interface{}, opts ...Option) (Result, error) {
 		updateFields[k] = v
 	}
 	//若开启自动填充时间，则尝试自动填充时间
-	if AutoFillCreatedAtAndUpdatedAtField == true {
-		//强制填充更新时间/创建时间
-		updateFields[AutoFieldUpdatedAt] = time.Now()
-		updateFields[AutoFieldCreatedAt] = time.Now()
-	}
+	// if AutoFillCreatedAtAndUpdatedAtField == true {
+	// 	//强制填充更新时间/创建时间
+	// 	updateFields[AutoFieldUpdatedAt] = time.Now()
+	// 	updateFields[AutoFieldCreatedAt] = time.Now()
+	// }
 	opts = append(opts, Table(dstStruct.TableName()))
 	opts = append(opts, Params(updateFields))
 	// for k, v := range updateFields {
