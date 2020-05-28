@@ -158,7 +158,7 @@ func TestSessionInsert(t *testing.T) {
 	}
 }
 func TestSessionInsert2(t *testing.T) {
-	AutoFillCreatedAtAndUpdatedAtField = true
+	// AutoFillCreatedAtAndUpdatedAtField = true
 	Debug = true
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -178,7 +178,7 @@ func TestSessionInsert2(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
-	AutoFillCreatedAtAndUpdatedAtField = false
+	// AutoFillCreatedAtAndUpdatedAtField = false
 }
 
 func TestSessionReplace(t *testing.T) {
@@ -202,7 +202,7 @@ func TestSessionReplace(t *testing.T) {
 	}
 }
 func TestSessionReplace2(t *testing.T) {
-	AutoFillCreatedAtAndUpdatedAtField = true
+	// AutoFillCreatedAtAndUpdatedAtField = true
 	Debug = true
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -221,7 +221,7 @@ func TestSessionReplace2(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
-	AutoFillCreatedAtAndUpdatedAtField = false
+	// AutoFillCreatedAtAndUpdatedAtField = false
 }
 
 func TestSessionUpdate(t *testing.T) {
@@ -269,7 +269,7 @@ func TestSessionUpdate2(t *testing.T) {
 	}
 }
 func TestSessionUpdate3(t *testing.T) {
-	AutoFillCreatedAtAndUpdatedAtField = true
+	// AutoFillCreatedAtAndUpdatedAtField = true
 	Debug = true
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -290,7 +290,7 @@ func TestSessionUpdate3(t *testing.T) {
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
-	AutoFillCreatedAtAndUpdatedAtField = false
+	// AutoFillCreatedAtAndUpdatedAtField = false
 }
 func TestSessionDelete1(t *testing.T) {
 	Debug = true
