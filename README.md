@@ -489,6 +489,28 @@ func main() {
 
 ```
 
+### multi-database 
+
+```golang
+gosql.NewCollect(
+    gosql.NewCluster(
+        gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+    ),
+    "db1",
+)
+gosql.NewCollect(
+    gosql.NewCluster(
+        gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
+    ),
+    "db2",
+)
+
+db1 := gosql.Collect("db1")
+
+
+db2 := gosql.Collect("db2")
+```
+
 ### builder of API
 
 * builder.New() start a builder
