@@ -70,6 +70,8 @@ func debugPrint(format string, vals ...interface{}) {
 	}
 }
 
+// type Error mysql.MySQLError
+
 //Error ..
 type Error struct {
 	Number  uint16
