@@ -234,7 +234,7 @@ users = append(users,u2)
 ret,err := db.Insert(users)
 ```
 
-#### REPALCE
+#### REPLACE
 
 db.Replace(dst interface{}, opts ...Option) (Result, error)
 
