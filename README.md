@@ -14,7 +14,7 @@ gosql is a easy ORM library for Golang.
 * Unlimited nesting query
 * Reading and Writing Separation
 * Delay connection creation
-* ORM maping to sturct
+* ORM mapping to struct
 * Support transaction
 * Versatile
 * Clean Code
