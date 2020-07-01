@@ -32,12 +32,12 @@ func TestBuildSelect(t *testing.T) {
 		s.Where("t2.id", 10000)
 	})
 	s.GroupBy("class,group")
-	s.OrderBy("score desc", "name asc")
+	s.OrderBy("score desc", "name asc", "age")
 	s.Limit(30)
 	s.Offset(10)
 	s.ForUpdate()
 	result := s.BuildSelect()
-	want := "SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `name` = ? AND `nick` != ? AND `role1` IN (? ,? ,? ,?) AND `role2` NOT IN (? ,? ,? ,?) AND `card1` IN (?) AND `card2` NOT IN (?) AND ( `age` > ? AND `age` < ?) AND v1 = 1 AND v2 = ? AND `desc` LIKE ? AND `desc` NOT LIKE ? AND EXISTS (select 1) AND NOT EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `t2`.`id` = ?) GROUP BY `class,group` HAVING `class` = ? ORDER BY `score desc`, `name asc` LIMIT 30 OFFSET 10 FOR UPDATE"
+	want := "SELECT DISTINCT * FROM `tbl1`.`t1` JOIN `tbl3` ON `a` = `b` WHERE `t1`.`status` = ? AND `name` = ? AND `nick` != ? AND `role1` IN (? ,? ,? ,?) AND `role2` NOT IN (? ,? ,? ,?) AND `card1` IN (?) AND `card2` NOT IN (?) AND ( `age` > ? AND `age` < ?) AND v1 = 1 AND v2 = ? AND `desc` LIKE ? AND `desc` NOT LIKE ? AND EXISTS (select 1) AND NOT EXISTS (SELECT * FROM `tbl2`.`t2` WHERE `t2`.`id` = ?) GROUP BY `class,group` HAVING `class` = ? ORDER BY `score` DESC, `name` ASC, `age` LIMIT 30 OFFSET 10 FOR UPDATE"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
@@ -191,7 +191,7 @@ func TestSelectSQL(t *testing.T) {
 		Limit(10),
 		ForUpdate(),
 	)
-	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score` >= ? AND `age` <= ?) AND `status` = ? AND `desc` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id DESC` LIMIT 10 FOR UPDATE"
+	want := "SELECT DISTINCT `id`, `name` FROM `table_1` WHERE `id` != ? AND ( `age` < ? OR `age` > ?) OR ( `score` >= ? AND `age` <= ?) AND `status` = ? AND `desc` NOT LIKE ? AND `age` IS NOT NULL GROUP BY `type` ORDER BY `id` DESC LIMIT 10 FOR UPDATE"
 	if result != want {
 		t.Errorf("result: %v, want: %v", result, want)
 	}

@@ -431,7 +431,11 @@ func (s *SQLSegments) buildOrderBy() string {
 		if i > 0 {
 			sql += ","
 		}
-		sql += " " + buildIdent(v)
+		vv := strings.SplitN(v, " ", 2)
+		sql += " " + buildIdent(vv[0])
+		if len(vv) > 1 {
+			sql += " " + strings.ToUpper(vv[1])
+		}
 	}
 	return sql
 }
