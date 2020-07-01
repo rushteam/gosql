@@ -75,9 +75,9 @@ WHERE (`t1`.`status` = ?
         FROM `tbl2`.`t2`
         WHERE `t2`.`id` = ?
     ))
-GROUP BY `class,group`
+GROUP BY `class`, `group`
 HAVING `class` = ?
-ORDER BY `score desc`, `name asc`
+ORDER BY `score` DESC, `name` ASC, `age`
 LIMIT 10, 30
 FOR UPDATE
 ```
@@ -109,8 +109,8 @@ FOR UPDATE
         s.Table("tbl2.t2")
         s.Where("t2.id", 10000)
     })
-    s.GroupBy("class,group")
-    s.OrderBy("score desc", "name asc")
+    s.GroupBy("class","group")
+    s.OrderBy("score desc", "name asc","age")
     s.Limit(30)
     s.Offset(10)
     s.ForUpdate()
