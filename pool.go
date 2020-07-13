@@ -36,16 +36,16 @@ func (d *dbEngine) Connect() (*sql.DB, error) {
 
 //PoolCluster impl Cluster
 type PoolCluster struct {
-	vs          uint64
-	pools       []*dbEngine
-	forceMaster bool
+	vs           uint64
+	pools        []*dbEngine
+	forcePrimary bool
 }
 
 // PoolClusterOpts ..
 type PoolClusterOpts func(p *PoolCluster) *PoolCluster
 
 // Executor ..
-func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
+func (c *PoolCluster) Executor(s *Session, primary bool) (*Session, error) {
 	n := len(c.pools)
 	if n == 0 {
 		return nil, errors.New("not found db config")
@@ -54,18 +54,18 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 		s = &Session{v: atomic.AddUint64(&(c.vs), 1), ctx: context.Background()}
 	}
 	var dbx *dbEngine
-	if master || c.forceMaster == true {
-		//select master db
+	if primary || c.forcePrimary == true {
+		//select primary db
 		dbx = c.pools[0]
-		debugPrint("db: [master] dsn %s", dbx.Dsn)
+		debugPrint("db: [primary] dsn %s", dbx.Dsn)
 	} else {
-		//select slave db
+		//select replica db
 		var i int
 		if n > 1 {
 			i = 1 + int(s.v)%(n-1)
 		}
 		dbx = c.pools[i]
-		debugPrint("db: [slave#%d] %s", i, dbx.Dsn)
+		debugPrint("db: [replica#%d] %s", i, dbx.Dsn)
 	}
 	executor, err := dbx.Connect()
 	if err != nil {
@@ -75,13 +75,13 @@ func (c *PoolCluster) Executor(s *Session, master bool) (*Session, error) {
 	return s, nil
 }
 
-//Master select master db
-func (c *PoolCluster) Master() (*Session, error) {
+//Primary select primary db
+func (c *PoolCluster) Primary() (*Session, error) {
 	return c.Executor(nil, true)
 }
 
-//Slave select slave db
-func (c *PoolCluster) Slave(v uint64) (*Session, error) {
+//Replica select replica db
+func (c *PoolCluster) Replica(v uint64) (*Session, error) {
 	return c.Executor(nil, false)
 }
 

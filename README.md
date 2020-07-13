@@ -448,20 +448,18 @@ rows,err := db.Query("select * from my_user where id = ?",1)
 //sql: select * from my_user where id = 1
 ```
 
-### select master or slave
+### select primary or replica
 
-* db.Master() change to master
+* db.Primary() change to primary db
 
 ```golang
-db := db.Master()
-db.Fetch(...)
+ret,err := db.Primary().Fetch(...)
 ```
 
-* db.Slave() change to slave
+* db.Replica() change to replica
 
 ```golang
-db := db.Slave()
-db.Fetch(...)
+ret,err := db.Replica().Fetch(...)
 ```
 
 ### Paging

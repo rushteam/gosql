@@ -462,19 +462,19 @@ rows,err := db.Query("select * from my_user where id = ?",1)
 //sql: select * from my_user where id = 1
 ```
 
-## select master or slave
+## select primary or replica
 
-### change to master: db.Master()
+### change to primary: db.Primary()
 
 ```golang
-db := db.Master()
+db := db.Primary()
 db.Fetch(...)
 ```
 
-### change to slave: db.Slave()
+### change to replica: db.Replica()
 
 ```golang
-db := db.Slave()
+db := db.Replica()
 db.Fetch(...)
 ```
 
