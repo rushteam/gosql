@@ -94,7 +94,7 @@ FOR UPDATE
     s.Where("[!in]role2", []string{"1", "2", "3", "4"})
     s.Where("[in]card1", 1)
     s.Where("[!in]card2", 1)
-    s.Where(func(s *Clause) {
+    s.Where(func(s *gosql.Clause) {
         s.Where("[>]age", "20")
         s.Where("[<]", "50")
     })
