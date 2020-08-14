@@ -274,7 +274,7 @@ err := db.Fetch(user,
     gosql.Columns("id","name"),
     gosql.Where("id", 1),
     gosql.Where("[like]name", "j%"),
-    gosql.OrWhere(func(s *Clause) {
+    gosql.OrWhere(func(s *gosql.Clause) {
         s.Where("[>=]score", "90")
         s.Where("[<=]age", "100")
     }),
@@ -291,7 +291,7 @@ err := db.FetchAll(&userList,
     gosql.Columns("id","name"),
     gosql.Where("id", 1),
     gosql.Where("[like]name", "j%"),
-    gosql.OrWhere(func(s *Clause) {
+    gosql.OrWhere(func(s *gosql.Clause) {
         s.Where("[>]score", "90")
         s.Where("[<]score", "100")
     }),
