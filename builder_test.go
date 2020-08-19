@@ -309,3 +309,52 @@ func TestDeleteSQL(t *testing.T) {
 		t.Errorf("result: %v, want: %v", result, want)
 	}
 }
+
+func BenchmarkTable(b *testing.B) {
+	s := NewSQLSegment()
+	for i := 0; i < b.N; i++ {
+		s.Table("tbl1.t1")
+	}
+}
+func BenchmarkBuildSelect(b *testing.B) {
+	s := NewSQLSegment()
+	for i := 0; i < b.N; i++ {
+		s.BuildSelect()
+	}
+}
+func BenchmarkBuildSelectLarge(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		s := NewSQLSegment()
+		s.Flag("DISTINCT")
+		s.Field("*")
+		s.Table("tbl1.t1")
+		s.Where("t1.status", "0")
+		s.Where("name", "jack")
+		s.Where("[!=]nick", "tom")
+		s.Where("[in]role1", []string{"1", "2", "3", "4"})
+		s.Where("[!in]role2", []string{"1", "2", "3", "4"})
+		s.Where("[in]card1", 1)
+		s.Where("[!in]card2", 1)
+		s.Where(func(s *Clause) {
+			s.Where("[>]age", "20")
+			s.Where("[<]age", "50")
+		})
+		s.Where("v1 = 1")
+		s.Where("[#]v2 = ?", 2)
+		s.Join("tbl3", "a", "=", "b")
+		s.Having("class", "one")
+		s.Where("[~]desc", "student")
+		s.Where("[!~]desc", "teacher")
+		s.Where("[exists]card3", "select 1")
+		s.Where("[!exists]card4", func(s *SQLSegments) {
+			s.Table("tbl2.t2")
+			s.Where("t2.id", 10000)
+		})
+		s.GroupBy("class,group")
+		s.OrderBy("score desc", "name asc", "age")
+		s.Limit(30)
+		s.Offset(10)
+		s.ForUpdate()
+		s.BuildSelect()
+	}
+}
