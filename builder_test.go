@@ -310,16 +310,20 @@ func TestDeleteSQL(t *testing.T) {
 	}
 }
 
-func BenchmarkTable(b *testing.B) {
-	s := NewSQLSegment()
+func BenchmarkSelectWhere(b *testing.B) {
 	for i := 0; i < b.N; i++ {
+		s := NewSQLSegment()
 		s.Table("tbl1.t1")
+		s.Where("[=]id", 1)
+		s.BuildSelect()
 	}
 }
 func BenchmarkBuildSelect(b *testing.B) {
-	s := NewSQLSegment()
 	for i := 0; i < b.N; i++ {
+		s := NewSQLSegment()
+		s.Table("t1")
 		s.BuildSelect()
+
 	}
 }
 func BenchmarkBuildSelectLarge(b *testing.B) {
