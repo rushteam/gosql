@@ -86,7 +86,7 @@ func TestNewCluster2(t *testing.T) {
 	m, _ := c.Primary()
 	m.Query("select 3")
 
-	s, _ := c.Replica(0)
+	s, _ := c.Replica()
 	s.Query("select 4")
 
 	if err := mock.ExpectationsWereMet(); err != nil {

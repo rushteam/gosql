@@ -58,13 +58,6 @@ func (s *Session) Query(query string, args ...interface{}) (*sql.Rows, error) {
 func (s *Session) QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row {
 	debugPrint("db: [session #%v] QueryRow %s %v", s.v, query, args)
 	db, _ := s.Executor()
-	// db, err := s.Executor()
-	// if err != nil {
-	// 	row := &sql.Row{}
-	// 	rowErr := (*error)(unsafe.Pointer(row))
-	// 	*rowErr = err
-	// 	return row
-	// }
 	return db.QueryRowContext(ctx, query, args...)
 }
 
@@ -73,7 +66,6 @@ func (s *Session) QueryRow(query string, args ...interface{}) *sql.Row {
 	debugPrint("db: [session #%v] QueryRow %s %v", s.v, query, args)
 	db, _ := s.Executor()
 	return db.QueryRow(query, args...)
-	//return s.QueryRowContext(s.ctx, query, args...)
 }
 
 //ExecContext ..
@@ -94,7 +86,6 @@ func (s *Session) Exec(query string, args ...interface{}) (sql.Result, error) {
 		return nil, err
 	}
 	return db.Exec(query, args...)
-	// return s.ExecContext(s.ctx, query, args...)
 }
 
 //Fetch ..
