@@ -8,6 +8,27 @@
 
 gosql is a easy ORM library for Golang. 
 
+## Style:
+
+```
+var userList []UserModel
+err := db.FetchAll(&userList,
+    gosql.Columns("id","name"),
+    gosql.Where("status", 1),
+    gosql.Where("[like]name", "j%"),
+    gosql.OrWhere(func(s *gosql.Clause) {
+        s.Where("[>]score", "90")
+        s.Where("[<]score", "100")
+    }),
+    gosql.GroupBy("type"),
+    gosql.OrderBy("score DESC"),
+    gosql.Offset(0),
+    gosql.Limit(10),
+)
+// select id,name from user where status =1 and name like 'j%' or (score > 90 and score <100) group by type order by score DESC limit 0,10;
+```
+
+
 ## Feature
 
 * Functional Options Style SQL builder
