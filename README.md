@@ -10,7 +10,7 @@ gosql is a easy ORM library for Golang.
 
 ## Style:
 
-```
+```golang
 var userList []UserModel
 err := db.FetchAll(&userList,
     gosql.Columns("id","name"),
