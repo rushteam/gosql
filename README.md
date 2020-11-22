@@ -10,7 +10,7 @@ gosql is a easy ORM library for Golang.
 
 ## Feature
 
-* Golang-style SQL builder
+* Functional Options Style SQL builder
 * Unlimited nesting query
 * Reading and Writing Separation
 * Delay connection creation
@@ -143,7 +143,10 @@ func main() {
         gosql.AddDb("mysql", "user:password@tcp(127.0.0.1:3306)/test?parseTime=true&readTimeout=3s&writeTimeout=3s&timeout=3s"),
     )
     user := &UserModel{}
-    err := db.Fetch(user, gosql.Where("id", 1), gosql.Where("[like]name", "j%"))
+    err := db.Fetch(user, 
+    	gosql.Where("id", 1), 
+	gosql.Where("[like]name", "j%")
+    )
     if err != nil {
         fmt.Println(err)
     }
