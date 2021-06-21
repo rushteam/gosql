@@ -166,7 +166,7 @@ func main() {
     user := &UserModel{}
     err := db.Fetch(user, 
     	gosql.Where("id", 1), 
-	gosql.Where("[like]name", "j%")
+	gosql.Where("[like]name", "j%"),
     )
     if err != nil {
         fmt.Println(err)
